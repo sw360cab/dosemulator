@@ -1,0 +1,63 @@
+#include <string.h>
+#include <general.h>
+
+#define N 10
+extern char *salloc(); 
+extern char *srealloc();
+
+char *Get_line(){
+	
+	char *line;
+	char *cp;
+	
+	unsigned size;
+	unsigned count;
+	int c;
+	
+	size = N;
+	line=salloc(size);
+	cp=line;
+	for(count=0;(c=getchar())!= '\n'; count++){
+		
+		if(c==EOF)
+			return NULL;
+		if(count>=(size-1))
+		{
+			line=srealloc(line,size +=N);
+			cp=line+count;
+		}
+		*cp++=c;
+	}
+	*cp ='\0';
+	count++;
+	return srealloc(line,count);
+}
+
+void
+	print_list(Resource *res_list)
+	{
+		Resource *last, *first;
+		
+		char c;
+		
+		printf("\n\n***************************** List ***********************************\n\n");
+		last= res_list;
+		res_list=res_list->next;
+		first=res_list;
+		
+		if(res_list->next != NULL)
+		{
+			res_list=res_list->next;
+			
+			while(res_list!=first){
+				
+				printf("%s\n",res_list->name);
+				res_list=res_list->next;
+			}
+			res_list=last;
+		}
+		//c=getchar();
+		return;
+	}
+
+
