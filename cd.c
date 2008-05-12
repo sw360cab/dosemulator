@@ -1,10 +1,8 @@
 /*
- * all'inizio pausa in attesa di comando. TODO : pausa(), sigalarm() 
- * viene stampato "per terminare comando quit";
  * 
- * dopo comando -> output 
- * 
- * 
+ * * 
+ * TODO: wrapper for both cd and chdir
+ * TODO: menage duoble quotes in the path ""
 */
  
 
@@ -35,14 +33,14 @@ void get_input(char *format,void *variable)
 		/* line, letting the user to write  */
 		/* all the garbage he prefer on the */
 		/* input line.			    */
-	}
-
+}
+/*
 int main(int argc,char **argv) 
    { 
 		if (argc < 2)
 		{  printf("Usage: %s <pathname>\n",argv[0]);
 						 exit(1);
-	 }
+		}
 				if (chdir(argv[1]) != 0)
 						{ printf("Error in chdir\n");
 								 exit(1);
@@ -50,4 +48,5 @@ int main(int argc,char **argv)
 				
 				system("pwd");
 				pause();
-		}
+	}
+*/
