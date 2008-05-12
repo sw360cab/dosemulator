@@ -30,9 +30,9 @@
 #define TRUE 1
 #define FALSE 0
 
-void exec_com (char * buf)
+void exec_com (char * command, char * options)
 {
-	printf("%s executed\n", buf);
+	printf("%s executed\n", options);
 	exit(0);
 }
 
@@ -40,7 +40,8 @@ int main(int argc,char **argv)
 {
 	int status;
 	int running = TRUE;
-	char command[50];
+	char command[20], *opt;
+	char *line;
 	
 	printf ("\n-- This is Windows DOS shell emulation 1.0\n");
 	printf ("-- you can type windows command or run programs\n");
@@ -49,9 +50,14 @@ int main(int argc,char **argv)
 	while (running)
 	{
 		printf("$$-WinShell-$$ >> ");
+		
 		// get_line
+		
+		
 		// parse command
-		scanf("%s", command);
+		opt = (char *) malloc(sizeof(char)*strlen(line));
+		sscanf("%s %s", command, opt);
+		printf("Trovati COMANDO %s\n e OPZIONI %s\n", command,opt); 
 		
 		if ( strcmp(command,"exit")==0 || strcmp(command,"quit")==0 )
 		{
@@ -61,7 +67,7 @@ int main(int argc,char **argv)
 		
 		if (fork() == 0)	// child
 			//execl("/bin/ls", "ls", "-l", (char *)0);
-			exec_com(command);
+			exec_com(command,opt);
 		else	// father
 			wait(&status);
 	}
