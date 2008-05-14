@@ -4,7 +4,7 @@ CC = gcc
 LDFLAGS = -lm
 
 #
-OBJECTS =  resource.c dir.c 
+OBJECTS =  get_line.c resource.c dir.c 
 
 all	: $(OBJECTS)
 	$(CC) $(LDFLAGS) $(CFLAGS) -o dir $(OBJECTS) 
