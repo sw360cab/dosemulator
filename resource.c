@@ -254,7 +254,7 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 
 	t = res_list->status.st_mtim;
 	rawtime = t.tv_sec;
-	timeinfo = localtime( &rawtime);
+	timeinfo = localtime((long *)&rawtime);
 	strftime(buffer, 80, "%d/%m/%Y  %H.%M    ", timeinfo);
 	if (res_list->type == 4) {
 		dirindication="<DIR>               ";
@@ -268,14 +268,14 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 		for (i=0; i<( 21-strlen(dirindication)); i++) {
 			sizeandname[i]=' ';
 		}
-		sizeandname[i+1]='/0';
+		
 		(*files)++;
 		*file_size+= (int)res_list->status.st_size;
 
 	}
 
 	printf("%s %s %s %s\n", buffer, sizeandname , dirindication, res_list->name);
-	
+
 }
 
 void stdprint_parents(char *path) {
@@ -327,93 +327,103 @@ void stdprint_parents(char *path) {
 
 }
 
-void print_list(Resource *res_list, char *path) {
+Resource *print_list(Resource *res_list, char *path, short recursive) {
 	Resource *last, *first, *res;
 	Resource *dirs_list=NULL;
 
-	short recursive = 0; //TODO change: recursion as parameter
+	//short recursive = 1; //TODO change: recursion as parameter
 	int files = malloc(sizeof(int));
 	int totfilesize = malloc(sizeof(int));
 	int dirs = malloc(sizeof(int));
-	char temp_path[MAXPATH];
+	char *temp_path =(char *) malloc(MAXPATH);
 	char c;
-	
+
 	files = 0;
 	totfilesize=0;
 	dirs = 2;
-
+	
 	printf("\n Directory di %s\n\n", path);
-
+ 
 	last= res_list;
+	temp_path =(char *) malloc((unsigned int)MAXPATH);
+	strcpy(temp_path, path);
+	stdprint_parents(temp_path);
 
-	stdprint_parents(path);
+	if (res_list != NULL) {
+		if (res_list->next != NULL) {
+			first=res_list->next;
+			res_list=res_list->next;
 
-	if (res_list->next != NULL || res_list != NULL) {
-		first=res_list->next;
-		res_list=res_list->next;
-		//TODO try with getEvent
+			while (res_list->next!=first) {
 
-		while (res_list->next!=first) {
+				//TODO print the std values,date(last modification) time (last modification) <DIR>(or not) <size in bytes> (if file) file name
 
-			//TODO print the std values,date(last modification) time (last modification) <DIR>(or not) <size in bytes> (if file) file name
+				stdprint(res_list, &dirs, &files, &totfilesize);
+
+				if (recursive == 1 && res_list->type==4) {
+
+					if (!strcmp(res_list->name, "")==0) {
+
+						res = create_res(res_list->status, res_list->name,
+								res_list->type, path);
+						insert_resource(&dirs_list, res);
+					}
+				}
+
+				res_list=res_list->next;
+			}
 
 			stdprint(res_list, &dirs, &files, &totfilesize);
-			
+/*
+			printf("               %d File(s)    %d bytes\n", files,
+					totfilesize);
+			printf("               %d Folder(s)\n", dirs);
+*/
 			if (recursive == 1 && res_list->type==4) {
 
 				if (!strcmp(res_list->name, "")==0) {
-
 					res = create_res(res_list->status, res_list->name,
-							res_list->type);
-					insert_resource(&dirs_list, res);
+							res_list->type, path);
+					insert_resource(&dirs_list, res_list);
 				}
 			}
-
-			res_list=res_list->next;
+			res_list=last;
 		}
+	} else
+		dirs_list = NULL;
+	
 
-		stdprint(res_list, &dirs, &files, &totfilesize);
+	printf("               %d File(s)    %d bytes\n", files,
+			totfilesize);
+	printf("               %d Folder(s)\n", dirs);
 
-		printf("               %d File(s)    %d bytes\n", files, totfilesize);
-		printf("               %d Folder(s)\n", dirs);
+	/*
+	 if (recursive == 1) {
 
-		if (recursive == 1 && res_list->type==4) {
+	 last= dirs_list;
+	 first=dirs_list->next;
 
-			if (!strcmp(res_list->name, "")==0) {
-				res = create_res(res_list->status, res_list->name,
-						res_list->type);
-				insert_resource(&dirs_list, res_list);
-			}
-		}
-		res_list=last;
-	}
+	 if (dirs_list->next != NULL) {
+	 dirs_list=dirs_list->next;
 
-	if (recursive == 1) {
+	 while (dirs_list->next!=first) {
 
-		last= dirs_list;
-		first=dirs_list->next;
+	 strcpy(temp_path, path);
+	 strcat(temp_path, "/");
+	 strcat(temp_path, dirs_list->name);
+	 my_dir(temp_path);
+	 dirs_list = dirs_list->next;
 
-		if (dirs_list->next != NULL) {
-			dirs_list=dirs_list->next;
+	 }
 
-			while (dirs_list->next!=first) {
+	 strcpy(temp_path, path);
+	 strcat(temp_path, "/");
+	 strcat(temp_path, dirs_list->name);
+	 my_dir(temp_path);
 
-				strcpy(temp_path, path);
-				strcat(temp_path, "/");
-				strcat(temp_path, dirs_list->name);
-				my_dir(temp_path);
-				dirs_list = dirs_list->next;
+	 dirs_list=last;
+	 }
 
-			}
-
-			strcpy(temp_path, path);
-			strcat(temp_path, "/");
-			strcat(temp_path, dirs_list->name);
-			my_dir(temp_path);
-
-			dirs_list=last;
-		}
-
-	}
-	return;
+	 }*/
+	return dirs_list;
 }

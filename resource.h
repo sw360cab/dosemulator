@@ -30,6 +30,7 @@ struct resource_unit
 	Resource *next;	/* Next event in the list */
 	Resource *prev;    /* Previous event in the list */
 	char *name;     /* name of the resource */
+	char *path;     /*path of the resource*/
 	unsigned char type;     /* Type of resource, 4 =  directory , 8 = file */
 	/* Optional fields, depending on the events to be simulated */
 	//int   param1;   /* Generic integer parameter */
@@ -47,4 +48,4 @@ Resource *get_resource(Resource **);		/* Returns the first event from the FES */
 Resource *new_resource(void );		/* Returns a new event */
 void release_resource(Resource *);		/* Releases an event */
 void delete_resource(Resource **,Resource *); /* Delete a resource */
-void print_list(Resource *, char *);
+Resource *print_list(Resource *, char *, short);

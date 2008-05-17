@@ -19,9 +19,9 @@
  * ***** END LICENSE BLOCK ***** 
  */
 
-//TODO recursion algorithm
-//TODO printout formatting functions
-//TODO getline realloc: maybe unsigned int length = u + strlen(str); without strlen
+
+//TODO printout formatting functions -> most common functions
+
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -33,7 +33,6 @@
 #include <dirent.h>
 #include <semaphore.h>
 #include "resource.h"
-//TODO better definition of maximum path length
 
 //Looking in /usr/src/linux-2.4.20-8/include/linux/limits.h, I see:
 //#define PATH_MAX 4096 /* # chars in a path name including nul */
@@ -49,9 +48,6 @@
 short show_directory;
 short show_read_only;
 short show_hidden_files;
-short show_system_files;
-short show_archive_files;
-
 short show_owner; // /Q option 
 short show_recursive; // /S option 
 
@@ -63,27 +59,29 @@ void initialize() {
 	show_directory = 1;
 	show_read_only = 0;
 	show_hidden_files = 0;
-	show_system_files = 0; //TODO do "system" files exist under linux ?
-	show_archive_files = 1;//TODO do archive files exist under linux ?
-
 	show_owner = 0; // /Q option 
-	show_recursive = 1; // /S option //TODO to change in 0
+	show_recursive = 1;  
 	resources_list = NULL;
 
 }
 
-Resource *create_res(struct stat status, char res_name[], unsigned char type) {
+Resource *create_res(struct stat status, char res_name[], unsigned char type,
+		char *path) {
 
 	Resource *res;
-	char *name;
+	char *name, *new_path;
 
 	name =(char *) malloc((unsigned int)strlen(res_name));
-	strcpy(name, res_name);
+	new_path =(char *)malloc((unsigned int)MAXPATH);
 
+	strcpy(name, res_name);
+	strcpy(new_path, path);
+	
 	res = new_resource();
 	res->status = status;
 	res->name = name;
 	res->type = type;
+	res->path = new_path;
 	return res;
 
 }
@@ -92,19 +90,19 @@ Resource *my_dir(char *path) {
 
 	DIR *dp;
 	Resource *res;
-	Resource *to_print, *temp;
+	Resource *to_print = NULL;
 
 	struct dirent *ep;
 	struct stat status;
 	char current_dir[MAXPATH], temp_path[MAXPATH];
-	char *res_name;
 	int *p;
-
+	
+	
 	strcpy(current_dir, path);
-
+	
 	dp = opendir(current_dir);
 	if (dp != NULL) {
-		while (ep = readdir(dp)) {
+		while ( (ep = readdir(dp)) ) {
 
 			//ep->type: 4 dir, 8 file
 			if (show_directory==0 && ep->d_type==4) {
@@ -112,11 +110,10 @@ Resource *my_dir(char *path) {
 			}
 
 			//if ep = . or .. , i don't need to process the node
-			
+
 			if ( (strcmp(ep->d_name, ".") == 0 ) || (strcmp(ep->d_name, "..")
 					== 0)) {
-				//printf("%s\n",ep->d_name);
-				continue;
+						continue;
 			}
 			if (show_hidden_files==0 && ep->d_name[0]=='.') {
 				continue;
@@ -133,25 +130,20 @@ Resource *my_dir(char *path) {
 			}
 			strcat(temp_path, ep->d_name);
 
-			//TODO recursion
-			/*
-			 if(show_recursive==1 && ep->d_type==4){
-			 my_dir(temp_path);
-			 }*/
+			
 
-			//TODO files that terminates with "~" aren't added to the list
+			//files that terminates with "~" aren't added to the list
 			if (temp_path[strlen(temp_path)-1] == '~') {
-				//printf("%s\n",ep->d_name);
 				continue;
 			}
 
-			if ( (p=open(temp_path, O_EXCL)) == NULL) {
+			if ( (p=(int *)open(temp_path, O_EXCL)) == NULL) {
 
 				printf("dir: cannot access : %s: No such file or directory\n",
 						temp_path);
-				continue;
+				exit(1);
 			}
-
+			
 			if (fstat(p, &status) != 0) {
 				if (ep->d_type==4)
 					printf("Cannot open directory %s: Permission denied\n",
@@ -169,29 +161,77 @@ Resource *my_dir(char *path) {
 					&& (((unsigned short)status.st_mode) == 33024))
 				continue;
 
-			res = create_res(status, ep->d_name, ep->d_type);
+			res = create_res(status, ep->d_name, ep->d_type, path);
 			insert_resource(&resources_list, res);
 
 		}
 		(void) closedir(dp);
-		/*
-		while (resources_list!= NULL) {
-			insert_resource(&to_print, get_resource(&resources_list));
-		}
-		print_list(to_print, current_dir);
-		*/
-	} else{
+		
+		 while (resources_list!= NULL) {
+		 insert_resource(&to_print, get_resource(&resources_list));
+		 }
+		 resources_list = NULL;
+		 
+		 
+	} else {
 		printf("dir: cannot access : %s: No such file or directory\n", path);
-		//return to_print;//TODO correct
-	}	
-	return resources_list;
+		exit(1);
+		
+	}
+	return to_print;
+}
+
+Resource *processNode(char *path,short recursive) {
+
+	Resource *to_print=NULL, *to_dir=NULL;
+	
+	
+	to_print = my_dir(path);
+	to_dir = print_list(to_print, path,recursive);
+	
+
+	return to_dir;
+}
+
+char *build_path(char *parent_path, char* resource_name){
+	
+	char *new_path = malloc((unsigned int) MAXPATH);
+	strcpy(new_path,parent_path);
+	strcat(new_path, "/");
+	strcat(new_path,resource_name);
+	
+	return new_path;
+	
+}
+
+void followNode(char *path) {
+	
+	
+	Resource *children=NULL, *first;
+	
+	
+	
+	children = processNode(path , 1);
+	
+	
+	if (children != NULL) {
+
+		first=children->next;
+		children=children->next;
+
+		while (children->next!=first) {
+			
+			followNode(build_path(children->path,children->name));
+			
+			children=children->next;
+		}
+		
+		followNode(build_path(children->path,children->name));
+	}
 }
 
 int main(int argc, char **argv) {
 
-	Resource *to_print;
-	Resource *to_dir;
-	 
 	char current_dir[MAXPATH];
 
 	if (argc != 2) {
@@ -203,12 +243,12 @@ int main(int argc, char **argv) {
 	initialize();
 
 	strcpy(current_dir, argv[1]);
-	
-	
-	to_print = my_dir(current_dir);
-	print_list(to_print, current_dir);
-	
-	
-	
+
+	if (show_recursive == 0) {
+
+		processNode(current_dir, 0);
+	} else
+		followNode(current_dir);
+
 	return 0;
 }
