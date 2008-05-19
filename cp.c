@@ -26,18 +26,19 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include "parse.h"
 
 #define BUF_MAX 1024
 
-int main(int argc,char **argv) 
+void cp(param **list)
 	{ 
-	
 	char *buf;
+	char *src, *dest;
 	int source_fd, dest_fd;
 	int rd;
 	struct stat st;
 	
-	/* copy for pure text file
+	/* // copy for pure text file
 	 * 
 	 * FILE *in, *out;
 	 * in = fopen(“wordlist.txt”, “r”);
@@ -52,21 +53,26 @@ int main(int argc,char **argv)
 	
 	// resolve path
 	// chdir to path
-	//scanf ("%s\n", buf);
-	//sscanf("%s %s", source, dest);
+
+	src = (char *) malloc(sizeof(char)*strlen((*list)->name)+1);
+	strcpy(src,(*list)->name);
 	
-   	if ( (source_fd=open (argv[1], O_RDONLY)) == -1)
+	(*list)=(*list)->next;
+	dest = (char *) malloc(sizeof(char)*strlen((*list)->name)+1);
+	strcpy(dest,(*list)->name);
+	
+   	if ( (source_fd=open (src, O_RDONLY)) == -1)
    		{
-   		fprintf(stderr, "Can't open source file %s\n",argv[1]);
+   		fprintf(stderr, "Can't open source file %s\n",src);
    		exit(1);
    		}
    		
-   	stat(argv[1],&st);
+   	stat(src,&st);
    	buf = (char *) malloc(sizeof(char)*st.st_size+1);
    	  		 
-   	if ( (dest_fd=open (argv[2], O_CREAT | O_WRONLY, st.st_mode)) == -1)
+   	if ( (dest_fd=open (dest, O_CREAT | O_WRONLY, st.st_mode)) == -1)
    		{
-   		fprintf(stderr, "Can't open dest file %s\n",argv[2]);
+   		fprintf(stderr, "Can't open dest file %s\n",dest);
    		exit(1);
    		}
    	
@@ -81,6 +87,8 @@ int main(int argc,char **argv)
     	write( dest_fd, buf, rd );
     	
     free(buf);
+    free(src);
+    free(dest);
 	close(source_fd);
 	close(dest_fd);
 	}
