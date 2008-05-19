@@ -26,13 +26,33 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include "parse.h"
 
 #define TRUE 1
 #define FALSE 0
 
+extern char *get_line();
+extern void cp(param**);
+
 void exec_com (char * command, char * options)
 {
-	printf("%s executed\n", options);
+	param *parameter_list;
+		
+	parameter_list=parse_options(options);
+	
+	/*
+	while (parameter_list!=NULL)
+	{
+		printf("---%s---\n", parameter_list->name);
+		parameter_list= parameter_list->next;
+	}
+	*/
+	
+	// switch used to execute commands
+	if (strcmp(command,"copy")==0 )
+		cp(&parameter_list);
+		
+	free(parameter_list);
 	exit(0);
 }
 
@@ -40,7 +60,7 @@ int main(int argc,char **argv)
 {
 	int status;
 	int running = TRUE;
-	char command[20], *opt;
+	char *command, *opt;
 	char *line;
 	
 	printf ("\n-- This is Windows DOS shell emulation 1.0\n");
@@ -52,24 +72,36 @@ int main(int argc,char **argv)
 		printf("$$-WinShell-$$ >> ");
 		
 		// get_line
-		
+		line=get_line();
 		
 		// parse command
+		command = (char *) malloc(sizeof(char)*20);
 		opt = (char *) malloc(sizeof(char)*strlen(line));
-		sscanf("%s %s", command, opt);
-		printf("Trovati COMANDO %s\n e OPZIONI %s\n", command,opt); 
+
+		parse_line(&command, &opt, line);
 		
+		printf("Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,opt); 
+		
+		// TODO invetigate Segmentation fault on "exit
 		if ( strcmp(command,"exit")==0 || strcmp(command,"quit")==0 )
 		{
 			running=FALSE;
+			free(command);
+			free(opt);
 			break;
 		}
 		
 		if (fork() == 0)	// child
+		{
 			//execl("/bin/ls", "ls", "-l", (char *)0);
 			exec_com(command,opt);
-		else	// father
+			free(command);
+			free(opt);
+		}
+		else 	// father
+		{
 			wait(&status);
+		}
 	}
 }
 
