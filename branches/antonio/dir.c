@@ -20,8 +20,8 @@
  */
 
 
-//TODO printout formatting functions -> most common functions
-
+//TODO printout formatting functions -> most common functions: see my_commands.doc  
+//TODO perform some free 
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -58,7 +58,7 @@ void initialize() {
 
 	show_directory = 1;
 	show_read_only = 0;
-	show_hidden_files = 0;
+	show_hidden_files = 1;
 	show_owner = 0; // /Q option 
 	show_recursive = 1;  
 	resources_list = NULL;
@@ -82,6 +82,8 @@ Resource *create_res(struct stat status, char res_name[], unsigned char type,
 	res->name = name;
 	res->type = type;
 	res->path = new_path;
+	
+	
 	return res;
 
 }
@@ -139,12 +141,12 @@ Resource *my_dir(char *path) {
 
 			if ( (p=(int *)open(temp_path, O_EXCL)) == NULL) {
 
-				printf("dir: cannot access : %s: No such file or directory\n",
+				fprintf(stderr,"dir: cannot access : %s: No such file or directory\n",
 						temp_path);
 				exit(1);
 			}
 			
-			if (fstat(p, &status) != 0) {
+			if (fstat((int)p, &status) != 0) {
 				if (ep->d_type==4)
 					printf("Cannot open directory %s: Permission denied\n",
 							temp_path);
@@ -156,7 +158,7 @@ Resource *my_dir(char *path) {
 			}
 
 			//st.mode 400 (user read only)-> 33024
-			//TODO should i menage other read only cases ?
+			//TODO should i menage other read only cases ? use stavfs
 			if (show_read_only==1
 					&& (((unsigned short)status.st_mode) == 33024))
 				continue;
@@ -167,14 +169,14 @@ Resource *my_dir(char *path) {
 		}
 		(void) closedir(dp);
 		
-		 while (resources_list!= NULL) {
+	 	 while (resources_list!= NULL) {
 		 insert_resource(&to_print, get_resource(&resources_list));
 		 }
 		 resources_list = NULL;
-		 
+		  
 		 
 	} else {
-		printf("dir: cannot access : %s: No such file or directory\n", path);
+		fprintf(stderr,"dir: cannot access : %s: No such file or directory\n", path);
 		exit(1);
 		
 	}
