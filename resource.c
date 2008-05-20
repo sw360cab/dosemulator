@@ -20,7 +20,7 @@
  */
 
 #include  <sys/types.h>
-//#include  <sys/timers.h>
+#include <sys/statvfs.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -75,9 +75,9 @@ void delete_resource(Resource **last, Resource *elem) {
 Resource* delete_resource_POP(Resource **last, Resource *elem) {
 
 	if (elem==NULL)
-		return;
+		return NULL;
 	if ((*last)==NULL)
-		return;
+		return NULL;
 
 	if ((*last)->next==(*last)) {
 		/* There is a single event in the FES */
@@ -237,10 +237,10 @@ void timespec2string(struct timespec *ts, char buffer[], int len)
 	/* ctime_r terminates the time with a carriage return. We eliminate it.*/
 	/* We report time in microseconds. That is the precision on our system.*/
 	//sprintf(&buffer[24], " and %6d microseconds", (ts->tv_nsec)/1000);
-	sprintf(&buffer[24], " %d ", ts->tv_sec);
+	sprintf(&buffer[24], " %d ", (int)ts->tv_sec);
 }
+  
 
-//TODO print: file_size; update: total_file_size;   
 void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 
 	struct timespec t;
@@ -275,7 +275,7 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 	}
 
 	printf("%s %s %s %s\n", buffer, sizeandname , dirindication, res_list->name);
-
+	
 }
 
 void stdprint_parents(char *path) {
@@ -286,13 +286,14 @@ void stdprint_parents(char *path) {
 	time_t rawtime;
 	char buffer[TIMLEN];
 	char *sizeandname;
-	int p;
+	int *p;
 	unsigned int l = 25;
 	char *dirindication = (char *)malloc(l);
+	
 
-	if ( (p=open(path, O_EXCL)) != NULL) {
+	if ( (p=(int *)open(path, O_EXCL)) != NULL) {
 
-		if (fstat(p, &status) == 0) {
+		if (fstat((int)p, &status) == 0) {
 			//TODO build a function that returns the date and substitute it in all prints 
 			t = status.st_mtim;
 			rawtime = t.tv_sec;
@@ -310,7 +311,7 @@ void stdprint_parents(char *path) {
 	strcat(path, "/..");
 	if ( (p=open(path, O_EXCL)) != NULL) {
 
-		if (fstat(p, &status) == 0) {
+		if (fstat((int)p, &status) == 0) {
 			//TODO build a function that returns the date and substitute it in all prints 
 			t = status.st_mtim;
 			rawtime = t.tv_sec;
@@ -331,12 +332,12 @@ Resource *print_list(Resource *res_list, char *path, short recursive) {
 	Resource *last, *first, *res;
 	Resource *dirs_list=NULL;
 
-	//short recursive = 1; //TODO change: recursion as parameter
-	int files = malloc(sizeof(int));
-	int totfilesize = malloc(sizeof(int));
-	int dirs = malloc(sizeof(int));
+	int files = (int) malloc(sizeof(int));
+	int totfilesize =(int) malloc(sizeof(int));
+	int dirs =(int) malloc(sizeof(int));
 	char *temp_path =(char *) malloc(MAXPATH);
-	char c;
+	struct statvfs status_space;
+	
 
 	files = 0;
 	totfilesize=0;
@@ -356,15 +357,15 @@ Resource *print_list(Resource *res_list, char *path, short recursive) {
 
 			while (res_list->next!=first) {
 
-				//TODO print the std values,date(last modification) time (last modification) <DIR>(or not) <size in bytes> (if file) file name
+				
 
 				stdprint(res_list, &dirs, &files, &totfilesize);
 
 				if (recursive == 1 && res_list->type==4) {
 
 					if (!strcmp(res_list->name, "")==0) {
-
-						res = create_res(res_list->status, res_list->name,
+ 
+						res =(Resource *) create_res(res_list->status, res_list->name,
 								res_list->type, path);
 						insert_resource(&dirs_list, res);
 					}
@@ -392,38 +393,12 @@ Resource *print_list(Resource *res_list, char *path, short recursive) {
 	} else
 		dirs_list = NULL;
 	
-
+	statvfs(path,&status_space);
 	printf("               %d File(s)    %d bytes\n", files,
 			totfilesize);
-	printf("               %d Folder(s)\n", dirs);
+	printf("               %d Folder(s)  %d available blocks\n\n", dirs, (int) status_space.f_bfree);
+	//TODO block size ? 512 ? 
+	
 
-	/*
-	 if (recursive == 1) {
-
-	 last= dirs_list;
-	 first=dirs_list->next;
-
-	 if (dirs_list->next != NULL) {
-	 dirs_list=dirs_list->next;
-
-	 while (dirs_list->next!=first) {
-
-	 strcpy(temp_path, path);
-	 strcat(temp_path, "/");
-	 strcat(temp_path, dirs_list->name);
-	 my_dir(temp_path);
-	 dirs_list = dirs_list->next;
-
-	 }
-
-	 strcpy(temp_path, path);
-	 strcat(temp_path, "/");
-	 strcat(temp_path, dirs_list->name);
-	 my_dir(temp_path);
-
-	 dirs_list=last;
-	 }
-
-	 }*/
 	return dirs_list;
 }
