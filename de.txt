@@ -1,0 +1,5 @@
+to be fixed - installed:
+
+- jaxb
+- jmf
+- jva wsdp

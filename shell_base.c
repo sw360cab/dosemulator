@@ -28,11 +28,11 @@
 #include <fcntl.h>
 #include "parse.h"
 
-#define TRUE 1
-#define FALSE 0
-
 extern char *get_line();
 extern void cp(param**);
+extern void md(param*);
+
+char *working_dir;
 
 void exec_com (char * command, char * options)
 {
@@ -49,8 +49,10 @@ void exec_com (char * command, char * options)
 	*/
 	
 	// switch used to execute commands
-	if (strcmp(command,"copy")==0 )
+	/*if (strcmp(command,"copy")==0 )
 		cp(&parameter_list);
+	else*/ if (strcmp(command,"md")==0 )
+		md(parameter_list);
 		
 	free(parameter_list);
 	exit(0);
@@ -69,6 +71,9 @@ int main(int argc,char **argv)
 	
 	while (running)
 	{
+		//working_dir =(char *) malloc((unsigned int)1000);
+		//getcwd(working_dir,1000);
+		
 		printf("$$-WinShell-$$ >> ");
 		
 		// get_line

@@ -6,7 +6,7 @@ LDFLAGS = -lm
 
 INCLUDES =	parse.h
 #
-OBJECTS =  shell_base.c get_line.c parse.c cp.c cd.c
+OBJECTS =  shell_base.c get_line.c parse.c md.c
 
 all	: $(OBJECTS)
 	$(CC) $(LDFLAGS) $(CFLAGS) -o shell_base $(OBJECTS) 
