@@ -5,7 +5,7 @@
 
 int jolly_char(char *line)
 {
-	if (strncmp( line, "/",1)==0)
+	if (strncmp( line, "\\",1)==0)
 		return 1;
 	else if (strncmp( line, "+",1)==0)
 		return 1;

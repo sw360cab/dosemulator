@@ -1,3 +1,6 @@
+#define MAXPATH 4096
+#define TRUE 1
+#define FALSE 0
 
 typedef struct elem param;
 
