@@ -25,12 +25,13 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #include <fcntl.h>
 
 #define BUF_MAX 1024
+#define MAXPATH 4096
 
 extern char *get_line();
-
 
 void erase(char *pth)
 	{
@@ -80,11 +81,132 @@ int request(char *pth, int rd_only)
 			}
 		}
 	}
+
+/*
+ * recursive function that enter recursively
+ * directories, delete files and at the end delete 
+ * also the specified directory --> rm -Rf
+ */
+void recur_del(char *current_path)
+{
+	DIR *dp;
+	struct dirent *ep;
+	char *temp_path;
+	
+	temp_path = (char *) malloc( sizeof(char)*MAXPATH+1 );
+	
+	dp = opendir(current_path);
+
+	if (dp != NULL) {
+		while ( (ep = readdir(dp)) )
+			{
+			strcpy(temp_path,current_path);
+			
+			//if the current dir doesn't finish with '/',
+			//I should add it before appending the currente resource name
+			if ( current_path[strlen(current_path)-1] != '/')
+							strcat(temp_path, "/");				
+			strcat(temp_path, ep->d_name);
+			
+			//ep->type: 4 dir, 8 file
+			if ( ep->d_type==4)	// is a directory get into recursively
+				{
+				if (strcmp(ep->d_name, ".") != 0  && strcmp(ep->d_name, "..")!= 0 )
+					recur_del(temp_path);
+				}
+			
+			else // is a file
+				{
+				if ( strcmp(ep->d_name, ".") != 0 && strcmp(ep->d_name, "..")!= 0 )
+					erase(temp_path);
+				}
+			}
+		closedir(dp);
+		
+		if ( rmdir(current_path) == -1)
+			{
+				fprintf(stderr, "Unable to delete directory %s\n Directory should be empty or there is a permission problem\n",current_path);
+			   	exit(1);
+			}
+		printf("deleted %s\n", current_path);
+	}
+	free(temp_path);
+	return;
+}
+
+/*
+ * recursive function that enter recursively
+ * directories, delete files if they have specified name
+ */
+void recur_subdir(char* current_path, char *file_name)
+{
+	DIR *dp;
+	struct dirent *ep;
+	char *temp_path;
+	int source_fd;
+	struct stat st;
+	
+	temp_path = (char *) malloc( sizeof(char)*MAXPATH+1 );
+	
+	dp = opendir(current_path);
+
+	if (dp != NULL) {
+		while ( (ep = readdir(dp)) )
+			{
+			strcpy(temp_path,current_path);
+			
+			//if the current dir doesn't finish with '/',
+			//I should add it before appending the currente resource name
+			if ( current_path[strlen(current_path)-1] != '/')
+							strcat(temp_path, "/");				
+			strcat(temp_path, ep->d_name);
+			
+			//ep->type: 4 dir, 8 file
+			if ( ep->d_type==4)	// is a directory get into recursively
+				{
+				if (strcmp(ep->d_name, ".") != 0  && strcmp(ep->d_name, "..")!= 0 )
+					recur_subdir(temp_path,file_name);
+				}
+			
+			else // is a file
+				{
+				// check if if file name is the one requested
+				if ( strcmp(ep->d_name, file_name) == 0)
+					{
+					
+					// do several checks on file than erase
+					if ( (source_fd=open (temp_path, O_RDONLY)) == -1)  // try to open file
+						{
+						fprintf(stderr, "Unable to find file %s or you don\'t have enough permission\n",temp_path);
+						continue;
+						}
+
+					if (st.st_nlink > 1)  // unlink wouldn't delete for sure the file, whether others open it meanwhile
+						{
+						fprintf(stderr, "Check that file %s is not open or used by another file\n",temp_path);
+						continue;
+						}	
+					//erase(temp_path);
+					printf("deleted %s\n", temp_path);
+					}
+				}
+			}
+		closedir(dp);
+	}
+	free(temp_path);
+	return;
+}
+
+void deltree(char *pth)
+{
+	recur_del(pth);
+	exit(0);
+}	
 	
 int main(int argc,char **argv) 
 	{ 
 	
-	char *path;
+	char *path,*working_dir;
 	int source_fd, dest_fd;
 	int rd;
 	struct stat st;
@@ -96,18 +218,22 @@ int main(int argc,char **argv)
 	int attrib=0;
 	int sub_dir=0;
 	
-	if ( strcmp(argv[2],"\\P")==0 ) // req of deletion for each file
+	// working directory
+	working_dir =(char *) malloc(sizeof(char)*BUF_MAX);
+	getcwd(working_dir,BUF_MAX);
+	
+	if ( strcmp(argv[2],"\P")==0 ) // req of deletion for each file
 		req=1;
-	else if ( strcmp(argv[2],"\\F")==0 ) // force deletion of read-only file
+	else if ( strcmp(argv[2],"\F")==0 ) // force deletion of read-only file
 		read_only=0;
-	else if ( strcmp(argv[2],"\\Q")==0 ) // delete everything without asking
+	else if ( strcmp(argv[2],"\Q")==0 ) // delete everything without asking
 		{
 		req=0;
 		read_only=0;
 		}
-	else if ( strcmp(argv[2],"\\S")==0 ) // look for file to be deleted in subdirectories
+	else if ( strcmp(argv[2],"\S")==0 ) // look for file to be deleted in subdirectories
 		sub_dir=1;
-	else if ( strcmp(argv[2],"\\A")==0 ) // delete according to attributes
+	else if ( strcmp(argv[2],"\A")==0 ) // delete according to attributes
 		{
 		attrib=1;
 		printf("attrib\n");
@@ -214,10 +340,13 @@ int main(int argc,char **argv)
     		
    	else // just delete
    		{
-   		//if subdir --> check file in subdir recursively
-   		{
-   		erase(path);
-   		close(source_fd);
-   		}
+   		// subdir --> check file in subdir recursively
+   		if (sub_dir==1)
+   			recur_subdir(working_dir,path);
+   		else	// just delete
+   			{
+   			erase(path);
+   			close(source_fd);
+   			}
    		}
 	}

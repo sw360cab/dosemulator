@@ -20,12 +20,18 @@ void erase(char *pth)
 	return;
 	}
 
-void recur(char *current_path)
+/*
+ * recursive function that enter recursively
+ * directories, delete files and at the end delete 
+ * also the specified directory --> rm -Rf
+ */
+void recur_del(char *current_path)
 {
 	DIR *dp;
 	struct dirent *ep;
-	char temp_path[MAXPATH];
-	char file_name[MAXPATH];
+	char *temp_path;
+	
+	temp_path = (char *) malloc( sizeof(char)*MAXPATH+1 );
 	
 	dp = opendir(current_path);
 
@@ -44,25 +50,24 @@ void recur(char *current_path)
 			if ( ep->d_type==4)	// is a directory get into recursively
 				{
 				if (strcmp(ep->d_name, ".") != 0  && strcmp(ep->d_name, "..")!= 0 )
-					recur(temp_path);
-				
-				//printf("going into %s\n", temp_path);
+					recur_del(temp_path);
 				}
 			
 			else // is a file
 				{
 				if ( (strcmp(ep->d_name, ".") != 0 ) && (strcmp(ep->d_name, "..")!= 0))
-					{
-					printf("file deleted %s........\n", ep->d_name);
 					erase(temp_path);
-					}
 				}
 			}
-			//free(temp_path);
 			closedir(dp);
-			printf("deleted 22 %s\n", current_path);
-			rmdir(current_path);
+			if ( rmdir(current_path) == -1)
+				{
+					fprintf(stderr, "Unable to delete directory %s\n Directory should be empty or there is a permission problem\n",current_path);
+				   	exit(1);
+				}
+			printf("deleted %s\n", current_path);
 	}
+	free(temp_path);
 	return;
 }
 
@@ -71,8 +76,8 @@ int main(int argc, char **argv)
 	
 	char nonno[50];
 	char current_dir[MAXPATH];
-		
+	
 	strcpy(current_dir,argv[1]);
-	recur(current_dir);
+	recur_del(current_dir);
 	exit(0);
 	}
