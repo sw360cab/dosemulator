@@ -31,6 +31,8 @@
 extern char *get_line();
 extern void cp(param**);
 extern void md(param*);
+extern void del(param*);
+extern void deltree(param*);
 
 char *working_dir;
 
@@ -53,7 +55,11 @@ void exec_com (char * command, char * options)
 		cp(&parameter_list);
 	else*/ if (strcmp(command,"md")==0 )
 		md(parameter_list);
-		
+	else if (strcmp(command,"del")==0 )
+		del(parameter_list);
+	else if (strcmp(command,"deltree")==0 )
+		deltree(parameter_list);
+	
 	free(parameter_list);
 	exit(0);
 }
