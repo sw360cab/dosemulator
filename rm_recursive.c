@@ -32,38 +32,38 @@ void recur(char *current_path)
 	if (dp != NULL) {
 		while ( (ep = readdir(dp)) )
 			{
-			//ep->type: 4 dir, 8 file
-			if ( ep->d_type==4) {		// is a directory get into recursively
-				strcpy(temp_path,current_path);
-				//if the current dir doesn't finish with '/',
-				//I should add it before appending the currente resource name
-				if ( current_path[strlen(current_path)-1] != '/')
-								strcat(temp_path, "/");
-								
-				strcat(temp_path, ep->d_name);
-				
-				recur(temp_path);
-			}
+			strcpy(temp_path,current_path);
 			
-			else
+			//if the current dir doesn't finish with '/',
+			//I should add it before appending the currente resource name
+			if ( current_path[strlen(current_path)-1] != '/')
+							strcat(temp_path, "/");				
+			strcat(temp_path, ep->d_name);
+			
+			//ep->type: 4 dir, 8 file
+			if ( ep->d_type==4)	// is a directory get into recursively
+				{
+				if (strcmp(ep->d_name, ".") != 0  && strcmp(ep->d_name, "..")!= 0 )
+					recur(temp_path);
+				
+				//printf("going into %s\n", temp_path);
+				}
+			
+			else // is a file
 				{
 				if ( (strcmp(ep->d_name, ".") != 0 ) && (strcmp(ep->d_name, "..")!= 0))
 					{
-					strcpy(file_name,current_path);
-					
-					if ( current_path[strlen(current_path)-1] != '/')
-						strcat(file_name, "/");
-													
-					strcat(file_name, ep->d_name);
-					
-					erase(file_name);
+					printf("file deleted %s........\n", ep->d_name);
+					erase(temp_path);
 					}
 				}
 			}
 			//free(temp_path);
 			closedir(dp);
-			return;
-		}
+			printf("deleted 22 %s\n", current_path);
+			rmdir(current_path);
+	}
+	return;
 }
 
 int main(int argc, char **argv)
@@ -71,12 +71,7 @@ int main(int argc, char **argv)
 	
 	char nonno[50];
 	char current_dir[MAXPATH];
-	
-	strcpy(nonno,"mookookokooko");
-	printf ("nonno is %s\n", nonno);
-	strcpy(nonno,"culo");
-	printf ("nonno is %s\n", nonno);
-	
+		
 	strcpy(current_dir,argv[1]);
 	recur(current_dir);
 	exit(0);
