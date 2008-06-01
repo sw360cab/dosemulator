@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+//#include "parse.h"
 
 #define MAXPATH 4096
 
@@ -73,8 +74,6 @@ void recur_del(char *current_path)
 
 int main(int argc, char **argv)
 	{
-	
-	char nonno[50];
 	char current_dir[MAXPATH];
 	
 	strcpy(current_dir,argv[1]);
