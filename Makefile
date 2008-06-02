@@ -4,10 +4,11 @@ CC = gcc
 LDFLAGS = -lm
 
 #
-OBJECTS =  get_line.c resource.c dir.c 
+INCLUDES = resource.h parse.h
+OBJECTS =  resource.c dir.c find.c shell_base.c get_line.c parse.c cp.c cd.c more.c attrib.c
 
 all	: $(OBJECTS)
-	$(CC) $(LDFLAGS) $(CFLAGS) -o dir $(OBJECTS) 
+	$(CC) $(LDFLAGS) $(CFLAGS) -o shell_base $(OBJECTS) 
 
 
 #

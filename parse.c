@@ -5,12 +5,14 @@
 
 int jolly_char(char *line)
 {
-	if (strncmp( line, "/",1)==0)
+	if (strncmp( line, "\\",1)==0)
 		return 1;
 	else if (strncmp( line, "+",1)==0)
 		return 1;
 	else if (strncmp( line, "-",1)==0)
 		return 1;
+	else if (strncmp( line, "\"\"",1)==0)
+			return 1;
 	else 
 		return 0;
 }
@@ -60,7 +62,7 @@ param* parse_options(char *opt)
 		
 		p->name = (char *) malloc(sizeof(char)* (end) );
 		strncpy(p->name, opt, end);
-		printf("%s to be parsed\n", p->name);
+		//printf("%s to be parsed\n", p->name);
 		if (jolly_char(opt) )
 			p->type = 1;
 		else 

@@ -23,13 +23,14 @@
  * 
  * * 
  * TODO: menage duoble quotes in the path ""
+ * TODO: update the current working dir
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-
+#include "parse.h"
 /*
  **  Function : void get_input(char *format,void *variable)
  **  Return   : None
@@ -38,13 +39,38 @@
  **             is written.
  */
 
-void cd(char *path) {
+char *cd(char *current, param **list) {
+	//TODO handle paramteres
+	param *p = (*list);
+	short int flag= FALSE;
+	char *path;
+
+	while (p!=NULL) {
+
+		if (p->type==0) {
+
+			path = (char *)malloc((unsigned int)strlen(p->name));
+			strcpy(path, p->name);
+			flag = TRUE;
+
+		}
+
+		p=p->next;
+
+	}
+
+	if (flag == FALSE) {
+		path = (char *)malloc(2);
+		strcpy(path, ".");
+	}
 
 	if (chdir(path) != 0) {
-		printf("Impossible to find path\n");
-		exit(1);
+		printf("CD: Impossible to find path\n");
+		free(path);
+		return current;
+	} else {
+		printf("%s\n", path);
+		return path;
 	}
-	return path;
-	
 }
 

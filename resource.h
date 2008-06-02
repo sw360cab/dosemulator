@@ -22,6 +22,7 @@
 
 #include <sys/stat.h>  
 
+
 typedef struct resource_unit Resource;
 
 
@@ -32,10 +33,6 @@ struct resource_unit
 	char *name;     /* name of the resource */
 	char *path;     /*path of the resource*/
 	unsigned char type;     /* Type of resource, 4 =  directory , 8 = file */
-	/* Optional fields, depending on the events to be simulated */
-	//int   param1;   /* Generic integer parameter */
-	//int   param2;   /* Generic integer parameter */
-	//double param3;  /* Generic double  parameter */
 	struct stat status; /* The result of the fstatus */
 	
 	//char  *record; /* Generic pointer parameter, to be used  through a cast to the specific type   */
@@ -48,4 +45,5 @@ Resource *get_resource(Resource **);		/* Returns the first event from the FES */
 Resource *new_resource(void );		/* Returns a new event */
 void release_resource(Resource *);		/* Releases an event */
 void delete_resource(Resource **,Resource *); /* Delete a resource */
-Resource *print_list(Resource *, char *, short);
+Resource *print_list(Resource *, char *,char *); /*print a list of resources - the third argument is a generic pointer parameter, to be used  through a cast to the specific type */
+
