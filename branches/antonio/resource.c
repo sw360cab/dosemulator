@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "resource.h"
+#include "parse.h"
 #define MAXPATH 4096
 #define TIMLEN 60
 
@@ -239,8 +240,8 @@ void timespec2string(struct timespec *ts, char buffer[], int len)
 	//sprintf(&buffer[24], " and %6d microseconds", (ts->tv_nsec)/1000);
 	sprintf(&buffer[24], " %d ", (int)ts->tv_sec);
 }
-  
 
+//TODO \ah prints a strange char in dirindication:initialize it;
 void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 
 	struct timespec t;
@@ -251,7 +252,8 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 	char *dirindication = (char *)malloc(l);
 	char buffer[TIMLEN];
 	char *sizeandname;
-
+	
+	
 	t = res_list->status.st_mtim;
 	rawtime = t.tv_sec;
 	timeinfo = localtime((long *)&rawtime);
@@ -268,14 +270,14 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 		for (i=0; i<( 21-strlen(dirindication)); i++) {
 			sizeandname[i]=' ';
 		}
-		
+
 		(*files)++;
 		*file_size+= (int)res_list->status.st_size;
 
 	}
 
-	printf("%s %s %s %s\n", buffer, sizeandname , dirindication, res_list->name);
-	
+	printf("%s %s %s %s\n", buffer, sizeandname, dirindication, res_list->name);
+
 }
 
 void stdprint_parents(char *path) {
@@ -289,7 +291,6 @@ void stdprint_parents(char *path) {
 	int *p;
 	unsigned int l = 25;
 	char *dirindication = (char *)malloc(l);
-	
 
 	if ( (p=(int *)open(path, O_EXCL)) != NULL) {
 
@@ -309,7 +310,7 @@ void stdprint_parents(char *path) {
 		printf("dir: cannot access : %s: No such file or directory\n", path);
 
 	strcat(path, "/..");
-	if ( (p=open(path, O_EXCL)) != NULL) {
+	if ( (p=(int *)open(path, O_EXCL)) != NULL) {
 
 		if (fstat((int)p, &status) == 0) {
 			//TODO build a function that returns the date and substitute it in all prints 
@@ -328,27 +329,44 @@ void stdprint_parents(char *path) {
 
 }
 
-Resource *print_list(Resource *res_list, char *path, short recursive) {
+Resource *print_list(Resource *res_list, char *path, char *options) {
 	Resource *last, *first, *res;
 	Resource *dirs_list=NULL;
-
 	int files = (int) malloc(sizeof(int));
 	int totfilesize =(int) malloc(sizeof(int));
 	int dirs =(int) malloc(sizeof(int));
+	int recursive = 0;
 	char *temp_path =(char *) malloc(MAXPATH);
 	struct statvfs status_space;
-	
+	param *prms = (param *)options;
+	dirs = 2;
+
+	while (prms != NULL) {
+
+		if (strcasecmp(prms->name, "\\S")== 0)
+			recursive = 1;
+		else if (strcasecmp(prms->name, "\\AH") == 0)
+			dirs = 0;
+		else if (strcasecmp(prms->name, "\\AR") == 0)
+			dirs = 0;
+		else if (strcasecmp(prms->name, "\\A-D") == 0)
+			dirs = 0;
+
+		prms = prms->next;
+	}
 
 	files = 0;
 	totfilesize=0;
-	dirs = 2;
-	
+
 	printf("\n Directory di %s\n\n", path);
- 
+
 	last= res_list;
 	temp_path =(char *) malloc((unsigned int)MAXPATH);
 	strcpy(temp_path, path);
-	stdprint_parents(temp_path);
+
+	//if i don't have to show dirs, dirs is setted to zero and i don't print parent folders
+	if (dirs == 2)
+		stdprint_parents(temp_path);
 
 	if (res_list != NULL) {
 		if (res_list->next != NULL) {
@@ -357,16 +375,14 @@ Resource *print_list(Resource *res_list, char *path, short recursive) {
 
 			while (res_list->next!=first) {
 
-				
-
 				stdprint(res_list, &dirs, &files, &totfilesize);
 
 				if (recursive == 1 && res_list->type==4) {
 
 					if (!strcmp(res_list->name, "")==0) {
- 
-						res =(Resource *) create_res(res_list->status, res_list->name,
-								res_list->type, path);
+
+						res =(Resource *) create_res(res_list->status,
+								res_list->name, res_list->type, path);
 						insert_resource(&dirs_list, res);
 					}
 				}
@@ -375,11 +391,11 @@ Resource *print_list(Resource *res_list, char *path, short recursive) {
 			}
 
 			stdprint(res_list, &dirs, &files, &totfilesize);
-/*
-			printf("               %d File(s)    %d bytes\n", files,
-					totfilesize);
-			printf("               %d Folder(s)\n", dirs);
-*/
+			/*
+			 printf("               %d File(s)    %d bytes\n", files,
+			 totfilesize);
+			 printf("               %d Folder(s)\n", dirs);
+			 */
 			if (recursive == 1 && res_list->type==4) {
 
 				if (!strcmp(res_list->name, "")==0) {
@@ -392,13 +408,12 @@ Resource *print_list(Resource *res_list, char *path, short recursive) {
 		}
 	} else
 		dirs_list = NULL;
-	
-	statvfs(path,&status_space);
-	printf("               %d File(s)    %d bytes\n", files,
-			totfilesize);
-	printf("               %d Folder(s)  %d available blocks\n\n", dirs, (int) status_space.f_bfree);
-	//TODO block size ? 512 ? 
-	
 
+	statvfs(path, &status_space);
+	printf("               %d File(s)    %d bytes\n", files, totfilesize);
+	printf("               %d Folder(s)  %d available blocks\n\n", dirs,
+			(int) status_space.f_bfree);
+	
 	return dirs_list;
 }
+

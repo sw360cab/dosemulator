@@ -33,75 +33,95 @@
 
 extern char *get_line();
 extern void cp(param**);
+extern char *cd(char*, param**);
+extern void dir(param**);
+extern void find(param**);
+extern void more(param**);
+extern void attrib(param**);
 
-void exec_com (char * command, char * options)
-{
+char *working_dir;
+
+void exec_com(char * command, char * options) {
 	param *parameter_list;
-		
+
 	parameter_list=parse_options(options);
-	
+
 	/*
-	while (parameter_list!=NULL)
-	{
-		printf("---%s---\n", parameter_list->name);
-		parameter_list= parameter_list->next;
-	}
-	*/
-	
+	 while (parameter_list!=NULL)
+	 {
+	 printf("---%s---\n", parameter_list->name);
+	 parameter_list= parameter_list->next;
+	 }
+	 */
+
 	// switch used to execute commands
-	if (strcmp(command,"copy")==0 )
+	if (strcmp(command, "copy")==0)
 		cp(&parameter_list);
-		
+	else if (strcmp(command, "cd") == 0)
+		working_dir = cd(working_dir, &parameter_list);
+	else if (strcmp(command, "dir") == 0)
+		dir(&parameter_list);
+	else if (strcmp(command, "find") == 0)
+		find(&parameter_list);
+	else if (strcmp(command, "more") == 0)
+		more(&parameter_list);
+	else if (strcmp(command, "attrib") == 0)
+		attrib(&parameter_list);
+	else
+		printf("Command not found\n");
+
 	free(parameter_list);
 	exit(0);
 }
 
-int main(int argc,char **argv) 
-{
+int main(int argc, char **argv) {
 	int status;
-	int running = TRUE;
+	int running= TRUE;
 	char *command, *opt;
 	char *line;
-	
-	printf ("\n-- This is Windows DOS shell emulation 1.0\n");
-	printf ("-- you can type windows command or run programs\n");
-	printf ("-- type 'help' for a list of command or 'exit' to quit\n\n");
-	
-	while (running)
-	{
-		printf("$$-WinShell-$$ >> ");
-		
+
+	working_dir =(char *) malloc((unsigned int)1000);
+	getcwd(working_dir, 1000);
+
+	printf("\n-- This is Windows DOS shell emulation 1.0\n");
+	printf("-- you can type windows command or run programs\n");
+	printf("-- type 'help' for a list of command or 'exit' to quit\n\n");
+
+	while (running) {
+
+		printf("$$-WinShell-$$  %s >> ", working_dir);
+
 		// get_line
 		line=get_line();
-		
+
 		// parse command
 		command = (char *) malloc(sizeof(char)*20);
 		opt = (char *) malloc(sizeof(char)*strlen(line));
 
 		parse_line(&command, &opt, line);
-		
-		printf("Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,opt); 
-		
+
+		//printf("Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,opt); 
+
 		// TODO invetigate Segmentation fault on "exit
-		if ( strcmp(command,"exit")==0 || strcmp(command,"quit")==0 )
-		{
+		if (strcmp(command, "exit")==0 || strcmp(command, "quit")==0) {
 			running=FALSE;
 			free(command);
 			free(opt);
 			break;
 		}
-		
-		if (fork() == 0)	// child
+
+		if (fork() == 0) // child
 		{
 			//execl("/bin/ls", "ls", "-l", (char *)0);
-			exec_com(command,opt);
+			exec_com(command, opt);
 			free(command);
 			free(opt);
-		}
-		else 	// father
+		} else // father
 		{
 			wait(&status);
+
 		}
+
 	}
 }
 
@@ -112,4 +132,4 @@ int main(int argc,char **argv)
  * - command --> esegue relativo comando / funzione
  * - unknown --> stampa "WinShell: 'command' - command not found "
  */
- 
+
