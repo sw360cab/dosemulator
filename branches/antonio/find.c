@@ -28,7 +28,7 @@
 #include <fcntl.h>
 #include "parse.h"
 
-//TODO how to define a good string length ?
+//TODO how to define a good string length ?-> see nw.c in docs/readFunctions.zip 
 #define STRING_LENGTH 1024
 
 
