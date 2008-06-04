@@ -22,6 +22,8 @@
 //TODO printout formatting functions -> most common functions: see my_commands.doc  
 //TODO !fare il caso di più path
 //TODO readonly dir ?
+//TODO close fd in all my functions!!
+//TODO in all files: substitue par = (*parameter_list) with par = parameter_list;
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -166,7 +168,7 @@ Resource *my_dir(char *path) {
 			//if stat succeeded, statvfs will succeed, no errors check
 
 			//st.mode 400 (user read only)-> 33024
-			//TODO should i menage other read only cases ? use stavfs
+			//TODO other read only cases: see attrib.c
 			if (show_read_only==1
 					&& (((unsigned short)status.st_mode) != 33024))
 				continue;
@@ -302,10 +304,16 @@ void dir(param **parameters) {
 		temp = temp->next;
 	}
 	
-	if(flag==FALSE){
+	
+	temp = (*parameters);
+	
+	if(flag==FALSE || temp==NULL ){
+		
+	
 		current_dir = (char *)malloc((unsigned int)MAXPATH);
 		getcwd(current_dir,MAXPATH);
 	}
+	
 	
 	if (show_recursive == 0) {
 
