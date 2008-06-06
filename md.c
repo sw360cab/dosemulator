@@ -29,8 +29,6 @@
 #include <dirent.h>
 #include "parse.h"
 
-#define BUF_MAX 1024
-
 /*
  * '-' and '_' are allowed for paths
  */
@@ -143,9 +141,16 @@ void md(param *list)
 	param *p;
 	int i,count;
 	
+	if(list==NULL)
+		{
+		fprintf(stderr, "md: missing file operand\n");
+		fprintf(stderr, "Try \'help md\' for more information\n");
+		exit(1);
+		}
+	
 	// working directory
-	working_dir =(char *) malloc(sizeof(char)*BUF_MAX);
-	getcwd(working_dir,BUF_MAX);
+	working_dir =(char *) malloc(sizeof(char)*MAXPATH);
+	getcwd(working_dir,MAXPATH);
 	
 	path = (char *) malloc( sizeof(char)*strlen(list->name) );
 	while (list!=NULL)

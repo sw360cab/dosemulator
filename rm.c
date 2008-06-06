@@ -29,9 +29,6 @@
 #include <fcntl.h>
 #include "parse.h"
 
-#define BUF_MAX 1024
-#define MAXPATH 4096
-
 extern char *get_line();
 
 /*
@@ -223,9 +220,16 @@ void del(param *list)
 	int attrib=0;
 	int sub_dir=0;
 	
+	if(list==NULL)
+		{
+		fprintf(stderr, "del: missing file operand\n");
+		fprintf(stderr, "Try \'help del\' for more information\n");
+		exit(1);
+		}
+	
 	// working directory
-	working_dir =(char *) malloc(sizeof(char)*BUF_MAX);
-	getcwd(working_dir,BUF_MAX);
+	working_dir =(char *) malloc(sizeof(char)*MAXPATH);
+	getcwd(working_dir,MAXPATH);
 	
 	while (list!=NULL)
 		{
@@ -391,15 +395,20 @@ void del(param *list)
  */
 void deltree(param *list)
 {
-	char *path;
+	char *path, *working_dir;
 	struct stat st;
 	int source_fd;
 	
-	printf("Ciao\n");
+	if(list==NULL)
+		{
+		fprintf(stderr, "deltree: missing file operand\n");
+		fprintf(stderr, "Try \'help deltree\' for more information\n");
+		exit(1);
+		}
 	
 	// working directory
-	/*working_dir =(char *) malloc(sizeof(char)*BUF_MAX);
-	getcwd(working_dir,BUF_MAX);*/
+	working_dir =(char *) malloc(sizeof(char)*MAXPATH);
+	getcwd(working_dir,MAXPATH);
 	
 	while (list!=NULL)
 		{
@@ -430,7 +439,7 @@ void deltree(param *list)
 					fprintf(stderr, "Check that file %s is not open or used by another file\n",list->name);
 					exit(1);
 					}	
-	   			//erase(list->name);
+	   			erase(list->name);
 	   			printf("Warning: file %s deleted, but you can use\n\'del\' command to delete single files\n",list->name);
 	   			close(source_fd);
 				} 
@@ -444,7 +453,6 @@ void deltree(param *list)
 					exit(1);
 					}
 				// rm -Rf
-				printf("Warning: dir\n");
 				recur_del(list->name);
 				}
 			}

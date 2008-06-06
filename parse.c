@@ -10,7 +10,9 @@
 
 int jolly_char(char *line)
 {
-	if (strncmp( line, "\\",1)==0)
+	if (strcmp( line, ">")==0 || strcmp( line, ">>")==0) // redirection
+		return 2;
+	else if (strncmp( line, "\\",1)==0)
 		return 1;
 	else if (strncmp( line, "+",1)==0)
 		return 1;
@@ -56,28 +58,30 @@ param* parse_options(char *opt)
 	
 	start=count;
 	
-	do
+	// return immediately if no options are present
+	if (strlen(opt)!=0)
 	{
-		while ( strncmp( opt+count, " ",1)!=0 && strncmp( opt+count,"\0",1)!=0 )
-			count++ ;
-		end=count;
-		p=new_elem();
-		
-		p->name = (char *) malloc(sizeof(char)* (end) );
-		strncpy(p->name, opt, end);
-		printf("%s to be parsed\n", p->name);
-		if (jolly_char(opt) )
-			p->type = 1;
-		else 
-			p->type = 0;
-		p->next=NULL;
-		
-		insert_e(&pt,p);
+		do
+		{
+			while ( strncmp( opt+count, " ",1)!=0 && strncmp( opt+count,"\0",1)!=0 )
+				count++ ;
+			end=count;
+			p=new_elem();
 			
-		opt+=count+1;
-		start=end+1;
-		count=0;
-	}while ( strncmp( opt, "\0",1)!=0 );
+			p->name = (char *) malloc(sizeof(char)* (end) );
+			strncpy(p->name, opt, end);
+			printf("%s to be parsed\n", p->name);
+			
+			p->type = jolly_char(opt);
+			p->next=NULL;
+			
+			insert_e(&pt,p);
+				
+			opt+=count+1;
+			start=end+1;
+			count=0;
+		}while ( strncmp( opt, "\0",1)!=0 );
+	}
 	
 	return pt;	
 }
@@ -86,9 +90,57 @@ void parse_line(char **comm, char ** opt, char * line)
 {	
 	int count=0;
 	
-	while ( strncmp( line+count, " ",1)!=0 )
-		count++ ;
+	while ( strncmp( line+count, " ",1)!=0 && strncmp( line+count, "\0",1)!=0 )
+		count++;
 	
 	strncpy(*comm,line,count); // TODO Change function with strnchr or similar
-	strncpy(*opt,line+count+1, strlen(line) - count +1);
+	if(strncmp( line+count, "\0",1)!=0)
+		strncpy(*opt,line+count+1, strlen(line) - count +1);
+}
+
+char *salloc (unsigned size)
+{
+    char *ret;
+    ret = (char *) malloc (size+1);
+        
+    return ret;
+}
+
+char *srealloc(char *str, unsigned u){
+	
+	char *ret;
+	unsigned int length = u + strlen(str);
+	
+	
+	ret = (char *) realloc(str,length);
+	    
+	return ret;	
+}
+
+char *get_line(){
+	
+	char *line;
+	char *cp;
+	
+	unsigned size;
+	unsigned count;
+	int c;
+	
+	size = N;
+	line=salloc(size);
+	cp=line;
+	for(count=0;(c=getchar())!= '\n'; count++){
+		
+		if(c==EOF)
+			return NULL;
+		if(count>=(size-1))
+		{
+			line=srealloc(line,size +=N);
+			cp=line+count;
+		}
+		*cp++=c;
+	}
+	*cp ='\0';
+	count++;
+	return srealloc(line,count);
 }
