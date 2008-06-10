@@ -41,9 +41,11 @@ struct resource_unit
 
 /* Prototypes */
 void insert_resource(Resource **, Resource *);	/* Inserts an event in the  FES */
+void insert_resource_order_by_type(Resource **, Resource *);	/* Inserts an event in the  FES */
 Resource *get_resource(Resource **);		/* Returns the first event from the FES */
 Resource *new_resource(void );		/* Returns a new event */
 void release_resource(Resource *);		/* Releases an event */
 void delete_resource(Resource **,Resource *); /* Delete a resource */
 Resource *print_list(Resource *, char *,char *); /*print a list of resources - the third argument is a generic pointer parameter, to be used  through a cast to the specific type */
+
 

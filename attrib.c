@@ -347,7 +347,7 @@ Resource *my_attrib(char *path) {
 		}
 
 		//chmod +r d.txt
-
+		//TODO is it possibile with set mode ?
 		if (r_option == 1)
 			strcpy(command, "chmod +r ");
 
@@ -409,7 +409,7 @@ Resource *attrib_followNode(char *path) {
 
 }
 
-Resource *attrib(param **parameters) {
+void attrib(param **parameters) {
 
 	param *p = (*parameters);
 	Resource *res=NULL;

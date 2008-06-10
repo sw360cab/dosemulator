@@ -45,7 +45,7 @@ char *cd(char *current, param **list) {
 	short int flag= FALSE;
 	char *path;
 
-	while (p!=NULL) {
+	while (p!=NULL && flag==FALSE) {
 
 		if (p->type==0) {
 
@@ -54,7 +54,12 @@ char *cd(char *current, param **list) {
 			flag = TRUE;
 
 		}
-
+		else if(p->type==1){
+			
+			fprintf(stderr, "CD: invald argument\n");
+			exit(1);
+			
+		}
 		p=p->next;
 
 	}

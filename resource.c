@@ -102,6 +102,70 @@ Resource* delete_resource_POP(Resource **last, Resource *elem) {
 }
 
 /* 
+ **  Function:    void insert_resource_order_by_type(Event **last, Event *elem)
+ **  Parameters:  Event **last  - Reference pointer for the list (the last 
+ **                               element)
+ **               Event  *elem  - Record of type Event to be inserted
+ **  Return:      none
+ **  Description: Inserts 'elem' in the Event List referenced by **last
+ */
+void insert_resource_order_by_type(Resource **last, Resource *elem) {
+	Resource *p;
+	if (elem==NULL)
+		return; /* Nothing to do */
+
+	/* The Event List is empty: elem becomes the Event List */
+	if ((*last)==NULL) {
+		(*last) = elem;
+		(*last)->next = elem;
+		(*last)->prev = elem;
+		return;
+	}
+
+	/* 
+	 ** elem is scheduled later than the last event in the list:
+	 ** it is inserted at the end and becomes the new last
+	 */
+	//if (elem->time >= (*last)->time)
+	if (elem->type >= (*last)->type) {
+		elem->prev = (*last);
+		elem->next = (*last)->next;
+		((*last)->next)->prev = elem;
+		(*last)->next = elem;
+		(*last) = elem;
+	} else
+	/* 
+	 ** lookup the correct position for elem, starting from the end
+	 ** of the list, i.e. following the prev pointer
+	 */
+	{
+		p = (*last);
+		//while (elem->time < p->time && p->prev!=(*last))
+		while ( elem->type < p->type && p->prev!=(*last))
+			p = p->prev;
+		//if (elem->time < p->time)
+		if (elem->type < p->type) {
+			/* p is the first element scheduled after elem: 
+			 insert elem immediately before it*/
+			elem->prev = p->prev;
+			elem->next = p;
+			(p->prev)->next = elem;
+			p->prev = elem;
+		} else {
+			/* elem must be the first event in the list:
+			 insert elem after p (that is *last) */
+			elem->prev = p;
+			elem->next = p->next;
+			(p->next)->prev = elem;
+			p->next = elem;
+		}
+	}
+	return;
+}
+
+
+
+/* 
  **  Function:    void insert_event(Event **last, Event *elem)
  **  Parameters:  Event **last  - Reference pointer for the list (the last 
  **                               element)
