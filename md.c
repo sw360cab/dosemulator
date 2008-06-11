@@ -29,42 +29,42 @@
 #include <dirent.h>
 #include "parse.h"
 
-/*
- * '-' and '_' are allowed for paths
- */
-int under_s(int ch)
-{
-	if (ch=='-' || ch =='_')
-		return TRUE;
-	else
-		return FALSE;
-}
-
-/*
- * check for forbidden characters
- */
-int alpha_num(char *path, char *ch)
-{
-	int i,count=strlen(path);
-
-	//printf ("here %s::%d-----\n", path, count);
-
-	// if name is alphaneumeric or contains '-' or '_' is OK
-	for(i=0;i<strlen(path) && ( isalnum(path[i]) || under_s(path[i]) ); i++)
-	{
-		count--;
-		//printf ("cnt = %d -- %c--\n",count,path[i]);
-	}
-
-	if (count==0)
-		return TRUE;
-
-	else
-	{
-		strncpy(ch,path+i,1);
-		return FALSE;
-	}
-}
+///*
+// * '-' and '_' are allowed for paths
+// */
+//int under_s(int ch)
+//{
+//	if (ch=='-' || ch =='_')
+//		return TRUE;
+//	else
+//		return FALSE;
+//}
+//
+///*
+// * check for forbidden characters
+// */
+//int alpha_num(char *path, char *ch)
+//{
+//	int i,count=strlen(path);
+//
+//	//printf ("here %s::%d-----\n", path, count);
+//
+//	// if name is alphaneumeric or contains '-' or '_' is OK
+//	for(i=0;i<strlen(path) && ( isalnum(path[i]) || under_s(path[i]) ); i++)
+//	{
+//		count--;
+//		//printf ("cnt = %d -- %c--\n",count,path[i]);
+//	}
+//
+//	if (count==0)
+//		return TRUE;
+//
+//	else
+//	{
+//		strncpy(ch,path+i,1);
+//		return FALSE;
+//	}
+//}
 
 
 /*
@@ -105,7 +105,7 @@ param* parse_path(char *str)
 
 		// check correctness of temporay string -> relative path
 		// TODO can have problems with last string of path
-		if (!alpha_num(p->name,&c))
+		if (!alpha_num(p->name,&c,1))
 		{
 			printf ("Unexpected char %c\n", c);
 			exit(1);
@@ -157,84 +157,50 @@ void md(param *list)
 	path = (char *) malloc( sizeof(char)*strlen(list->name) );
 	while (list!=NULL)
 	{
-		if(list->type==2)
-		{
-			mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-			if(strcmp(list->name,">>")==0) // append mode
+		strcpy(path, list->name);
+
+		p=parse_path(path);
+
+		// get permission of working directory
+		stat(working_dir,&st);
+
+		while(p!=NULL){
+			// printf("%s to be parsed and type %d\n", p->name, p->type);
+
+			dir=opendir(p->name);
+
+			if (dir!=NULL && p->type==1) // path existing
 			{
-				//open in append mode
-				if ( (fd=open (list->next->name, O_APPEND | O_WRONLY, mode)) == -1)
-				{
-					fprintf(stderr, "Can't open file %s, file will be created\n",list->next->name);
-					if ( (fd=open (list->next->name, O_CREAT | O_WRONLY | O_TRUNC, mode)) == -1)
-					{
-						fprintf(stderr, "Can't create file %s\n",list->next->name);
-						exit(1);
-					}
-				}
+				printf ("Path already exists !\n");
+				exit(1);
 			}
-			else
+			else if (dir!=NULL)
 			{
-				//open in write mode
-				if ( (fd=open (list->next->name, O_CREAT | O_WRONLY | O_TRUNC, mode)) == -1)
+				stat(p->name,&st); // parent inode 
+				// 	---> changes only when descending in an existing dir
+				// printf ("Path mode %d!\n", st.st_mode);
+			}
+			else if (dir==NULL)
+			{
+				if (mkdir(p->name, st.st_mode) < 0 )
 				{
-					fprintf(stderr, "Can't create file %s\n",list->next->name);
+					printf ("Unable to create directory or you don't have permission to do so\n");
 					exit(1);
 				}
+				printf("created\n");
 			}
-			close(1);
-			dup(fd);
-			close(2);
-			dup(fd);
-			close(fd);
-			list=list->next->next;
+
+			chdir(p->name);
+
+			p=p->next;
 		}
-		else
-		{
-			strcpy(path, list->name);
 
-			p=parse_path(path);
+		free(p);
 
-			// get permission of working directory
-			stat(working_dir,&st);
-
-			while(p!=NULL){
-				// printf("%s to be parsed and type %d\n", p->name, p->type);
-
-				dir=opendir(p->name);
-
-				if (dir!=NULL && p->type==1) // path existing
-				{
-					printf ("Path already exists !\n");
-					exit(1);
-				}
-				else if (dir!=NULL)
-				{
-					stat(p->name,&st); // parent inode 
-					// 	---> changes only when descending in an existing dir
-					// printf ("Path mode %d!\n", st.st_mode);
-				}
-				else if (dir==NULL)
-				{
-					if (mkdir(p->name, st.st_mode) < 0 )
-					{
-						printf ("Unable to create directory or you don't have permission to do so\n");
-						exit(1);
-					}
-				}
-
-				chdir(p->name);
-
-				p=p->next;
-			}
-
-			free(p);
-
-			list=list->next;
-			path = (char *)realloc(path, sizeof(char)*strlen(list->name));
-			// return to working directory
-			chdir(working_dir);
-		}	
+		list=list->next;
+		path = (char *)realloc(path, sizeof(char)*strlen(list->name));
+		// return to working directory
+		chdir(working_dir);
 	}
 	printf ("done\n");
 	fprintf (stderr,"Unexpected char\n");
