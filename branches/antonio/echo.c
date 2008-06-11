@@ -30,6 +30,7 @@ short redirection_in= FALSE;
 short append_out= FALSE;
 short append_in= FALSE;
 
+/*
 void my_echo(char *msg, char *path) {
 
 	FILE *file;
@@ -51,8 +52,8 @@ void my_echo(char *msg, char *path) {
 			exit(1);
 		}
 
-		fprintf(file, "%s", msg); /*writes*/
-		fclose(file); /*done!*/
+		fprintf(file, "%s", msg); 
+		fclose(file);
 
 	} else if (append_out == TRUE) {
 		
@@ -65,67 +66,32 @@ void my_echo(char *msg, char *path) {
 			exit(1);
 		}
 
-		fprintf(file, "%s", msg); /*writes*/
-		fclose(file); /*done!*/
+		fprintf(file, "%s", msg); 
+		fclose(file); 
 	}
 
 }
+*/
 
 void echo(param **paramaters) {
 
 	param *p = (*paramaters);
-	char *message, *path;
+	char *message;
 	short int count = 0;
 
+	if( p == NULL ){
+		
+		printf(" \n");
+		
+	}
+	
 	while (p!= NULL) {
 
-				
-		//maximum three paramters
-		if (count> 2) {
-			fprintf(stderr,"ECHO : too many arguments\n");
-			exit(1);
-		}
-
-		if (count == 0) {
-
-			message = (char *) malloc((unsigned short)strlen(p->name));
-			strcpy(message, p->name);
-
-		} else if (count==1) {
-
-			if (strcasecmp(p->name, ">") == 0)
-				redirection_out=TRUE;
-			else if (strcasecmp(p->name, ">>") == 0)
-				append_out = TRUE;
-
-			else {
-				fprintf(stderr,"ECHO : not valid argument\n");
-				exit(1);
-			}
-
-		} else if (count==2) {
-			if (p->type==0) {
-
-				path=(char *)malloc((unsigned short)strlen(p->name));
-				strcpy(path,p->name);
-			}
-
-			else {
-				fprintf(stderr,"ECHO : not valid path\n");
-				exit(1);
-			}
-		}
-
+		printf("%s",p->name);
+			
 		p=p->next;
-		count++;
+		
 	}
 
-	if (count==2) {
-		fprintf(stderr,"ECHO: wrong number of arguments\n");
-		exit(1);
-	} else if (count == 1) {
-		my_echo(message, NULL);
-	} else if (count == 3) {
-		my_echo(message, path);
-	}
+	
 }
