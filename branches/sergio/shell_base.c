@@ -64,9 +64,7 @@ void exec_com (char * command, char * options)
 	write(current_dir[1],working_dir,strlen(working_dir));
 	
 	// switch used to execute commands
-	/*if (strcmp(command,"copy")==0 )
-		cp(&parameter_list);
-	else*/ if (strcmp(command,"cd")==0 )
+	if (strcmp(command,"cd")==0 )
 		{
 		new_dir=cd(working_dir,&parameter_list);
 		
@@ -78,6 +76,8 @@ void exec_com (char * command, char * options)
 			write(current_dir[1],new_dir,strlen(new_dir));			
 			}
 		}
+	else if (strcmp(command,"copy")==0 )
+			cp(parameter_list);
 	else if (strcmp(command,"md")==0 )
 		md(parameter_list);
 	else if (strcmp(command,"del")==0 )

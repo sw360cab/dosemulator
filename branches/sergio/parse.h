@@ -25,7 +25,7 @@ int redirector(char *, int);
 param* parse_options(char *, int *);
 char* get_line();
 
-extern void cp(param**);
+extern void cp(param*);
 extern void md(param*);
 extern void del(param*);
 extern void deltree(param*);
