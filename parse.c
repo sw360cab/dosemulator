@@ -10,13 +10,13 @@
 
 int jolly_char(char *line)
 {
-	if (strcmp( line, ">")==0 || strcmp( line, ">>")==0) // redirection
+	if (strncmp( line, ">", 1)==0 || strncmp( line, ">>", 2)==0) // redirection
 		return 2;
-	else if (strncmp( line, "\\",1)==0)
+	else if (strncmp( line, "\\", 1)==0)
 		return 1;
-	else if (strncmp( line, "+",1)==0)
+	else if (strncmp( line, "+", 1)==0)
 		return 1;
-	else if (strncmp( line, "-",1)==0)
+	else if (strncmp( line, "-", 1)==0)
 		return 1;
 	else 
 		return 0;

@@ -18,7 +18,7 @@
  *
  * ***** END LICENSE BLOCK ***** 
  */
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -46,19 +46,19 @@ int under_s(int ch)
 int alpha_num(char *path, char *ch)
 {
 	int i,count=strlen(path);
-	
+
 	//printf ("here %s::%d-----\n", path, count);
-	
+
 	// if name is alphaneumeric or contains '-' or '_' is OK
 	for(i=0;i<strlen(path) && ( isalnum(path[i]) || under_s(path[i]) ); i++)
 	{
 		count--;
 		//printf ("cnt = %d -- %c--\n",count,path[i]);
 	}
-	
+
 	if (count==0)
 		return TRUE;
-	
+
 	else
 	{
 		strncpy(ch,path+i,1);
@@ -78,31 +78,31 @@ param* parse_path(char *str)
 	char c;
 	param *p;
 	param *pt=NULL;
-	
+
 	if (strncmp( str, "/",1)==0) // starting from root of filesystem
 	{
 		p=new_elem();
-				
+
 		p->name = (char *) malloc(sizeof(char));
 		strncpy(p->name, str, 1);
 		p->type = 0;
 		p->next=NULL;
-		
+
 		insert_e(&pt,p);
 		str++;
 	}
-	
+
 	do
 	{
 		while ( strncmp( str+count, "/",1)!=0 && strncmp( str+count,"\0",1)!=0 )
 			count++ ;
-		
+
 		p=new_elem();
-		
+
 		p->name = (char *) malloc(sizeof(char)* count+1 );
-		
+
 		strncpy(p->name, str, count);
-		
+
 		// check correctness of temporay string -> relative path
 		// TODO can have problems with last string of path
 		if (!alpha_num(p->name,&c))
@@ -110,19 +110,19 @@ param* parse_path(char *str)
 			printf ("Unexpected char %c\n", c);
 			exit(1);
 		}
-			
+
 		if (strncmp( str+count,"\0",1)==0 )
 			p->type = 1;
 		else 
 			p->type = 0;
 		p->next=NULL;
-		
+
 		insert_e(&pt,p);
-			
+
 		str+=count+1;
 		count=0;
 	}while ( strncmp( str, "\0",1)!=0 );
-	
+
 	return pt;	
 }
 
@@ -134,88 +134,127 @@ param* parse_path(char *str)
  * 		try to create it with same rights of parent directory
  */
 void md(param *list)	
-	{
+{
 	char *path, *working_dir;
 	DIR *dir;
 	struct stat st;
 	param *p;
 	int i,count;
+	mode_t mode;
+	int fd;
 	
 	if(list==NULL)
-		{
+	{
 		fprintf(stderr, "md: missing file operand\n");
 		fprintf(stderr, "Try \'help md\' for more information\n");
 		exit(1);
-		}
-	
+	}
+
 	// working directory
 	working_dir =(char *) malloc(sizeof(char)*MAXPATH);
 	getcwd(working_dir,MAXPATH);
-	
+
 	path = (char *) malloc( sizeof(char)*strlen(list->name) );
 	while (list!=NULL)
 	{
-		strcpy(path, list->name);
-			
-		p=parse_path(path);
-		
-		// get permission of working directory
-		stat(working_dir,&st);
-		
-		while(p!=NULL){
-			// printf("%s to be parsed and type %d\n", p->name, p->type);
-			
-			dir=opendir(p->name);
-			
-			if (dir!=NULL && p->type==1) // path existing
+		if(list->type==2)
+		{
+			mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+			if(strcmp(list->name,">>")==0) // append mode
+			{
+				//open in append mode
+				if ( (fd=open (list->next->name, O_APPEND | O_WRONLY, mode)) == -1)
 				{
-				printf ("Path already exists !\n");
-				exit(1);
-				}
-			else if (dir!=NULL)
-				{
-				stat(p->name,&st); // parent inode 
-				// 	---> changes only when descending in an existing dir
-				// printf ("Path mode %d!\n", st.st_mode);
-				}
-			else if (dir==NULL)
-				{
-				if (mkdir(p->name, st.st_mode) < 0 )
+					fprintf(stderr, "Can't open file %s, file will be created\n",list->next->name);
+					if ( (fd=open (list->next->name, O_CREAT | O_WRONLY | O_TRUNC, mode)) == -1)
 					{
-					printf ("Unable to create directory or you don't have permission to do so\n");
-					exit(1);
+						fprintf(stderr, "Can't create file %s\n",list->next->name);
+						exit(1);
 					}
 				}
-	
-			chdir(p->name);
-			
-			p=p->next;
+			}
+			else
+			{
+				//open in write mode
+				if ( (fd=open (list->next->name, O_CREAT | O_WRONLY | O_TRUNC, mode)) == -1)
+				{
+					fprintf(stderr, "Can't create file %s\n",list->next->name);
+					exit(1);
+				}
+			}
+			close(1);
+			dup(fd);
+			close(2);
+			dup(fd);
+			close(fd);
+			list=list->next->next;
 		}
-		
-		free(p);
-		
-		list=list->next;
-		path = (char *)realloc(path, sizeof(char)*strlen(list->name));
-		// return to working directory
-		chdir(working_dir);
+		else
+		{
+			strcpy(path, list->name);
+
+			p=parse_path(path);
+
+			// get permission of working directory
+			stat(working_dir,&st);
+
+			while(p!=NULL){
+				// printf("%s to be parsed and type %d\n", p->name, p->type);
+
+				dir=opendir(p->name);
+
+				if (dir!=NULL && p->type==1) // path existing
+				{
+					printf ("Path already exists !\n");
+					exit(1);
+				}
+				else if (dir!=NULL)
+				{
+					stat(p->name,&st); // parent inode 
+					// 	---> changes only when descending in an existing dir
+					// printf ("Path mode %d!\n", st.st_mode);
+				}
+				else if (dir==NULL)
+				{
+					if (mkdir(p->name, st.st_mode) < 0 )
+					{
+						printf ("Unable to create directory or you don't have permission to do so\n");
+						exit(1);
+					}
+				}
+
+				chdir(p->name);
+
+				p=p->next;
+			}
+
+			free(p);
+
+			list=list->next;
+			path = (char *)realloc(path, sizeof(char)*strlen(list->name));
+			// return to working directory
+			chdir(working_dir);
+		}	
 	}
+	printf ("done\n");
+	fprintf (stderr,"Unexpected char\n");
 	/*
 	 * dir=opendir(path);
-	
+
 	if (dir == NULL)
 		printf ("Failed !\n");
 	else
 		printf ("Path already exist !\n");
-	
-	
+
+
 	chdir(path);
 	stat(argv[1],&st);
-	
+
 	dir=opendir(argv[2]);
-	
+
 	if (dir == NULL)
 		mkdir(argv[2], st.st_mode);
 	else
 		printf ("already\n");
-	*/
-	}
+	 */
+}

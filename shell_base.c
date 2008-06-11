@@ -33,7 +33,20 @@ void exec_com (char * command, char * options)
 	param *parameter_list;
 	char working_dir[MAXPATH], buf[2];
 	char *new_dir;
-	
+//
+//	int fd;
+//	if ( (fd=open ("a.txt", O_CREAT | O_WRONLY | O_TRUNC,  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1)
+//	{
+//		fprintf(stderr, "Can't create file \n");
+//		exit(1);
+//	}
+//
+//	close(1);
+//	dup(fd);
+//	close(2);
+//	dup(fd);
+//	close(fd);
+//
 	parameter_list=parse_options(options);
 	
 	/*
