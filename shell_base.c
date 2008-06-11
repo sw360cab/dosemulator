@@ -33,21 +33,24 @@ void exec_com (char * command, char * options)
 	param *parameter_list;
 	char working_dir[MAXPATH], buf[2];
 	char *new_dir;
-//
-//	int fd;
+	int fd=-1;
+	
 //	if ( (fd=open ("a.txt", O_CREAT | O_WRONLY | O_TRUNC,  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1)
 //	{
 //		fprintf(stderr, "Can't create file \n");
 //		exit(1);
 //	}
-//
-//	close(1);
-//	dup(fd);
-//	close(2);
-//	dup(fd);
-//	close(fd);
-//
-	parameter_list=parse_options(options);
+
+	parameter_list=parse_options(options, &fd);
+	
+	if (fd>0) // there is a redirection
+	{
+		close(1);
+		dup(fd);
+		close(2);
+		dup(fd);
+		close(fd);
+	}
 	
 	/*
 	while (parameter_list!=NULL)
@@ -81,6 +84,8 @@ void exec_com (char * command, char * options)
 		del(parameter_list);
 	else if (strcmp(command,"deltree")==0 )
 		deltree(parameter_list);
+	else if (strcmp(command,"echo")==0 )
+		echo(parameter_list);
 	else if (strcmp(command,"list")==0 )
 		list(parameter_list);
 	else if (strcmp(command,"help")==0 )
@@ -140,14 +145,14 @@ int main(int argc,char **argv)
 			break;
 		}
 		
-		if (fork() == 0)	// child
-		{
+		/*if (fork() == 0)	// child
+		{*/
 			//execl("/bin/ls", "ls", "-l", (char *)0);
-			close(current_dir[0]);
+			//close(current_dir[0]);
 			exec_com(command,opt);
 			free(command);
 			free(opt);
-		}
+		/*}
 		else 	// father
 		{
 			wait(&status);
@@ -164,7 +169,7 @@ int main(int argc,char **argv)
 				
 				getcwd(working_dir,BUF_MAX);
 				}
-		}
+		}*/
 	}
 }
 
