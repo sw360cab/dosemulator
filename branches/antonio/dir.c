@@ -85,7 +85,11 @@ Resource *create_res(struct stat status, char res_name[], unsigned char type,
 	res->name = name;
 	res->type = type;
 	res->path = new_path;
+	res->flag = FALSE;
 
+	//can't free none
+	//free(name);
+	//free(new_path);
 	return res;
 
 }

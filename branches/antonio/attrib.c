@@ -18,7 +18,7 @@
  *
  * ***** END LICENSE BLOCK ***** 
  */
-
+//TODO perform some free in all files
 //status.st_mode = 32768 + xxx xxx xxx (converted in decimal)
 #include <stdlib.h>
 #include <sys/types.h>
@@ -145,40 +145,41 @@ void print_mask(int mask[], char *path, char *name) {
 	printf("%c%c%c%c   %s\n", attributes[0], attributes[1], attributes[2],
 			attributes[3], full_path);
 
+	free(full_path);
 }
+/*
+ int *fill_mask(mode_t st_mode, char *d_name) {
 
-int *fill_mask(mode_t st_mode, char *d_name) {
+ int mask[4];
+ char binary[80];
+ //read only = 100 000 000 || 100 100 000 || 100 100 100
+ if (((st_mode) == 33024) || st_mode == 33056 || st_mode == 33060)
+ mask[0]=1;
 
-	int mask[4];
-	char binary[80];
-	//read only = 100 000 000 || 100 100 000 || 100 100 100
-	if (((st_mode) == 33024) || st_mode == 33056 || st_mode == 33060)
-		mask[0]=1;
+ dec2bin((long)st_mode,(char *) &binary);
+ //8 9 10 - 11 12 13 - 14 15 16
 
-	dec2bin((long)st_mode, &binary);
-	//8 9 10 - 11 12 13 - 14 15 16
+ //at least one write enabled
+ if (binary[9]=='1' || binary[12]=='1' || binary[15]=='1')
+ mask[1]=1;
 
-	//at least one write enabled
-	if (binary[9]=='1' || binary[12]=='1' || binary[15]=='1')
-		mask[1]=1;
+ //at least one execute enable
+ if (binary[10]=='1' || binary[13]=='1' || binary[16]=='1')
+ mask[2]=1;
 
-	//at least one execute enable
-	if (binary[10]=='1' || binary[13]=='1' || binary[16]=='1')
-		mask[2]=1;
+ if (d_name[0]=='.')
 
-	if (d_name[0]=='.')
+ mask[3]=1;
 
-		mask[3]=1;
+ return mask;
 
-	return mask;
-
-}
+ }*/
 
 void print_attrib(Resource *res, char *path) {
 
 	Resource *first;
 	char binary[80];
-	int mask[4]= { 0, 0, 0, 0 };//R,W,X,H
+	int mask[4];//R,W,X,H
 
 
 	if (res == NULL)
@@ -190,12 +191,17 @@ void print_attrib(Resource *res, char *path) {
 	//TODO fill mask
 	while (res->next != first) {
 
+		mask[0] = 0;
+		mask[1] = 0;
+		mask[2] = 0;
+		mask[3] = 0;
+
 		//mask = fill_mask(status.st_mode, ep->d_name);
 		if (res->status.st_mode == 33024 || res->status.st_mode == 33056
 				|| res->status.st_mode == 33060)
 			mask[0]=1;
 
-		dec2bin((long)res->status.st_mode, &binary);
+		dec2bin((long)res->status.st_mode, (char *) &binary);
 		//8 9 10 - 11 12 13 - 14 15 16
 
 		//at least one write enabled
@@ -206,8 +212,11 @@ void print_attrib(Resource *res, char *path) {
 		if (binary[10]=='1' || binary[13]=='1' || binary[16]=='1')
 			mask[2]=1;
 
-		if (res->name[0]=='.')
+		if (res->name[0]=='.') {
+
 			mask[3]=1;
+
+		}
 
 		print_mask(mask, path, res->name);
 
@@ -219,7 +228,7 @@ void print_attrib(Resource *res, char *path) {
 			|| res->status.st_mode == 33060)
 		mask[0]=1;
 
-	dec2bin((long)res->status.st_mode, &binary);
+	dec2bin((long)res->status.st_mode, (char *) &binary);
 	//8 9 10 - 11 12 13 - 14 15 16
 
 	//at least one write enabled
@@ -248,9 +257,11 @@ Resource *my_attrib(char *path) {
 	int *p;
 	char *command = (char *)malloc((unsigned int)(MAXPATH + 15));
 	char *temp_path = (char *)malloc((unsigned int)MAXPATH);
-	int mask[4]= { 0, 0, 0, 0 };//R,W,X,H
+	char *name = (char *)malloc((unsigned int)MAXPATH);
+	
+
 	struct stat status;
-	char binary[80];
+	//char binary[80];
 
 	strcpy(temp_path, path);
 
@@ -259,13 +270,10 @@ Resource *my_attrib(char *path) {
 
 		dp = opendir(temp_path);
 
+		//scan for files
 		if (dp != NULL) {
 			while ( (ep=readdir(dp) )) {
-
-				mask[0]=0;
-				mask[1]=0;
-				mask[2]=0;
-				mask[3]=0;
+				
 
 				if (ep->d_name[strlen(ep->d_name)-1] == '~')
 					continue;
@@ -287,16 +295,32 @@ Resource *my_attrib(char *path) {
 					continue;
 
 				}
-				if (d_option==FALSE) {
-					if (! (ep->d_name[0]=='.' || ep->d_name[0]=='..' || ep->d_name
-							=='~' || ep->d_type==4)) {
+				
+				strcpy(name, ep->d_name);
+
+				if(strcmp(name,".")==0 || strcmp(name,"..")==0 )
+					continue;
+				
+				//if hidden, yes
+				if (name[0] == '.' ){
+
+					temp2 = create_res(status, ep->d_name, ep->d_type,
+							temp_path);
+					insert_resource(&to_print, temp2);
+
+				}
+
+				if (d_option==FALSE) {//no folders
+					if (! (ep->d_name[0]=='.' || strcmp(name, "..")==0
+							|| ep->d_name[strlen(ep->d_name)-1] == '~' || ep->d_type==4)) {
 						temp2 = create_res(status, ep->d_name, ep->d_type,
 								temp_path);
 						insert_resource(&to_print, temp2);
 					}
-				} else {
-					if (! (ep->d_name[0]=='.' || ep->d_name[0]=='..' || ep->d_name
-							=='~')) {
+				} else {//yes folders
+
+					if (! (ep->d_name[0]=='.' || strcmp(name, "..")==0
+							|| ep->d_name[strlen(ep->d_name)-1] == '~')) {
 						temp2 = create_res(status, ep->d_name, ep->d_type,
 								temp_path);
 						insert_resource(&to_print, temp2);
@@ -313,8 +337,11 @@ Resource *my_attrib(char *path) {
 					} else {//s_paramter != 0, return list of directories
 
 
-						if (ep->d_name[0]=='.' || ep->d_name[0]=='..' || ep->d_name
-								=='~')
+						/*if (ep->d_name[0]=='.' || ep->d_name[0]=='..' || ep->d_name
+						 =='~')
+						 continue;*/
+						if (strcmp(ep->d_name, "..")==0 || strcmp(ep->d_name,
+								"..")==0 || ep->d_name[strlen(ep->d_name)-1] == '~')
 							continue;
 
 						else {
@@ -331,6 +358,7 @@ Resource *my_attrib(char *path) {
 
 				}
 
+				
 			}
 
 			print_attrib(to_print, path);
@@ -347,7 +375,7 @@ Resource *my_attrib(char *path) {
 		}
 
 		//chmod +r d.txt
-		//TODO is it possibile with set mode ?
+		//TODO! try to do it with set mode 
 		if (r_option == 1)
 			strcpy(command, "chmod +r ");
 
@@ -370,6 +398,9 @@ Resource *my_attrib(char *path) {
 		system(command);
 	}
 
+	free(command);
+	free(temp_path);
+	free(name);
 	return to_return;
 }
 
@@ -399,13 +430,15 @@ Resource *attrib_followNode(char *path) {
 
 		while (children->next!=first) {
 
-			attrib_followNode(build_path(children->path, children->name));
+			attrib_followNode((char *)build_path(children->path, children->name));
 
 			children=children->next;
 		}
 
-		attrib_followNode(build_path(children->path, children->name));
+		attrib_followNode((char *)build_path(children->path, children->name));
 	}
+
+	free(children);
 
 }
 
@@ -452,7 +485,8 @@ void attrib(param **parameters) {
 	}
 
 	if (d_option==TRUE && s_parameter==FALSE) {
-		fprintf(stderr,"Option \\D is valid only if combinated with option \\S");
+		fprintf(stderr,"Option \\D is valid only if combinated with option \\S \n");
+		exit(1);
 	}
 
 	p = (*parameters);
@@ -491,6 +525,8 @@ void attrib(param **parameters) {
 			attrib_followNode(current_dir);
 
 	}
+	
+	free(current_dir);
 
 }
 

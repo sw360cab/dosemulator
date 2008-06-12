@@ -58,7 +58,7 @@ void my_date() {
 
 	time_ms = time(&time_accesible);
 	current_time_string = ctime(&rawtime);//it was &time_ms
-	printf("%s", current_time_string);
+	printf("%s\n", current_time_string);
 
 	if (t_option == FALSE) {//if t option only show date and don't ask for new date,
 	
@@ -119,6 +119,9 @@ void my_date() {
 		//“date 0722071500”. This will display the date as Sat July 22, 07:15 2000. 
 
 	}
+	//can't free current_time_string
+	//free(current_time_string);
+	free(new_time);
 
 }
 

@@ -34,7 +34,7 @@ struct resource_unit
 	char *path;     /*path of the resource*/
 	unsigned char type;     /* Type of resource, 4 =  directory , 8 = file */
 	struct stat status; /* The result of the fstatus */
-	
+	short flag; /* a generic flag*/
 	//char  *record; /* Generic pointer parameter, to be used  through a cast to the specific type   */
 	//Record *record;
       };
