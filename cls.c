@@ -8,6 +8,7 @@ void cls(param **parameters){
 	param *iterator = (*parameters);
 	short flag= FALSE;
 	
+		
 	while(iterator!=NULL){
 		
 		

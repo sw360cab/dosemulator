@@ -48,7 +48,7 @@ void my_find(char *string, char *src) {
 	if ( (fp = fopen(src, "r")) == NULL) {
 		fprintf(stderr,"FIND: cannot access : %s: No such file or directory\n",
 		src);
-		//exit(1);
+		exit(1);
 		return;
 	}
 

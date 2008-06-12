@@ -18,7 +18,6 @@
  *
  * ***** END LICENSE BLOCK ***** 
  */
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -87,11 +86,12 @@ void echo(param **paramaters) {
 	
 	while (p!= NULL) {
 
-		printf("%s",p->name);
+		printf("%s ",p->name);
 			
 		p=p->next;
 		
 	}
 
+	printf("\n");
 	
 }

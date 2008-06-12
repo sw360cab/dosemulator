@@ -463,7 +463,7 @@ Resource *print_list(Resource *res_list, char *path, char *options) {
 			if (recursive == 1 && res_list->type==4) {
 
 				if (!strcmp(res_list->name, "")==0) {
-					res = create_res(res_list->status, res_list->name,
+					res =(Resource *) create_res(res_list->status, res_list->name,
 							res_list->type, path);
 					insert_resource(&dirs_list, res_list);
 				}
