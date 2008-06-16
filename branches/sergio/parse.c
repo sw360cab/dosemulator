@@ -70,7 +70,7 @@ param * new_elem()
 
 /*
  * '-' and '_' are allowed for paths
- * '.' is supposed allowed for files
+ * '.' and '/' supposed allowed for files
  */
 int under_s(int ch, int dir)
 {
@@ -78,8 +78,9 @@ int under_s(int ch, int dir)
 		return TRUE;
 	else
 	{
+		//printf ("return FALSE\n");
 		if (dir==0) // '.' is allowed
-			if (ch=='.')
+			if (ch=='.' || ch =='/')
 					return TRUE;
 		else
 			return FALSE;
@@ -102,7 +103,7 @@ int alpha_num(char *path, char *ch, int dir)
 	for(i=0;i<strlen(path) && ( isalnum(path[i]) || under_s(path[i],dir) ); i++)
 	{
 		count--;
-		//printf ("cnt = %d -- %c--\n",count,path[i]);
+		printf ("cnt = %d-%s-%d-%d-\n",count,path, isalnum(path[i]),under_s(path[i],dir));
 	}
 
 	if (count==0)
@@ -191,7 +192,24 @@ int redirector(char *str_file, int str_len) {
 	return fd;
 }
 
-param* parse_options(char *opt, int *file_d)
+char* pipe_string(char *str)
+{
+	char *line;
+	
+	line = (char *) malloc(sizeof(char)* strlen(str) );
+	// move until pipe
+	line = strchr(str,'|');
+	// move over pipe
+	line++;
+	
+	// check if blank space or not after pipe
+	if (strncmp(line," ",1)==0)
+		line++;
+
+	return line;
+}
+
+param* parse_options(char *opt, int *file_d, int *pipe)
 {	
 	int start, end, count=0;
 	param *p;
@@ -215,13 +233,19 @@ param* parse_options(char *opt, int *file_d)
 				while ( strncmp( opt,"\0",1)!=0 )  // move to end of line in order to exit do-while
 					opt++;
 				}
+			if ( strncmp(opt,"|",1)== 0) // pipe command
+				{
+				*pipe=1;
+				while ( strncmp( opt,"\0",1)!=0 )  // move to end of line in order to exit do-while
+					opt++;
+				}
 			else
 			{
 				p=new_elem();
 
 				p->name = (char *) malloc(sizeof(char)* (end) );
 				strncpy(p->name, opt, end);
-				printf("%s to be parsed\n", p->name);
+				//printf("%s to be parsed\n", p->name);
 
 				p->type = jolly_char(opt);
 				p->next=NULL;
@@ -245,7 +269,8 @@ void parse_line(char **comm, char ** opt, char * line)
 	while ( strncmp( line+count, " ",1)!=0 && strncmp( line+count, "\0",1)!=0 )
 		count++;
 	
-	strncpy(*comm,line,count); // TODO Change function with strnchr or similar
+	strncpy(*comm,line,count);
+	
 	if(strncmp( line+count, "\0",1)!=0)
 		strncpy(*opt,line+count+1, strlen(line) - count +1);
 }
