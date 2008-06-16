@@ -33,17 +33,56 @@ void exec_com (char * command, char * options)
 	param *parameter_list;
 	char working_dir[MAXPATH], buf[2];
 	char *new_dir;
-	int fd=-1;
+	char *line;
+	int status;	
+	int fd=-1, piped=0;
+	pid_t pid;
 	
-//	if ( (fd=open ("a.txt", O_CREAT | O_WRONLY | O_TRUNC,  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1)
-//	{
-//		fprintf(stderr, "Can't create file \n");
-//		exit(1);
-//	}
+	parameter_list=parse_options(options, &fd, &piped);
+	
+	// command with pipe
+	if(piped!=0)
+	{
+		// create pipe
+		pipe(pipe_comm);
+		// fork to distinguish between command before and after pipe
+		if ((pid=fork())==0) // first command just open pipe and then exec command normally
+		{
+			close(1);
+			dup(pipe_comm[1]);
+			close(pipe_comm[1]);
+		}
+		else // second command after pipe -- need to be parsed from the beginning
+		{
+			// wait end of first command
+			//wait(&status);
+			waitpid(pid,&status,0);
+			
+			// exit immediately if status is 1 -- something went wrong witn
+			if (status!=0) // previous command did not end correctly
+				exit(1);
+			
+			// set pipe
+			close(0);
+			dup(pipe_comm[0]);
+			close(pipe_comm[0]);
+			
+			// retrieve string of command after pipe
+			line = pipe_string(options);
+			printf("PIPE: new line --%s--\n",line);
+			
+			// realloc command and options string
+			/*free(options);
+			  command = (char *) realloc(command, sizeof(char)*20);
+			  options = (char *) malloc(sizeof(char)*strlen(line));*/
 
-	parameter_list=parse_options(options, &fd);
+			parse_line(&command, &options, line);
+			parameter_list=parse_options(options, &fd, &piped);	
+			printf("PIPE:  Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,options);
+		}
+	} // end command with pipe
 	
-	if (fd>0) // there is a redirection
+	if (fd>0 && piped==0) // there is a redirection - not valid with first command of a pipe
 	{
 		close(1);
 		dup(fd);
@@ -76,25 +115,28 @@ void exec_com (char * command, char * options)
 			write(current_dir[1],new_dir,strlen(new_dir));			
 			}
 		}
-	else if (strcmp(command,"copy")==0 )
+	else if (strcasecmp(command,"copy")==0 )
 			cp(parameter_list);
-	else if (strcmp(command,"md")==0 )
+	else if (strcasecmp(command,"xcopy")==0 )
+			xcp(parameter_list);
+	else if (strcasecmp(command,"md")==0 )
 		md(parameter_list);
-	else if (strcmp(command,"del")==0 )
+	else if (strcasecmp(command,"del")==0 )
 		del(parameter_list);
-	else if (strcmp(command,"deltree")==0 )
+	else if (strcasecmp(command,"deltree")==0 )
 		deltree(parameter_list);
-	else if (strcmp(command,"echo")==0 )
+	else if (strcasecmp(command,"echo")==0 )
 		echo(parameter_list);
-	else if (strcmp(command,"list")==0 )
+	else if (strcasecmp(command,"list")==0 )
 		list(parameter_list);
-	else if (strcmp(command,"help")==0 )
-		list(parameter_list);
+	else if (strcasecmp(command,"help")==0 )
+		help(parameter_list);
 	else
-		{
+	{
 		fprintf(stderr,"Error: \'%s\' unknown or bad typed command\n", command);
 		fprintf(stderr,"Try \'help\' or \'list\' for further information\n");
-		}
+		exit(1);
+	}
 
 	// TODO check free
 	//free(parameter_list);

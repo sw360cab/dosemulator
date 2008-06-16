@@ -105,7 +105,7 @@ param* parse_path(char *str)
 
 		// check correctness of temporay string -> relative path
 		// TODO can have problems with last string of path
-		if (!alpha_num(p->name,&c,1))
+		if (alpha_num(p->name,&c,1)==FALSE)
 		{
 			printf ("Unexpected char %c\n", c);
 			exit(1);
@@ -165,7 +165,7 @@ void md(param *list)
 		stat(working_dir,&st);
 
 		while(p!=NULL){
-			// printf("%s to be parsed and type %d\n", p->name, p->type);
+			//printf("%s to be parsed and type %d\n", p->name, p->type);
 
 			dir=opendir(p->name);
 
@@ -187,7 +187,6 @@ void md(param *list)
 					printf ("Unable to create directory or you don't have permission to do so\n");
 					exit(1);
 				}
-				printf("created\n");
 			}
 
 			chdir(p->name);
@@ -195,15 +194,14 @@ void md(param *list)
 			p=p->next;
 		}
 
-		free(p);
-
+		//free(p);
 		list=list->next;
-		path = (char *)realloc(path, sizeof(char)*strlen(list->name));
+		if (list!=NULL)
+			path = (char *)realloc(path, sizeof(char)*strlen(list->name));
 		// return to working directory
 		chdir(working_dir);
 	}
 	printf ("done\n");
-	fprintf (stderr,"Unexpected char\n");
 	/*
 	 * dir=opendir(path);
 

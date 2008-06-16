@@ -18,7 +18,7 @@
  *
  * ***** END LICENSE BLOCK ***** 
  */
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -29,64 +29,105 @@
 #include <fcntl.h>
 #include "parse.h"
 
-#define BUF_MAX 1024
-//void help(param *list_par)
-int main(int argc, char **argv )
-	{
-	char src[10],src2[10],src3[10];
+// help for a specific command
+void help(param *list_par)
+{
+	char *src;
 	char *buf;
 	int source_fd;
 	int rd;
-	struct stat st;
-	
-//	if (list_par == NULL)
-//		{
-//		fprintf(stderr, "Type help \'command\'\n");
-//		exit(1);
-//		}
-//	
-//	if (list_par->next != NULL)
-//		fprintf(stderr, "Warning: \'list\' command does not requires parameters \n\n");
 
-	if (strcmp(argv[1],"dir")==0)
-		strcpy(src,"list.txt");
-	else if (strcmp(argv[1],"attrib")==0)
-		strcpy(src,"list.txt");
-	else if (strcmp(argv[1],"md")==0)
-		strcpy(src,"list.txt");
-	else if (strcmp(argv[1],"del")==0)
-			strcpy(src,"list.txt");
-	else if (strcmp(argv[1],"deltree")==0)
-			strcpy(src,"list.txt");
-	else if (strcmp(argv[1],"copy")==0)
-			strcpy(src,"list.txt");
-	else if (strcmp(argv[1],"xcopy")==0)
-			strcpy(src,"list.txt");
-	else
-		{
-	   	fprintf(stderr, "Unknown command - type \'list\' for all available commands\n");
+	if (list_par == NULL)
+	{
+		fprintf(stderr, "Type help \'command\'\n");
 		exit(1);
-		}
-	
-	// easier to concatenated but it doesn't work at all
-	//	strcpy(src2,"list");
-	//	strcpy(src3,".txt");
-	//	sprintf(src,"%s.txt",src2);
-	
-	strcpy(src2,src);
-   	if ( (source_fd=open (src2, O_RDONLY)) == -1)
-   		{
-   		fprintf(stderr, "Problem with \'help\' command\n");
-   		exit(1);
-   		}
-   	
-
-   	/*while ((rd = read( source_fd, buf, (BUF_MAX/2)+1)) > 0 )
-   	    	write(1, buf, rd);
-*/
-   	rd = read( source_fd, buf, (BUF_MAX/2)+1);
-   	printf("%s+++%d\n",src2,rd);
-   	 write(1, buf, rd);
-   	//free(buf);
-   	close(source_fd);
 	}
+
+	if (list_par->next != NULL)
+		fprintf(stderr, "Warning: only a command help request can be satisfied a time\n\n");
+
+	src=(char*)malloc(sizeof(char)*strlen(list_par->name)+5);
+	strcpy(src, list_par->name);
+
+	sprintf(src,"%s.txt",list_par->name);
+	
+	// allocate buffer for copying
+	buf = (char *) malloc(sizeof(char)*BUF_MAX+1);
+
+	if ( (source_fd=open (src, O_RDONLY)) == -1)
+	{
+		fprintf(stderr, "Problem with \'help\' command\n");
+		exit(1);
+	}
+
+	while ((rd = read( source_fd, buf, BUF_MAX)) > 0 )
+		write(1, buf, rd);
+	
+	free(buf);
+	close(source_fd);
+}
+
+// list available command
+void list(param *list_par)
+{
+	char *src;
+	char *buf;
+	int source_fd;
+	int rd;
+
+	if (list_par != NULL)
+		fprintf(stderr, "Warning: \'list\' command does not requires parameters \n\n");
+
+	src=(char*)malloc(sizeof(char)*9);
+	strcpy(src,"list.txt");
+	if ( (source_fd=open (src, O_RDONLY)) == -1)
+	{
+		fprintf(stderr, "Problem with \'list\' command\n");
+		exit(1);
+	}
+	
+	// allocate buffer for copying
+	buf = (char *) malloc(sizeof(char)*BUF_MAX+1);
+
+	while ((rd = read( source_fd, buf, BUF_MAX)) > 0 )
+		write(1, buf, rd );
+
+	free(buf);
+	close(source_fd);
+}
+
+// help function version with file pointer
+/*
+void help(param *list_par)
+{
+	char *src;
+	char *buf, c;
+	int source_fd;
+	int rd;
+	FILE *fp;
+
+	if (list_par == NULL)
+	{
+		fprintf(stderr, "Type help \'command\'\n");
+		exit(1);
+	}
+
+	if (list_par->next != NULL)
+		fprintf(stderr, "Warning: only a command help request can be satisfied a time\n\n");
+
+	src=(char*)malloc(sizeof(char)*strlen(list_par->name)+5);
+	strcpy(src, list_par->name);
+	
+	// concatenated doesn't work at all with file pointers
+	sprintf(src,"%s.txt",list_par->name);
+
+	if ((fp = fopen(src, "r"))==NULL)
+	{
+		fprintf(stderr,"Error: \'%s\' unknown or bad typed command, try \'list\' for a list of commands\n", src);
+		exit(1);
+	}
+	while ((c = getc (fp)) != EOF)
+		putchar(c);
+
+	fclose(fp);
+}*/
