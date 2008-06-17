@@ -105,9 +105,9 @@ param* parse_path(char *str)
 
 		// check correctness of temporay string -> relative path
 		// TODO can have problems with last string of path
-		if (alpha_num(p->name,&c,1)==FALSE)
+		if (!alpha_num(p->name,&c,1))
 		{
-			printf ("Unexpected char %c\n", c);
+			printf ("Unexpected char \'%c\'\n", c);
 			exit(1);
 		}
 
