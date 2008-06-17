@@ -72,16 +72,17 @@ param * new_elem()
  * '-' and '_' are allowed for paths
  * '.' and '/' supposed allowed for files
  */
-int under_s(int ch, int dir)
+int under_s(char ch, int dir)
 {
 	if (ch=='-' || ch =='_')
 		return TRUE;
 	else
 	{
-		//printf ("return FALSE\n");
 		if (dir==0) // '.' is allowed
+			{
 			if (ch=='.' || ch =='/')
 					return TRUE;
+			}
 		else
 			return FALSE;
 	}
@@ -97,13 +98,11 @@ int alpha_num(char *path, char *ch, int dir)
 {
 	int i,count=strlen(path);
 
-	//printf ("here %s::%d-----\n", path, count);
-
 	// if name is alphaneumeric or contains '-' or '_' or '.' (in case of file name is OK
 	for(i=0;i<strlen(path) && ( isalnum(path[i]) || under_s(path[i],dir) ); i++)
 	{
 		count--;
-		printf ("cnt = %d-%s-%d-%d-\n",count,path, isalnum(path[i]),under_s(path[i],dir));
+		//printf ("cnt = %d-%s-%d-%d-\n",count,path, isalnum(path[i]),k);
 	}
 
 	if (count==0)

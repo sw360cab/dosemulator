@@ -125,6 +125,8 @@ void exec_com (char * command, char * options)
 		del(parameter_list);
 	else if (strcasecmp(command,"deltree")==0 )
 		deltree(parameter_list);
+	else if (strcasecmp(command,"rd")==0 )
+		rd(parameter_list);
 	else if (strcasecmp(command,"echo")==0 )
 		echo(parameter_list);
 	else if (strcasecmp(command,"list")==0 )
