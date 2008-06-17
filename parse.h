@@ -50,6 +50,7 @@ char* get_line();
 
 extern void cp(param*);
 extern void xcp(param*);
+extern void disk_copy(param*);
 extern void md(param*);
 extern void del(param*);
 extern void deltree(param*);
