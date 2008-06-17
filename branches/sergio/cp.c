@@ -25,6 +25,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/sysmacros.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include "parse.h"
@@ -132,6 +133,7 @@ int overridden(char *dest)
 		close(dest_fd);
 		return TRUE;
 	}
+	return FALSE;
 }
 
 // copy files
@@ -492,7 +494,6 @@ int confirmation(char *pth)
 void basic_copy(char *src, char *dest)
 {
 	char *buf;
-	char *working_dir;
 	int source_fd, dest_fd;
 	int rd;
 	struct stat st, st_dest;
@@ -614,14 +615,11 @@ void xcp(param *list)
 {
 	char *buf, *temp_path, c;
 	char *src, *dest;
-	char *working_dir, *src_dir;
+	char *src_dir;
 	int source_fd, dest_fd;
 	int rd, stat_res;
 	param *dir_list=NULL;
 	struct stat st, st_dest;
-	struct dirent *ep;
-	DIR *dp;
-	off_t count_concat=0;
 
 	// override=0; !!!
 	// global
@@ -856,5 +854,96 @@ void xcp(param *list)
 		close(source_fd);
 		close(dest_fd);
 	}
-
 }
+
+/*
+ * fake write on device floppy --> floppy.out
+ * !!! IMPORTANT must be ROOT to compile-execute this correctly
+ */
+void disk_copy(param* list)
+{
+	char path[10], *buf, *src;
+	int source_fd, floppy_fd;
+	int written_bytes=0;
+	int rd, stat_res;
+	struct stat st;
+
+	buf= (char*)malloc(sizeof(char)*BUF_MAX);
+
+	strcpy(path,"floppy.out");
+
+	// dev file major-minor numbers --> http://www.lanana.org/docs/device-list/devices.txt
+	
+	// if device does not exist create it
+	if ( (floppy_fd=open (path, O_WRONLY)) == -1)
+	{
+		if ( mknod(path, S_IFBLK | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, makedev(2,28)) == -1)
+			{
+			fprintf(stderr, "Can't find floppy device %s\n",path);
+			exit(1);
+			}
+		close(floppy_fd);
+	}
+
+	// try to open floppy dev file
+	if ( (floppy_fd=open (path, O_WRONLY)) == -1)
+	{
+		fprintf(stderr, "Can't access floppy file %s\n",path);
+		exit(1);
+	}
+
+	while (list != NULL){
+
+		// take info about file / dir
+		stat_res=stat(list->name,&st);
+
+		if ( list->type==0 && S_ISREG(st.st_mode) && stat_res>=0) // source is a file
+		{
+
+			src = (char *) malloc(sizeof(char)*strlen(list->name)+1);
+			strcpy(src,list->name);
+
+			// try to open source file
+			if ( (source_fd=open (src, O_RDONLY)) == -1)
+			{
+				fprintf(stderr, "Can't open source file %s\n",src);
+				exit(1);
+			}
+
+			// file to write does not exceed floppy size 
+			if (written_bytes + st.st_size < 1440)
+			{
+				while ((rd = read( source_fd, buf,BUF_MAX)) > 0 )
+					write(floppy_fd, buf, rd /*BUF_MAX*/ );
+
+				// increase writte bytes
+				written_bytes += st.st_size;
+
+				close(source_fd);
+			}
+
+			else  //not enough space on floppy
+			{
+				fprintf(stderr, "Error - not enough space on floppy\n");
+				close(source_fd);
+				exit(1);
+			}	
+
+
+		}
+
+		else // no option for this command
+		{
+			fprintf(stderr, "%s - unknown option\n",list->name );
+			exit(1);
+		}
+		
+		 //free space
+		if (strlen(src)!=0)
+			free(src);
+		
+		list = list->next;
+	} // end while
+	close(floppy_fd);
+}
+

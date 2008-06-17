@@ -37,9 +37,9 @@ void exec_com (char * command, char * options)
 	int status;	
 	int fd=-1, piped=0;
 	pid_t pid;
-	
+
 	parameter_list=parse_options(options, &fd, &piped);
-	
+
 	// command with pipe
 	if(piped!=0)
 	{
@@ -57,20 +57,20 @@ void exec_com (char * command, char * options)
 			// wait end of first command
 			//wait(&status);
 			waitpid(pid,&status,0);
-			
+
 			// exit immediately if status is 1 -- something went wrong witn
 			if (status!=0) // previous command did not end correctly
 				exit(1);
-			
+
 			// set pipe
 			close(0);
 			dup(pipe_comm[0]);
 			close(pipe_comm[0]);
-			
+
 			// retrieve string of command after pipe
 			line = pipe_string(options);
 			printf("PIPE: new line --%s--\n",line);
-			
+
 			// realloc command and options string
 			/*free(options);
 			  command = (char *) realloc(command, sizeof(char)*20);
@@ -81,7 +81,7 @@ void exec_com (char * command, char * options)
 			printf("PIPE:  Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,options);
 		}
 	} // end command with pipe
-	
+
 	if (fd>0 && piped==0) // there is a redirection - not valid with first command of a pipe
 	{
 		close(1);
@@ -90,36 +90,38 @@ void exec_com (char * command, char * options)
 		dup(fd);
 		close(fd);
 	}
-	
+
 	/*
 	while (parameter_list!=NULL)
 	{
 		printf("---%s---\n", parameter_list->name);
 		parameter_list= parameter_list->next;
 	}
-	*/
-	
+	 */
+
 	getcwd(working_dir,BUF_MAX);
 	write(current_dir[1],working_dir,strlen(working_dir));
-	
+
 	// switch used to execute commands
-	if (strcmp(command,"cd")==0 )
-		{
+	if (strcmp(command,"cd")==0 || strcasecmp(command,"chdir")==0)
+	{
 		new_dir=cd(working_dir,&parameter_list);
-		
+
 		if(strcmp(new_dir,working_dir) != 0 ) // working directory has changed
-			{
+		{
 			// invalid previous content of pipe
 			buf[0]='*';
 			write(current_dir[1],buf,1);
 			write(current_dir[1],new_dir,strlen(new_dir));			
-			}
 		}
+	}
 	else if (strcasecmp(command,"copy")==0 )
-			cp(parameter_list);
-	else if (strcasecmp(command,"xcopy")==0 )
-			xcp(parameter_list);
-	else if (strcasecmp(command,"md")==0 )
+		cp(parameter_list);
+	else if (strcasecmp(command,"xcopy")==0 )	
+		xcp(parameter_list);
+	else if (strcasecmp(command,"diskcopy")==0 )	
+		disk_copy(parameter_list);
+	else if (strcasecmp(command,"md")==0 || strcasecmp(command,"mkdir")==0)
 		md(parameter_list);
 	else if (strcasecmp(command,"del")==0 )
 		del(parameter_list);
@@ -154,31 +156,31 @@ int main(int argc,char **argv)
 	char *working_dir, *new_dir; 
 	char buf[MAXPATH];
 	int length;
-	
+
 	printf ("\n-- This is Windows DOS shell emulation 1.0\n");
 	printf ("-- you can type windows command or run programs\n");
 	printf ("-- type 'help' for a list of command or 'exit' to quit\n\n");
-	
+
 	working_dir = (char *) malloc(sizeof(char)*BUF_MAX);
 	new_dir = (char *) malloc(sizeof(char)*BUF_MAX);
 	getcwd(working_dir,BUF_MAX);
-	
+
 	// create pipe
 	pipe(current_dir);
-	
+
 	while (running)
 	{		
 		printf("$$-WinShell-$$:%s >> ", working_dir);
-		
+
 		// get_line
 		line=get_line();
-		
+
 		// parse command
 		command = (char *) malloc(sizeof(char)*20);
 		opt = (char *) malloc(sizeof(char)*strlen(line));
 
 		parse_line(&command, &opt, line);
-		
+
 		printf("Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,opt); 
 
 		if ( strcmp(command,"exit")==0 || strcmp(command,"quit")==0 )
@@ -188,19 +190,19 @@ int main(int argc,char **argv)
 			free(opt);
 			break;
 		}
-		
+
 		/*if (fork() == 0)	// child
 		{*/
-			//execl("/bin/ls", "ls", "-l", (char *)0);
-			//close(current_dir[0]);
-			exec_com(command,opt);
-			free(command);
-			free(opt);
+		//execl("/bin/ls", "ls", "-l", (char *)0);
+		//close(current_dir[0]);
+		exec_com(command,opt);
+		free(command);
+		free(opt);
 		/*}
 		else 	// father
 		{
 			wait(&status);
-			
+
 			length=read(current_dir[0],buf,BUF_MAX);
 			buf[length]='\0';
 			//printf("--pipe--%d--%s--\n",length,buf);
@@ -210,7 +212,7 @@ int main(int argc,char **argv)
 				{
 				chdir(new_dir+1);
 				printf("New dir --%s--\n",new_dir+1);
-				
+
 				getcwd(working_dir,BUF_MAX);
 				}
 		}*/
@@ -224,4 +226,3 @@ int main(int argc,char **argv)
  * - command --> esegue relativo comando / funzione
  * - unknown --> stampa "WinShell: 'command' - command not found "
  */
- 

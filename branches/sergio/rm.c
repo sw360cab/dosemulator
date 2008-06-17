@@ -123,10 +123,12 @@ void recur_del(char *current_path, int ask)
 			else // is a file
 			{
 				if ( strcmp(ep->d_name, ".") != 0 && strcmp(ep->d_name, "..")!= 0 )
+				{
 					if ( ask==0 && request(temp_path,0) )  // ask to delete 
 						erase(temp_path);
 					else if (ask==1)	// do not ask - just delete
 						erase(temp_path);
+				}
 			}
 		}
 		closedir(dp);
@@ -213,7 +215,7 @@ void del(param *list)
 { 	
 	param *p, *file_list=NULL;
 	char *path,*working_dir, *param_name;
-	int source_fd, dest_fd;
+	int source_fd;
 	struct stat st;
 
 	int req=0;
@@ -240,7 +242,7 @@ void del(param *list)
 		param_name= (char *) malloc(sizeof(char)*strlen(list->name)+1);
 		strcpy(param_name, list->name);
 
-		if (list->type=0) // parse file
+		if (list->type==0) // parse file
 		{
 			p=new_elem();
 
@@ -398,7 +400,7 @@ void del(param *list)
  */
 void deltree(param *list)
 {
-	char *path, *working_dir;
+	char *working_dir;
 	struct stat st;
 	int source_fd;
 
@@ -464,14 +466,34 @@ void deltree(param *list)
 	}
 }	
 
+// only checks if directory is empty --> return TRUE
+int empty_dir (char *path)
+{
+	DIR *dp;
+	struct dirent *ep;
+
+	// open directory
+	dp = opendir(path);
+	
+	// check all elements of the directory
+	if (dp != NULL) {
+		while ( (ep = readdir(dp)) )
+		{
+			if (strcmp(ep->d_name, ".") != 0  && strcmp(ep->d_name, "..")!= 0 )
+				return FALSE; // dir contain something
+		}
+	}
+	closedir(dp);
+	return TRUE;
+}
+
 /*
  * rmdir
  */
 void rd(param *list)
 {
-	char *path, *working_dir;
+	char *working_dir;
 	struct stat st;
-	int source_fd;
 	int sub_dir=0, no_ask=0;
 
 	if(list==NULL)
@@ -514,7 +536,7 @@ void rd(param *list)
 					exit(1);
 				}
 
-				if (sub_dir=1)
+				if (sub_dir==1)
 					// rm -Rf
 					recur_del(list->name,no_ask);
 				else // only delete dir if empty

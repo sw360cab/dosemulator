@@ -74,7 +74,7 @@
  */
 param* parse_path(char *str)
 {
-	int ct=0,count=0;
+	int count=0;
 	char c;
 	param *p;
 	param *pt=NULL;
@@ -139,9 +139,6 @@ void md(param *list)
 	DIR *dir;
 	struct stat st;
 	param *p;
-	int i,count;
-	mode_t mode;
-	int fd;
 	
 	if(list==NULL)
 	{

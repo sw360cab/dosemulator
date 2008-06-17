@@ -86,6 +86,7 @@ int under_s(char ch, int dir)
 		else
 			return FALSE;
 	}
+	return FALSE;
 }
 
 /*
