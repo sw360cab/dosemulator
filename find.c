@@ -18,7 +18,8 @@
  *
  * ***** END LICENSE BLOCK ***** 
  */
-//TODO more than one file in which to search
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -26,23 +27,23 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <ctype.h>
 #include "parse.h"
-
-//TODO how to define a good string length ?-> see nw.c in docs/readFunctions.zip 
-#define STRING_LENGTH 1024
-
-
+//TODO use lioy function to read and not fgets
 short v_option; //show not matched
 short c_option; //show only the number of matches
 short n_option; //show also line number: it has effciency only if c=false
 short i_options; //ignore uppercase
+
+
+extern char *extract_double_quotes(char *);
 
 void my_find(char *string, char *src) {
 
 	int row_counter=0, nr_matches=0, i=0, i2=0;
 	FILE *fp;
 	char *buf, *output, *buf2;
-	
+
 	short matched=FALSE;
 
 	if ( (fp = fopen(src, "r")) == NULL) {
@@ -52,8 +53,11 @@ void my_find(char *string, char *src) {
 		return;
 	}
 
+	for (i=0; i<strlen(src); i++) {
+		toupper(src[i]);
+	}
+	i=0;
 	//if argument 1 doesn't begin with "" quotes,error. it seems impossible to emulate
-
 
 	//TODO src uppercase
 	if (c_option == FALSE)
@@ -127,94 +131,114 @@ void my_find(char *string, char *src) {
 
 }
 
-void find(param **parameters){
+void find(param *parameters) {
 
-	
-	param *p = (*parameters);
-	param *prm = (*parameters);
+	param *p = parameters;
+	char *to_search;
 	char *src;
-	short int p1= FALSE, p2=FALSE;
-	
+	short int p1= FALSE, p2=FALSE; //p2 is the file, p1 is the string to search
+
+	if (p==NULL) {
+		fprintf(stderr, "md: missing file operand\n");
+		fprintf(stderr, "Try \'help md\' for more information\n");
+		exit(1);
+	}
 
 	//initialization of params to default values
 	v_option=FALSE; //show not matched
 	c_option=FALSE; //show only the number of matches
 	n_option=FALSE; //show also line number: it has effciency only if c=false
 	i_options=FALSE;
-	
+
 	while (p!= NULL) {
 
-		if (p->type==0) {
-			src = (char *)malloc(strlen(p->name));
-			strcpy(src, p->name);
-			p2 = TRUE;
-			break;
-		}
-		else{
+		if (p->type==1) {
+
 			/*short v_option=FALSE; //show not matched
-	short c_option=FALSE; //show only the number of matches
-	short n_option=FALSE; //show also line number: it has effciency only if c=false
-	short i_options=TRUE; //ignore uppercase
-	*/
+			 short c_option=FALSE; //show only the number of matches
+			 short n_option=FALSE; //show also line number: it has effciency only if c=false
+			 short i_options=TRUE; //ignore uppercase
+			 */
 			if (strcasecmp(p->name, "\\V") == 0)
-								v_option=TRUE;
-			else if(strcasecmp(p->name, "\\C") == 0)
-						c_option=TRUE;
-			else if(strcasecmp(p->name, "\\N") == 0)
-					n_option=TRUE;
-			else if(strcasecmp(p->name, "\\I") == 0)
-					i_options = TRUE;
-			else {
-							printf("FIND : not valid argument\n");
-							exit(1);
+				v_option=TRUE;
+			else if (strcasecmp(p->name, "\\C") == 0)
+				c_option=TRUE;
+			else if (strcasecmp(p->name, "\\N") == 0)
+				n_option=TRUE;
+			else if (strcasecmp(p->name, "\\I") == 0)
+				i_options = TRUE;
+			else if (p->name[0]=='"' && p->name[strlen(p->name)-1]=='"') {
+				p=p->next;
+				continue;
+			} else {
+				printf("FIND : --%s-- not valid argument\n", p->name);
+				exit(1);
 			}
 		}
-		
+
 		p=p->next;
 	}
-	
-	//TODO correct parse .c : jollychar "
-	if (p2==TRUE) {
-		
-		while (prm != NULL) {
-			
-			if(prm->type == 1){
-				
-				if (strcasecmp(p->name, "\\V") == 0){
-					prm=prm->next;
-					continue;
-				}
-				else if(strcasecmp(p->name, "\\C") == 0){
-					prm=prm->next;
-					continue;
-				}
-				else if(strcasecmp(p->name, "\\N") == 0){
-					prm=prm->next;
-					continue;
-				}
-				else if(strcasecmp(p->name, "\\I") == 0){
-					prm=prm->next;
-					continue;
-				}
-				else{
-						p1=TRUE; 
-						my_find(prm->name,src);
-				}
+
+	//here looking for the string to search
+
+
+	p=parameters;
+
+	while (p != NULL) {
+
+		if (p->type == 1) {
+
+			if (strcasecmp(p->name, "\\V") == 0) {
+				p=p->next;
+				continue;
+			} else if (strcasecmp(p->name, "\\C") == 0) {
+				p=p->next;
+				continue;
+			} else if (strcasecmp(p->name, "\\N") == 0) {
+				p=p->next;
+				continue;
+			} else if (strcasecmp(p->name, "\\I") == 0) {
+				p=p->next;
+				continue;
+			} else {
+				p1=TRUE;
+				to_search
+						= (char *)malloc(strlen(extract_double_quotes(p->name)));
+				break;
+
 			}
-			
-			
 		}
+
+		p=p->next;
 	}
-	else{
-		printf("1FIND: not correct parameter format\n");
+
+	p=parameters;
+	if (p1==TRUE) {
+
+		while (p!= NULL) {
+
+			if(p->type==0){
+				
+				src = (char *)malloc(strlen(p->name));
+				strcpy(src, p->name);
+				p2 = TRUE;
+				my_find(to_search, src);
+			}
+			p=p->next;
+		}
+
+	}
+
+	else {
+		printf("FIND: need string parameter\n");
 		exit(1);
 	}
-	
-	if(p1 == FALSE){
-		printf("2FIND: not correct parameter format\n");
+
+	if (p2 == FALSE) {
+		printf("FIND: need file name\n");
 		free(src);
 		exit(1);
 	}
-	
-	
+
 }
+

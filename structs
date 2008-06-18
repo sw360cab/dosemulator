@@ -19,22 +19,3 @@ struct tm
   int tm_isdst;                 // DST.         [-1/0/1]
 };
 
-if (strcmp(command, "copy")==0)
-		cp(&parameter_list);
-	else if (strcmp(command, "cd") == 0)
-		working_dir = cd(working_dir, &parameter_list);
-	else if (strcmp(command, "dir") == 0)
-		dir(&parameter_list);
-	else if (strcmp(command, "find") == 0)
-		find(&parameter_list);
-	else if (strcmp(command, "more") == 0)
-		more(&parameter_list);
-	else if (strcmp(command, "attrib") == 0)
-		attrib(&parameter_list);
-	else if (strcmp(command, "cls") == 0)
-		cls(&parameter_list);
-	else if (strcmp(command, "date") == 0)
-			date(&parameter_list);
-	else
-		printf("Command not found\n");
-

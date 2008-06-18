@@ -24,9 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "parse.h"
-
-//TODO how to define a good file string length ?
-#define STRING_LENGTH 1024
+//TODO use lioy function to read and not fgets
 
 short int c_option= FALSE;
 short n_option=FALSE;
@@ -78,10 +76,16 @@ void my_more(char *src) {
 
 }
 
-void more(param **parameters) {
+void more(param *parameters) {
 
-	param *p = (*parameters);
+	param *p = parameters;
 	short int files = 0;
+	
+	if (p==NULL) {
+			fprintf(stderr, "md: missing file operand\n");
+			fprintf(stderr, "Try \'help md\' for more information\n");
+			exit(1);
+		}
 	
 
 	while (p!= NULL) {
@@ -106,7 +110,7 @@ void more(param **parameters) {
 		p=p->next;
 	}
 
-	p = (*parameters);
+	p = parameters;
 
 	while (p!= NULL) {
 

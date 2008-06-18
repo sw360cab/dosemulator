@@ -40,7 +40,7 @@ int check_date(int dd, int mm, int yyyy) {
 
 	return 0;
 }
-//TODO global variable in the shell in order to access the  
+
 void my_date() {
 
 	time_t rawtime;
@@ -67,6 +67,10 @@ void my_date() {
 
 			printf("Please specify a new date: (dd/mm/yyyy):");
 			line = get_line();
+			
+			if(strcmp(line,"quit")==0)
+				exit(1);
+			
 			n = sscanf(line, "%d/%d/%d", &dd, &mm, &yyyy);
 
 			if (n!=3){
@@ -125,9 +129,9 @@ void my_date() {
 
 }
 
-void date(param **parameters) {
+void date(param *parameters) {
 	time_t new_time;
-	param *iterator = (*parameters);
+	param *iterator = parameters;
 	char *current_time_string;
 
 	if (iterator == NULL) {

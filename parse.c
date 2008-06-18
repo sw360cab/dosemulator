@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include "parse.h"
 
+//TODO correct parse .c : jollychar "
 int jolly_char(char *line)
 {
 	if (strcmp( line, ">")==0 || strcmp( line, ">>")==0) // redirection
@@ -18,6 +19,8 @@ int jolly_char(char *line)
 		return 1;
 	else if (strncmp( line, "-",1)==0)
 		return 1;
+	else if (line[0]=='"')
+			return 1;
 	else 
 		return 0;
 }
@@ -93,7 +96,7 @@ void parse_line(char **comm, char ** opt, char * line)
 	while ( strncmp( line+count, " ",1)!=0 && strncmp( line+count, "\0",1)!=0 )
 		count++;
 	
-	strncpy(*comm,line,count); // TODO Change function with strnchr or similar
+	strncpy(*comm,line,count); 
 	if(strncmp( line+count, "\0",1)!=0)
 		strncpy(*opt,line+count+1, strlen(line) - count +1);
 }

@@ -29,52 +29,10 @@ short redirection_in= FALSE;
 short append_out= FALSE;
 short append_in= FALSE;
 
-/*
-void my_echo(char *msg, char *path) {
 
-	FILE *file;
-	int fd;
+void echo(param *paramaters) {
 
-
-	if (redirection_out==FALSE && append_out==FALSE) {
-
-		printf("%s\n", msg);
-
-	} else if (redirection_out == TRUE) {
-
-		printf("opening %s\n",path);
-		file = fopen(path, "w+");
-
-		if (file == NULL) {
-
-			fprintf("ECHO: error opening %s\n", path);
-			exit(1);
-		}
-
-		fprintf(file, "%s", msg); 
-		fclose(file);
-
-	} else if (append_out == TRUE) {
-		
-		file = fopen(path, "a+");
-
-		printf("opening %s\n",path);
-		if (file == NULL) {
-
-			fprintf("ECHO: error opening %s\n", path);
-			exit(1);
-		}
-
-		fprintf(file, "%s", msg); 
-		fclose(file); 
-	}
-
-}
-*/
-
-void echo(param **paramaters) {
-
-	param *p = (*paramaters);
+	param *p = paramaters;
 	char *message;
 	short int count = 0;
 

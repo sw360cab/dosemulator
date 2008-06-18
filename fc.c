@@ -18,22 +18,7 @@
  *
  * ***** END LICENSE BLOCK ***** 
  */
-//TODO Per i comandi che non accettano di essere senza parametri metti subito all'inizio della funzione
-/*
- if(list==NULL)
- {
- fprintf(stderr, "md: missing file operand\n");
- fprintf(stderr, "Try \'help md\' for more information\n");
- exit(1);
- }
- */
 
-//TODO![lanciare un file eseguibile:]
-/*
- * vedere se il command inizia per ./
- * se sì, vedere se eseguibile, e lanciare exec
- * 
- */
 #include <stdlib.h>
 #include <sys/types.h>
 #include <stdio.h>
@@ -59,14 +44,14 @@ void print_differences(Resource *smaller, Resource *bigger) {
 	
 	int i =0;
 
-	printf("%s smaller than %s \n",smaller->path,bigger->path);
+	//printf("%s smaller than %s \n",smaller->path,bigger->path);
 	copy_smaller = smaller;
 	copy_bigger = bigger;
 
 	last_smaller = smaller->prev;
 	last_bigger = bigger->prev;
 
-	printf("%s %d lines, %s %d lines\n",smaller->path, smaller_lines,bigger->path,bigger_lines);
+	//printf("%s %d lines, %s %d lines\n",smaller->path, smaller_lines,bigger->path,bigger_lines);
 
 	//first= mark all equals lines 
 
@@ -76,7 +61,7 @@ void print_differences(Resource *smaller, Resource *bigger) {
 
 			if (case_sensitive==TRUE) {
 
-				
+				//printf("comparing \n %s \nand \n %s\n",copy_smaller->name, copy_bigger->name);
 				if (strcmp(copy_smaller->name, copy_bigger->name) == 0) {
 
 					copy_smaller->flag=TRUE;
@@ -129,7 +114,7 @@ void print_differences(Resource *smaller, Resource *bigger) {
 
 		for (i=0; i<bigger_lines; i++) {
 
-			if (bigger->flag!=TRUE) {
+			if (copy_bigger->flag!=TRUE) {
 
 				if (show_line_option==FALSE)
 					printf("%s", copy_bigger->name);
@@ -147,7 +132,9 @@ void print_differences(Resource *smaller, Resource *bigger) {
 
 void my_fc(char *path1, char *path2) {
 
+	//TODO use lioy function to read and not fgets
 	FILE *fp1, *fp2, *fp_bigger, *fp_smaller;
+	//int fp1,fp2,fp_bigger,fp_smaller;
 	int row = 1;
 	int count_lines1=0, count_lines2=0;
 
@@ -159,8 +146,6 @@ void my_fc(char *path1, char *path2) {
 	Resource *list_smaller=NULL;
 	
 	Resource *res_temp;
-
-	//TODO: redo the concept of size: the bigger is the one with more lines 
 
 	char *buf_bigger, *buf_smaller;
 	char *path_bigger, *path_smaller, *line;
@@ -254,7 +239,7 @@ void my_fc(char *path1, char *path2) {
 		res_temp = new_resource();
 		res_temp =(Resource *) create_res(status_smaller, buf_smaller, row, path_smaller);
 		insert_resource(&list_smaller, res_temp);
-		printf("inserted line %s of %s\n",res_temp->name,res_temp->path);
+		//printf("inserted line %s of %s\n",res_temp->name,res_temp->path);
 		row++;
 
 	}
@@ -268,7 +253,7 @@ void my_fc(char *path1, char *path2) {
 
 	}
 
-	printf("fgets on %s \n",list_smaller->path);
+	//printf("fgets on %s \n",list_smaller->path);
 	
 	
 	row=1;
@@ -296,14 +281,14 @@ void my_fc(char *path1, char *path2) {
 	close(fp1);
 	close(fp2);
 
-	printf("launching %s and %s\n",list_smaller->path,list_bigger->path);
+	//printf("launching %s and %s\n",list_smaller->path,list_bigger->path);
 	print_differences(list_smaller, list_bigger);
 
 }
 
-void fc(param **parameters) {
+void fc(param *parameters) {
 
-	param *p = (*parameters);
+	param *p = parameters;
 
 	if (p==NULL) {
 		fprintf(stderr, "md: missing file operand\n");
