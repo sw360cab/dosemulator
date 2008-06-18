@@ -50,7 +50,7 @@ void exec_com(char * command, char * options) {
 	/*if (strcmp(command,"copy")==0 )
 	 cp(&parameter_list);
 	 else*/if (strcmp(command, "cd")==0) {
-		new_dir=cd(working_dir, &parameter_list);
+		new_dir=cd(working_dir, parameter_list);
 
 		if (strcmp(new_dir, working_dir) != 0) // working directory has changed
 		{
@@ -62,22 +62,22 @@ void exec_com(char * command, char * options) {
 	}
 	
 	else if (strcmp(command, "dir") == 0)
-		dir(&parameter_list);
+		dir(parameter_list);
 	else if (strcmp(command, "find") == 0)
-		find(&parameter_list);
+		find(parameter_list);
 	else if (strcmp(command, "more") == 0)
-		more(&parameter_list);
+		more(parameter_list);
 	else if (strcmp(command, "attrib") == 0)
-		attrib(&parameter_list);
+		attrib(parameter_list);
 	else if (strcmp(command, "cls") == 0)
-		cls(&parameter_list);
+		cls(parameter_list);
 	else if (strcmp(command, "date") == 0)
-		date(&parameter_list);
+		date(parameter_list);
 	else if (strcmp(command, "echo") == 0)
-		echo(&parameter_list);
+		echo(parameter_list);
 	else if (strcmp(command, "fc") == 0)
-		fc(&parameter_list);
-	else if(launch_exe(command,&parameter_list)<0)
+		fc(parameter_list);
+	else if(launch_exe(command,parameter_list)<0)
 		
 	
 	{
@@ -85,7 +85,7 @@ void exec_com(char * command, char * options) {
 		fprintf(stderr,"Try \'help\' or \'list\' for further information\n");
 	}
 
-	// TODO check free
+	
 	//free(parameter_list);
 	exit(0);
 }

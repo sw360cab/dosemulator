@@ -19,11 +19,10 @@
  * ***** END LICENSE BLOCK ***** 
  */
 
+//BUG dir /home/folletto/temp : a commma appears before size
 //TODO printout formatting functions -> most common functions: see my_commands.doc  
-//TODO !fare il caso di più path
 //TODO readonly dir ?
-//TODO close fd in all my functions!!
-//TODO in all files: substitue par = (*parameter_list) with par = parameter_list;
+//TODO! close fd in all my functions!!
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -54,6 +53,10 @@ short show_recursive; // /S option
 Resource *resources_list;
 param *parameters_global;
 
+extern Resource *create_res(struct stat,char[],unsigned char,char*);
+extern char *build_path(char*,char*);
+extern int is_read_only(long);
+
 //it initialize tha mask with default options
 void initialize() {
 
@@ -67,32 +70,7 @@ void initialize() {
 	parameters_global = NULL;
 }
 
-//TODO try to move create_res to resource.c
-Resource *create_res(struct stat status, char res_name[], unsigned char type,
-		char *path) {
 
-	Resource *res;
-	char *name, *new_path;
-
-	name =(char *) malloc((unsigned int)strlen(res_name));
-	new_path =(char *)malloc((unsigned int)MAXPATH);
-
-	strcpy(name, res_name);
-	strcpy(new_path, path);
-
-	res = new_resource();
-	res->status = status;
-	res->name = name;
-	res->type = type;
-	res->path = new_path;
-	res->flag = FALSE;
-
-	//can't free none
-	//free(name);
-	//free(new_path);
-	return res;
-
-}
 
 Resource *my_dir(char *path) {
 
@@ -102,7 +80,6 @@ Resource *my_dir(char *path) {
 
 	struct dirent *ep;
 	struct stat status;
-	struct statvfs statusvfs;
 	char current_dir[MAXPATH], temp_path[MAXPATH];
 	int *p;
 
@@ -128,8 +105,7 @@ Resource *my_dir(char *path) {
 			}
 
 			//if hidden files exclude
-			if ( (show_hidden_files==2  )
-					&& ep->d_name[0]=='.')
+			if ( (show_hidden_files==2 ) && ep->d_name[0]=='.')
 				continue;
 
 			//if show only hidden files, don't show normal files 
@@ -151,6 +127,7 @@ Resource *my_dir(char *path) {
 				continue;
 			}
 
+			//TODO! change all p = (int *) open
 			if ( (p=(int *)open(temp_path, O_EXCL)) == NULL) {
 
 				fprintf(stderr,"DIR: cannot access : %s: No such file or directory\n",
@@ -158,7 +135,7 @@ Resource *my_dir(char *path) {
 				exit(1);
 			}
 
-			if (fstat((int)p, &status) != 0) {
+			if (stat(temp_path, &status) != 0) {
 				if (ep->d_type==4)
 					printf("Cannot open directory %s: Permission denied\n",
 							temp_path);
@@ -172,12 +149,13 @@ Resource *my_dir(char *path) {
 			//if stat succeeded, statvfs will succeed, no errors check
 
 			//st.mode 400 (user read only)-> 33024
-			//TODO other read only cases: see attrib.c
+			
+			
 			if (show_read_only==1
-					&& (((unsigned short)status.st_mode) != 33024))
+					&& (is_read_only(status.st_mode)==0))
 				continue;
 			if (show_read_only==2
-					&& (((unsigned short)status.st_mode) == 33024))
+					&& (is_read_only(status.st_mode)==1))
 				continue;
 
 			res = create_res(status, ep->d_name, ep->d_type, path);
@@ -209,16 +187,7 @@ Resource *processNode(char *path) {
 	return to_dir;
 }
 
-char *build_path(char *parent_path, char* resource_name) {
 
-	char *new_path = malloc((unsigned int) MAXPATH);
-	strcpy(new_path, parent_path);
-	strcat(new_path, "/");
-	strcat(new_path, resource_name);
-
-	return new_path;
-
-}
 
 void followNode(char *path) {
 
@@ -244,27 +213,19 @@ void followNode(char *path) {
 
 //int main(int argc, char **argv) {
 
-void dir(param **parameters) {
+void dir(param *parameters) {
 
 	char *current_dir;
-	param *temp = (*parameters);
+	param *temp = parameters;
 	short int flag=FALSE;
-	
+	short int count=0;
 	//here i initialize with default values 
 	initialize();
-	parameters_global = (*parameters);
-	
-	while (temp != NULL) {
-		
-		//printf("%s %d\n",temp->name,temp->type);
-		
-		
-		if (temp->type == 0) {
+	parameters_global = parameters;
 
-			current_dir = (char *)malloc((unsigned int)strlen(temp->name));
-			strcpy(current_dir, temp->name);
-			flag = TRUE;
-		}
+	//first list check: initialize parameters
+	while (temp != NULL) {
+
 		/*
 		 * D  Directory, R  File sola lettura, H  File nascosti
 		 * A  File archivio, S  File di sistema, - Prefisso per negare l'attributo
@@ -279,9 +240,8 @@ void dir(param **parameters) {
 		 1=show only
 		 2=exclude
 		 */
-		
-		else {//TODO iniatialize with correct parameters/options -> all cases
-			
+		if (temp->type == 1) {
+
 			if (strcasecmp(temp->name, "\\AD") == 0)
 				show_directory=1;
 			else if (strcasecmp(temp->name, "\\A-D") == 0)
@@ -295,8 +255,8 @@ void dir(param **parameters) {
 			else if (strcasecmp(temp->name, "\\A-H")== 0)
 				show_hidden_files=2;
 			else if (strcasecmp(temp->name, "\\A")== 0) //all
-				show_hidden_files=0; 
-			else if(strcasecmp(temp->name, "\\S") == 0)
+				show_hidden_files=0;
+			else if (strcasecmp(temp->name, "\\S") == 0)
 				show_recursive = 1;
 
 			else {
@@ -307,24 +267,51 @@ void dir(param **parameters) {
 		}
 		temp = temp->next;
 	}
-	
-	
-	temp = (*parameters);
-	
-	if(flag==FALSE || temp==NULL ){
-		
-	
-		current_dir = (char *)malloc((unsigned int)MAXPATH);
-		getcwd(current_dir,MAXPATH);
+
+	temp = parameters;
+
+	//second list check: look for paths
+	while (temp != NULL) {
+
+		if (temp->type == 0) {
+
+			current_dir = (char *)malloc((unsigned int)strlen(temp->name));
+			strcpy(current_dir, temp->name);
+			flag = TRUE;
+			count++;
+		}
+
+		if (flag==FALSE) {
+
+			current_dir = (char *)malloc((unsigned int)MAXPATH);
+			getcwd(current_dir, MAXPATH);
+		}
+
+		if (show_recursive == 0) {
+
+			processNode(current_dir);
+		} else
+			followNode(current_dir);
+
+		flag = FALSE;
+		temp = temp->next;
 	}
 	
 	
-	if (show_recursive == 0) {
+	
+	if ( flag==FALSE && count==0) {
 
-		processNode(current_dir);
-	} else
-		followNode(current_dir);
+		current_dir = (char *)malloc((unsigned int)MAXPATH);
+		getcwd(current_dir, MAXPATH);
 
-	free(current_dir);
+		if (show_recursive == 0) {
+
+			processNode(current_dir);
+		} else
+			followNode(current_dir);
+
+	}
+
+	//free(current_dir);
 	return;
 }

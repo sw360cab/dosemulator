@@ -34,6 +34,164 @@
 
 Resource *free_resources= NULL; /* Pointer to my free_list of events */
 
+void dec2bin(long decimal, char *binary) {
+
+	int k = 0, n = 0;
+
+	int neg_flag = 0;
+
+	int remain;
+
+	int old_decimal; // for test
+
+	char temp[80];
+	// take care of negative input
+
+	if (decimal < 0)
+
+	{
+
+		decimal = -decimal;
+
+		neg_flag = 1;
+
+	}
+
+	do
+
+	{
+
+		old_decimal = decimal; // for test
+
+		remain = decimal % 2;
+
+		// whittle down the decimal number
+
+		decimal = decimal / 2;
+
+		// this is a test to show the action
+
+		//printf("%d/2 = %d remainder = %d\n", old_decimal, decimal, remain);
+
+		// converts digit 0 or 1 to character '0' or '1'
+
+		temp[k++] = remain + '0';
+
+	} while (decimal > 0);
+	if (neg_flag)
+
+		temp[k++] = '-'; // add - sign
+
+	else
+
+		temp[k++] = ' '; // space
+
+
+	// reverse the spelling
+
+	while (k >= 0)
+
+		binary[n++] = temp[--k];
+
+	binary[n-1] = 0; // end with NULL
+
+}
+
+
+char *extract_double_quotes(char *src){
+	
+	char *doublequotes, *temp;
+	int i;
+	
+	if(src[0]=='"' && src[strlen(src)-1]=='"'){
+	
+	doublequotes = (char *)malloc(strlen(src)-2);
+	temp = (char *)malloc(1);
+
+			for (i=1; i<strlen(src)-1; i++) {
+
+				sprintf(temp, "%c", src[i]);
+				if (i==1)
+					strcpy(doublequotes, temp);
+				else
+					strcat(doublequotes, temp);
+			}
+
+		return doublequotes;
+	}
+	else
+		return src;
+	
+}
+
+
+int is_read_only(long st_mode) {
+
+	char binary[80];
+	int result=0;
+
+	dec2bin((long)st_mode, (char *) &binary);
+
+	//8 9 10 - 11 12 13 - 14 15 16
+
+	//char is 48, char 1 is 49
+	if (binary[9]==48 &&binary[10]==48 && binary[12]==48 && binary[13]==48
+			&& binary[15]==48 && binary[16]==48) {
+
+		if (binary[8]==49 || binary[11]==49 || binary[14]==49) {
+
+			result=1;
+
+		}
+	}
+
+	else
+		(result= 0);
+	/*printf("%c%c%c %c%c%c %c%c%c = %d\n ", binary[8], binary[9], binary[10],
+			binary[11], binary[12], binary[13], binary[14], binary[15],
+			binary[16], result);
+	 */
+	return result;
+
+}
+
+char *build_path(char *parent_path, char* resource_name) {
+
+	char *new_path = malloc((unsigned int) MAXPATH);
+	strcpy(new_path, parent_path);
+	strcat(new_path, "/");
+	strcat(new_path, resource_name);
+
+	return new_path;
+
+}
+
+Resource *create_res(struct stat status, char res_name[], unsigned char type,
+		char *path) {
+
+	Resource *res;
+	char *name, *new_path;
+
+	name =(char *) malloc((unsigned int)strlen(res_name));
+	new_path =(char *)malloc((unsigned int)MAXPATH);
+
+	strcpy(name, res_name);
+	strcpy(new_path, path);
+
+	res = new_resource();
+	res->status = status;
+	res->name = name;
+	res->type = type;
+	res->path = new_path;
+	res->flag = FALSE;
+
+	//can't free none
+	//free(name);
+	//free(new_path);
+	return res;
+
+}
+
 /* 
  **  Function:    void delete_event(Event **last,Event *event)
  **  Parameters:  Event **last  - Reference pointer for the list (the last
@@ -141,7 +299,7 @@ void insert_resource_order_by_type(Resource **last, Resource *elem) {
 	{
 		p = (*last);
 		//while (elem->time < p->time && p->prev!=(*last))
-		while ( elem->type < p->type && p->prev!=(*last))
+		while (elem->type < p->type && p->prev!=(*last))
 			p = p->prev;
 		//if (elem->time < p->time)
 		if (elem->type < p->type) {
@@ -162,8 +320,6 @@ void insert_resource_order_by_type(Resource **last, Resource *elem) {
 	}
 	return;
 }
-
-
 
 /* 
  **  Function:    void insert_event(Event **last, Event *elem)
@@ -305,7 +461,6 @@ void timespec2string(struct timespec *ts, char buffer[], int len)
 	sprintf(&buffer[24], " %d ", (int)ts->tv_sec);
 }
 
-//TODO \ah prints a strange char in dirindication:initialize it;
 void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 
 	struct timespec t;
@@ -316,8 +471,7 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 	char *dirindication = (char *)malloc(l);
 	char buffer[TIMLEN];
 	char *sizeandname;
-	
-	
+
 	t = res_list->status.st_mtim;
 	rawtime = t.tv_sec;
 	timeinfo = localtime((long *)&rawtime);
@@ -344,49 +498,52 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 
 }
 
-void stdprint_parents(char *path) {
+void strdprint_time_parents(struct stat status, int father) {
 
-	struct stat status;
 	struct timespec t;
 	struct tm * timeinfo;
 	time_t rawtime;
 	char buffer[TIMLEN];
 	char *sizeandname;
-	int *p;
 	unsigned int l = 25;
 	char *dirindication = (char *)malloc(l);
 
-	if ( (p=(int *)open(path, O_EXCL)) != NULL) {
+	t = status.st_mtim;
+	rawtime = t.tv_sec;
+	timeinfo = localtime( &rawtime);
+	strftime(buffer, 80, "%d/%m/%Y  %H.%M    ", timeinfo);
+	dirindication="<DIR>               ";
+	sizeandname = malloc(1);
+	sizeandname = " ";
 
-		if (fstat((int)p, &status) == 0) {
-			//TODO build a function that returns the date and substitute it in all prints 
-			t = status.st_mtim;
-			rawtime = t.tv_sec;
-			timeinfo = localtime( &rawtime);
-			strftime(buffer, 80, "%d/%m/%Y  %H.%M    ", timeinfo);
-			dirindication="<DIR>               ";
-			sizeandname = malloc(1);
-			sizeandname = " ";
+	if (father==1)
+		printf("%s %s %s ..\n", buffer, sizeandname, dirindication);
+	else
+		printf("%s %s %s .\n", buffer, sizeandname, dirindication);
 
-			printf("%s %s %s .\n", buffer, sizeandname, dirindication);
+	//can't free
+}
+
+void stdprint_parents(char *path) {
+
+	struct stat status;
+	int p;
+
+	if ( (p=open(path, O_RDONLY)) != -1) {
+
+		if (stat(path, &status) == 0) {
+
+			strdprint_time_parents(status, 0);
 		}
 	} else
 		printf("dir: cannot access : %s: No such file or directory\n", path);
 
 	strcat(path, "/..");
-	if ( (p=(int *)open(path, O_EXCL)) != NULL) {
+	if ( (p=open(path, O_RDONLY)) != -1) {
 
-		if (fstat((int)p, &status) == 0) {
-			//TODO build a function that returns the date and substitute it in all prints 
-			t = status.st_mtim;
-			rawtime = t.tv_sec;
-			timeinfo = localtime( &rawtime);
-			strftime(buffer, 80, "%d/%m/%Y  %H.%M    ", timeinfo);
-			dirindication="<DIR>               ";
-			sizeandname = malloc(1);
-			sizeandname = " ";
+		if (stat(path, &status) == 0) {
 
-			printf("%s %s %s ..\n", buffer, sizeandname, dirindication);
+			strdprint_time_parents(status, 1);
 		}
 	} else
 		printf("dir: cannot access : %s: No such file or directory\n", path);
@@ -463,8 +620,8 @@ Resource *print_list(Resource *res_list, char *path, char *options) {
 			if (recursive == 1 && res_list->type==4) {
 
 				if (!strcmp(res_list->name, "")==0) {
-					res =(Resource *) create_res(res_list->status, res_list->name,
-							res_list->type, path);
+					res =(Resource *) create_res(res_list->status,
+							res_list->name, res_list->type, path);
 					insert_resource(&dirs_list, res_list);
 				}
 			}
@@ -477,7 +634,6 @@ Resource *print_list(Resource *res_list, char *path, char *options) {
 	printf("               %d File(s)    %d bytes\n", files, totfilesize);
 	printf("               %d Folder(s)  %d available blocks\n\n", dirs,
 			(int) status_space.f_bfree);
-	
+
 	return dirs_list;
 }
-

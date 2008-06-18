@@ -18,7 +18,7 @@
  *
  * ***** END LICENSE BLOCK ***** 
  */
-
+//BUG! if space after argument, it exits
 #include <stdlib.h>
 #include <sys/types.h>
 #include <stdio.h>
@@ -31,9 +31,9 @@
 
 extern void dec2bin(long, char*);
 
-int launch_exe(char *command_path, param **parameters) {
+int launch_exe(char *command_path, param *parameters) {
 
-	param *par = (*parameters);
+	param *par = parameters;
 	struct stat stat_result;
 	int i=0, j=1, status;
 	int fd;
@@ -51,7 +51,7 @@ int launch_exe(char *command_path, param **parameters) {
 
 	if (i!=0) {
 
-		par = (*parameters);
+		par = parameters;
 
 		arguments= (char **) malloc((i+1) * sizeof *arguments);
 
@@ -69,7 +69,7 @@ int launch_exe(char *command_path, param **parameters) {
 	} else
 		arguments = NULL;
 
-	//TODO change all(int *)open in open 
+	
 	if ((fd = open(command_path, O_EXCL))!= -1) {
 
 		if (stat(command_path, &stat_result) == -1) {

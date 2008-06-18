@@ -3,9 +3,9 @@
 #include<string.h>
 #include "parse.h"
 
-void cls(param **parameters){
+void cls(param *parameters){
 	
-	param *iterator = (*parameters);
+	param *iterator = parameters;
 	short flag= FALSE;
 	
 		

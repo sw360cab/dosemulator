@@ -47,5 +47,8 @@ Resource *new_resource(void );		/* Returns a new event */
 void release_resource(Resource *);		/* Releases an event */
 void delete_resource(Resource **,Resource *); /* Delete a resource */
 Resource *print_list(Resource *, char *,char *); /*print a list of resources - the third argument is a generic pointer parameter, to be used  through a cast to the specific type */
-
-
+Resource *create_res(struct stat, char[], unsigned char,char *);/*create a resource with parameters*/
+char *build_path(char *,char *); /* given the resource name and owner dir path, it returns the full path of the resource*/
+int is_read_only(long);/*tells wheter resource is read only*/
+char *extract_double_quotes(char*); /*given a string , it extracts double quotes from beginning and end*/
+void dec2bin(long, char*);/*it trasform a decimal number to a binary one */
