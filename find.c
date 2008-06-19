@@ -19,7 +19,6 @@
  * ***** END LICENSE BLOCK ***** 
  */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -54,14 +53,14 @@ void my_find(char *string, char *src) {
 	}
 
 	for (i=0; i<strlen(src); i++) {
-		toupper(src[i]);
+		src[i] = toupper(src[i]);
 	}
 	i=0;
 	//if argument 1 doesn't begin with "" quotes,error. it seems impossible to emulate
 
 	//TODO src uppercase
 	if (c_option == FALSE)
-		printf("\n----------%s\n", src);
+		fprintf(stdout,"\n----------%s\n", src);
 
 	buf = (char *) malloc((unsigned int)STRING_LENGTH);
 	if (i_options==TRUE)
@@ -96,11 +95,13 @@ void my_find(char *string, char *src) {
 
 		if (matched==TRUE) {
 
-			if (v_option==FALSE && c_option==FALSE)
-				if (n_option == FALSE)
-					printf("%s", buf);
-				else
-					printf("[%d]%s", row_counter, buf);
+			if (v_option==FALSE && c_option==FALSE) {
+				if (n_option == FALSE) {
+					fprintf(stdout,"%s", buf);
+				} else {
+					fprintf(stdout,"[%d]%s", row_counter, buf);
+				}
+			}
 
 			if (c_option==TRUE && v_option==FALSE)
 				nr_matches++;
@@ -110,11 +111,13 @@ void my_find(char *string, char *src) {
 
 		else { //NOT MATCHED
 
-			if (v_option == TRUE && c_option==FALSE)
-				if (n_option == FALSE)
-					printf("%s", buf);
-				else
-					printf("[%d]%s", row_counter, buf);
+			if (v_option == TRUE && c_option==FALSE) {
+				if (n_option == FALSE) {
+					fprintf(stdout,"%s", buf);
+				} else {
+					fprintf(stdout,"[%d]%s", row_counter, buf);
+				}
+			}
 
 			if (c_option==TRUE && v_option==TRUE)
 				nr_matches++;
@@ -122,9 +125,9 @@ void my_find(char *string, char *src) {
 
 	}
 	if (c_option==TRUE)
-		printf("\n----------%s:  %d", src, nr_matches);
+		fprintf(stdout,"\n----------%s:  %d", src, nr_matches);
 
-	printf("\n");
+	fprintf(stdout,"\n");
 	free(buf);
 	if (i_options==TRUE)
 		free(buf2);
@@ -171,7 +174,7 @@ void find(param *parameters) {
 				p=p->next;
 				continue;
 			} else {
-				printf("FIND : --%s-- not valid argument\n", p->name);
+				fprintf(stdout,"FIND : --%s-- not valid argument\n", p->name);
 				exit(1);
 			}
 		}
@@ -217,8 +220,8 @@ void find(param *parameters) {
 
 		while (p!= NULL) {
 
-			if(p->type==0){
-				
+			if (p->type==0) {
+
 				src = (char *)malloc(strlen(p->name));
 				strcpy(src, p->name);
 				p2 = TRUE;
@@ -230,12 +233,12 @@ void find(param *parameters) {
 	}
 
 	else {
-		printf("FIND: need string parameter\n");
+		fprintf(stdout,"FIND: need string parameter\n");
 		exit(1);
 	}
 
 	if (p2 == FALSE) {
-		printf("FIND: need file name\n");
+		fprintf(stdout,"FIND: need file name\n");
 		free(src);
 		exit(1);
 	}

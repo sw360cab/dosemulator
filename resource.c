@@ -71,7 +71,7 @@ void dec2bin(long decimal, char *binary) {
 
 		// this is a test to show the action
 
-		//printf("%d/2 = %d remainder = %d\n", old_decimal, decimal, remain);
+		//fprintf(stdout,"%d/2 = %d remainder = %d\n", old_decimal, decimal, remain);
 
 		// converts digit 0 or 1 to character '0' or '1'
 
@@ -147,7 +147,7 @@ int is_read_only(long st_mode) {
 
 	else
 		(result= 0);
-	/*printf("%c%c%c %c%c%c %c%c%c = %d\n ", binary[8], binary[9], binary[10],
+	/*fprintf(stdout,"%c%c%c %c%c%c %c%c%c = %d\n ", binary[8], binary[9], binary[10],
 			binary[11], binary[12], binary[13], binary[14], binary[15],
 			binary[16], result);
 	 */
@@ -422,7 +422,7 @@ Resource *new_resource(void) {
 
 	if (free_resources==NULL) {
 		if ((p=(Resource *)malloc(sizeof(Resource)))==NULL) {
-			printf("Error  : Memory allocation error\n");
+			fprintf(stdout,"Error  : Memory allocation error\n");
 			exit(1);
 		}
 		//p->time = (Time)0;
@@ -494,7 +494,7 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 
 	}
 
-	printf("%s %s %s %s\n", buffer, sizeandname, dirindication, res_list->name);
+	fprintf(stdout,"%s %s %s %s\n", buffer, sizeandname, dirindication, res_list->name);
 
 }
 
@@ -517,9 +517,9 @@ void strdprint_time_parents(struct stat status, int father) {
 	sizeandname = " ";
 
 	if (father==1)
-		printf("%s %s %s ..\n", buffer, sizeandname, dirindication);
+		fprintf(stdout,"%s %s %s ..\n", buffer, sizeandname, dirindication);
 	else
-		printf("%s %s %s .\n", buffer, sizeandname, dirindication);
+		fprintf(stdout,"%s %s %s .\n", buffer, sizeandname, dirindication);
 
 	//can't free
 }
@@ -536,7 +536,7 @@ void stdprint_parents(char *path) {
 			strdprint_time_parents(status, 0);
 		}
 	} else
-		printf("dir: cannot access : %s: No such file or directory\n", path);
+		fprintf(stdout,"dir: cannot access : %s: No such file or directory\n", path);
 
 	strcat(path, "/..");
 	if ( (p=open(path, O_RDONLY)) != -1) {
@@ -546,7 +546,7 @@ void stdprint_parents(char *path) {
 			strdprint_time_parents(status, 1);
 		}
 	} else
-		printf("dir: cannot access : %s: No such file or directory\n", path);
+		fprintf(stdout,"dir: cannot access : %s: No such file or directory\n", path);
 
 }
 
@@ -579,7 +579,7 @@ Resource *print_list(Resource *res_list, char *path, char *options) {
 	files = 0;
 	totfilesize=0;
 
-	printf("\n Directory di %s\n\n", path);
+	fprintf(stdout,"\n Directory di %s\n\n", path);
 
 	last= res_list;
 	temp_path =(char *) malloc((unsigned int)MAXPATH);
@@ -613,9 +613,9 @@ Resource *print_list(Resource *res_list, char *path, char *options) {
 
 			stdprint(res_list, &dirs, &files, &totfilesize);
 			/*
-			 printf("               %d File(s)    %d bytes\n", files,
+			 fprintf(stdout,"               %d File(s)    %d bytes\n", files,
 			 totfilesize);
-			 printf("               %d Folder(s)\n", dirs);
+			 fprintf(stdout,"               %d Folder(s)\n", dirs);
 			 */
 			if (recursive == 1 && res_list->type==4) {
 
@@ -631,8 +631,8 @@ Resource *print_list(Resource *res_list, char *path, char *options) {
 		dirs_list = NULL;
 
 	statvfs(path, &status_space);
-	printf("               %d File(s)    %d bytes\n", files, totfilesize);
-	printf("               %d Folder(s)  %d available blocks\n\n", dirs,
+	fprintf(stdout,"               %d File(s)    %d bytes\n", files, totfilesize);
+	fprintf(stdout,"               %d Folder(s)  %d available blocks\n\n", dirs,
 			(int) status_space.f_bfree);
 
 	return dirs_list;

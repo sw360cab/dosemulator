@@ -38,7 +38,7 @@ void exec_com(char * command, char * options) {
 	/*
 	 while (parameter_list!=NULL)
 	 {
-	 printf("---%s---\n", parameter_list->name);
+	 fprintf(stdout,"---%s---\n", parameter_list->name);
 	 parameter_list= parameter_list->next;
 	 }
 	 */
@@ -99,9 +99,9 @@ int main(int argc, char **argv) {
 	char buf[MAXPATH];
 	int length;
 
-	printf("\n-- This is Windows DOS shell emulation 1.0\n");
-	printf("-- you can type windows command or run programs\n");
-	printf("-- type 'help' for a list of command or 'exit' to quit\n\n");
+	fprintf(stdout,"\n-- This is Windows DOS shell emulation 1.0\n");
+	fprintf(stdout,"-- you can type windows command or run programs\n");
+	fprintf(stdout,"-- type 'help' for a list of command or 'exit' to quit\n\n");
 
 	working_dir = (char *) malloc(sizeof(char)*BUF_MAX);
 	new_dir = (char *) malloc(sizeof(char)*BUF_MAX);
@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
 	pipe(current_dir);
 
 	while (running) {
-		printf("$$-WinShell-$$:%s >> ", working_dir);
+		fprintf(stdout,"$$-WinShell-$$:%s >> ", working_dir);
 
 		// get_line
 		line=get_line();
@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
 
 		parse_line(&command, &opt, line);
 
-	//	printf("Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command, opt);
+	//	fprintf(stdout,"Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command, opt);
 
 		if (strcmp(command, "exit")==0 || strcmp(command, "quit")==0) {
 			running=FALSE;
@@ -144,13 +144,13 @@ int main(int argc, char **argv) {
 
 			length=read(current_dir[0], buf, BUF_MAX);
 			buf[length]='\0';
-			//printf("--pipe--%d--%s--\n",length,buf);
+			//fprintf(stdout,"--pipe--%d--%s--\n",length,buf);
 
 			// buffer contains onvalidating char '*'
 			if ( (new_dir=strrchr(buf, '*')) != NULL) // working directory has changed in the child
 			{
 				chdir(new_dir+1);
-				//printf("New dir --%s--\n", new_dir+1);
+				//fprintf(stdout,"New dir --%s--\n", new_dir+1);
 
 				getcwd(working_dir, BUF_MAX);
 			}

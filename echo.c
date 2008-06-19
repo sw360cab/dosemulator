@@ -33,23 +33,21 @@ short append_in= FALSE;
 void echo(param *paramaters) {
 
 	param *p = paramaters;
-	char *message;
-	short int count = 0;
-
+	
 	if( p == NULL ){
 		
-		printf(" \n");
+		fprintf(stdout," \n");
 		
 	}
 	
 	while (p!= NULL) {
 
-		printf("%s ",p->name);
+		fprintf(stdout,"%s ",p->name);
 			
 		p=p->next;
 		
 	}
 
-	printf("\n");
+	fprintf(stdout,"\n");
 	
 }

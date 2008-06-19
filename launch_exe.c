@@ -20,12 +20,14 @@
  */
 //BUG! if space after argument, it exits
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <sys/wait.h>
 #include "parse.h"
 #include "resource.h"
 
@@ -35,20 +37,23 @@ int launch_exe(char *command_path, param *parameters) {
 
 	param *par = parameters;
 	struct stat stat_result;
+	pid_t pid;
 	int i=0, j=1, status;
 	int fd;
 	char **arguments;
 	char binary[80];
 
-	//count the number of arguments
+
+	//count the number of arguments(whose length is >0)
 	while (par != NULL) {
 
-		//printf("param: %s\n",par->name);
-		i++;
+		
+		if(strlen(par->name)>0)
+			i++;
 		par=par->next;
 
 	}
-
+	
 	if (i!=0) {
 
 		par = parameters;
@@ -57,13 +62,16 @@ int launch_exe(char *command_path, param *parameters) {
 
 		//bacause execve is missing the first argument
 		arguments[0] = (char *)malloc(2);
-		strcpy(arguments[0],"--");
+		strcpy(arguments[0],"**");
 		
 		while (par != NULL) {
 
-			arguments[j]=(char *) malloc((unsigned short)strlen(par->name));
-			strcpy(arguments[j], par->name);
-			j++;
+			if(strlen(par->name) != 0){
+				arguments[j]=(char *) malloc(sizeof(char) * strlen(par->name+1));
+				strcpy(arguments[j], par->name);
+				j++;
+			}
+			
 			par=par->next;
 		}
 	} else
@@ -74,8 +82,6 @@ int launch_exe(char *command_path, param *parameters) {
 
 		if (stat(command_path, &stat_result) == -1) {
 			fprintf(stderr, "%s : denied permission\n", command_path);
-			if (i>0)
-				free(arguments);
 			return -1;
 		}
 
@@ -86,24 +92,24 @@ int launch_exe(char *command_path, param *parameters) {
 		if (! (binary[10]=='1' || binary[13]=='1' || binary[16]=='1')) {
 
 			fprintf(stderr, "%s: any executable permission\n", command_path);
-			if (i>0)
-				free(arguments);
+			return -1;
+			
 		}
 
-		if (fork()==0) {//child
+		if ((pid=fork())==0) {//child
 
 			execv(command_path, arguments);
 
 		} else { //father
-			wait(&status);
-			free(arguments);
+			waitpid(pid,&status,0);
+			
 			return 0;
 		}
 
 	} else {
-		free(arguments);
+		
 		return -1;
 
 	}
-
+		return 0;
 }

@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include "parse.h"
 #include "resource.h"
 
@@ -44,14 +45,14 @@ void print_differences(Resource *smaller, Resource *bigger) {
 	
 	int i =0;
 
-	//printf("%s smaller than %s \n",smaller->path,bigger->path);
+	//fprintf(stdout,"%s smaller than %s \n",smaller->path,bigger->path);
 	copy_smaller = smaller;
 	copy_bigger = bigger;
 
 	last_smaller = smaller->prev;
 	last_bigger = bigger->prev;
 
-	//printf("%s %d lines, %s %d lines\n",smaller->path, smaller_lines,bigger->path,bigger_lines);
+	//fprintf(stdout,"%s %d lines, %s %d lines\n",smaller->path, smaller_lines,bigger->path,bigger_lines);
 
 	//first= mark all equals lines 
 
@@ -61,7 +62,7 @@ void print_differences(Resource *smaller, Resource *bigger) {
 
 			if (case_sensitive==TRUE) {
 
-				//printf("comparing \n %s \nand \n %s\n",copy_smaller->name, copy_bigger->name);
+				//fprintf(stdout,"comparing \n %s \nand \n %s\n",copy_smaller->name, copy_bigger->name);
 				if (strcmp(copy_smaller->name, copy_bigger->name) == 0) {
 
 					copy_smaller->flag=TRUE;
@@ -90,7 +91,7 @@ void print_differences(Resource *smaller, Resource *bigger) {
 	copy_smaller=smaller;
 	copy_bigger=bigger;
 
-	printf("\n****** %s *******\n\n", smaller->path);
+	fprintf(stdout,"\n****** %s *******\n\n", smaller->path);
 
 	
 		for (i=0; i<smaller_lines; i++) {
@@ -98,16 +99,16 @@ void print_differences(Resource *smaller, Resource *bigger) {
 			if (copy_smaller->flag!=TRUE) {
 
 				if (show_line_option==FALSE)
-					printf("%s", copy_smaller->name);
+					fprintf(stdout,"%s", copy_smaller->name);
 				else
-					printf("%d   %s", copy_smaller->type, copy_smaller->name);
+					fprintf(stdout,"%d   %s", copy_smaller->type, copy_smaller->name);
 			}
 			copy_smaller = copy_smaller->next;
 		}
 
 	
 
-	printf("\n****** %s *******\n\n", bigger->path);
+	fprintf(stdout,"\n****** %s *******\n\n", bigger->path);
 
 	
 
@@ -117,9 +118,9 @@ void print_differences(Resource *smaller, Resource *bigger) {
 			if (copy_bigger->flag!=TRUE) {
 
 				if (show_line_option==FALSE)
-					printf("%s", copy_bigger->name);
+					fprintf(stdout,"%s", copy_bigger->name);
 				else
-					printf("%d   %s", copy_bigger->type, copy_bigger->name);
+					fprintf(stdout,"%d   %s", copy_bigger->type, copy_bigger->name);
 			}
 
 			copy_bigger = copy_bigger->next;
@@ -127,7 +128,7 @@ void print_differences(Resource *smaller, Resource *bigger) {
 
 	
 
-	printf("\n");
+	fprintf(stdout,"\n");
 }
 
 void my_fc(char *path1, char *path2) {
@@ -148,7 +149,7 @@ void my_fc(char *path1, char *path2) {
 	Resource *res_temp;
 
 	char *buf_bigger, *buf_smaller;
-	char *path_bigger, *path_smaller, *line;
+	char *path_bigger, *path_smaller;
 
 	buf_bigger = (char *)malloc( (unsigned short) STRING_LENGTH + 1);
 	buf_smaller = (char *)malloc( (unsigned short) STRING_LENGTH + 1);
@@ -239,7 +240,7 @@ void my_fc(char *path1, char *path2) {
 		res_temp = new_resource();
 		res_temp =(Resource *) create_res(status_smaller, buf_smaller, row, path_smaller);
 		insert_resource(&list_smaller, res_temp);
-		//printf("inserted line %s of %s\n",res_temp->name,res_temp->path);
+		//fprintf(stdout,"inserted line %s of %s\n",res_temp->name,res_temp->path);
 		row++;
 
 	}
@@ -253,7 +254,7 @@ void my_fc(char *path1, char *path2) {
 
 	}
 
-	//printf("fgets on %s \n",list_smaller->path);
+	//fprintf(stdout,"fgets on %s \n",list_smaller->path);
 	
 	
 	row=1;
@@ -278,10 +279,10 @@ void my_fc(char *path1, char *path2) {
 
 
 
-	close(fp1);
-	close(fp2);
+	fclose(fp1);
+	fclose(fp2);
 
-	//printf("launching %s and %s\n",list_smaller->path,list_bigger->path);
+	//fprintf(stdout,"launching %s and %s\n",list_smaller->path,list_bigger->path);
 	print_differences(list_smaller, list_bigger);
 
 }

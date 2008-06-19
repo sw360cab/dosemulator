@@ -67,11 +67,11 @@ void my_more(char *src) {
 			}
 				
 		}
-		printf("%s",buf);
+		fprintf(stdout,"%s",buf);
 
 		row++;
 	}
-	printf("\n");
+	fprintf(stdout,"\n");
 	free(buf);
 
 }
@@ -102,7 +102,7 @@ void more(param *parameters) {
 				s_option=TRUE;
 
 			else {
-				printf("MORE : not valid argument\n");
+				fprintf(stdout,"MORE : not valid argument\n");
 				exit(1);
 			}
 		}
@@ -117,7 +117,7 @@ void more(param *parameters) {
 		if (p->type==0) {
 
 			if (files>0) {
-				printf("MORE: Press ENTER to continue to the next file...\n");
+				fprintf(stdout,"MORE: Press ENTER to continue to the next file...\n");
 				getchar();
 			} 
 

@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <unistd.h>
 #include "parse.h"
 #include "resource.h"
 
@@ -81,7 +82,7 @@ void print_mask(int mask[], char *path, char *name) {
 	else
 		attributes[3]=' ';
 
-	printf("%c%c%c%c   %s\n", attributes[0], attributes[1], attributes[2],
+	fprintf(stdout,"%c%c%c%c   %s\n", attributes[0], attributes[1], attributes[2],
 			attributes[3], full_path);
 
 	//free(full_path);
@@ -230,7 +231,7 @@ int bin2dec(char *bin) {
 
 		sum = sum + n * b;
 
-		//printf("%d*%d + ",n,b); // uncomment to show the way this works
+		//fprintf(stdout,"%d*%d + ",n,b); // uncomment to show the way this works
 
 	}
 
@@ -241,7 +242,6 @@ int bin2dec(char *bin) {
 int bin2mask(char *mask){
 	
 	int i=0;
-	int partial[3];
 	int sum=0;
 	int mask_int[9];
 	
@@ -259,7 +259,7 @@ int bin2mask(char *mask){
 	partial[2]= (1*mask_int[8]) + (2*mask_int[7]) + (4*mask_int[6]);
 	*/
 	
-	//printf("%d + %d + %d \n",partial[0],partial[1],partial[2]);
+	//fprintf(stdout,"%d + %d + %d \n",partial[0],partial[1],partial[2]);
 	
 	//sum = partial[2] +(10*partial[1])+ (100*partial[0]);
 	//sum =(1* mask_int[9])+(2*mask_int[8])+(4*mask_int[7])+(8*mask_int[6])+(16*mask_int[5])+
@@ -286,19 +286,19 @@ int my_change_mod(char *path, char *binary, char *permission) {
 		for (i=0; i<9; i++) {
 
 			mask[i]=binary[i+8];
-			printf("%c-%c\n", mask[i],binary[i+8]);
+			fprintf(stdout,"%c-%c\n", mask[i],binary[i+8]);
 		}
 
-		printf("\n--%d--\n",32768+bin2mask(mask));
+		fprintf(stdout,"\n--%d--\n",32768+bin2mask(mask));
 		
 		
 		if(chmod(path,(mode_t)bin2mask(mask))==-1)
 			return -1;
-		else 
+		else
 			return 0;
 
 	}
-
+	return 0;
 }
 
 Resource *my_attrib(char *path) {
@@ -317,33 +317,36 @@ Resource *my_attrib(char *path) {
 
 	strcpy(temp_path, path);
 
+	
+	
 	//if no parameters, print info
 	if (r_option + w_option + h_option + x_option == 0) {
 
-		dp = opendir(temp_path);
+		dp = opendir(path);
 
 		//scan for files
 		if (dp != NULL) {
 			while ( (ep=readdir(dp) )) {
-
+				strcpy(temp_path,path);
 				if (ep->d_name[strlen(ep->d_name)-1] == '~')
 					continue;
 
 				strcpy(temp_path, (char *)build_path(path, ep->d_name));
 
-				if ( (p= open(temp_path, O_EXCL)) == -1) {
+				
+				if ( (p= open(temp_path, O_RDONLY)) == -1) {
 
 					fprintf(stderr,"ATTRIB: cannot access : %s: No such file or directory\n",
 					temp_path);
-					exit(1);
+					//no need to exit; continue;
 				}
 
 				if (stat(temp_path, &status) != 0) {
 					if (ep->d_type==4)
-						printf("Cannot open directory %s: Permission denied\n",
+						fprintf(stdout,"Cannot open directory %s: Permission denied\n",
 								temp_path);
 					else
-						printf("Cannot open file %s: Permission denied\n",
+						fprintf(stdout,"Cannot open file %s: Permission denied\n",
 								temp_path);
 					continue;
 
@@ -402,7 +405,7 @@ Resource *my_attrib(char *path) {
 							temp = create_res(status, ep->d_name, ep->d_type,
 									path);
 							insert_resource(&to_return, temp);
-							//printf("resource %s inserted, if folder type 4, %d\n",temp->name, temp->type);
+							//fprintf(stdout,"resource %s inserted, if folder type 4, %d\n",temp->name, temp->type);
 						}
 
 						if (d_option==0)//if d option, don't process folder
@@ -417,13 +420,12 @@ Resource *my_attrib(char *path) {
 			print_attrib(to_print, path);
 		}
 
-		closedir(dp);
-		close(p);
+		
 	}
 
 	else {
 
-		if ( (p = open(path, O_EXCL)) == -1) {
+		if ( (p = open(path, O_RDONLY)) == -1) {
 
 			fprintf(stderr,"ATTRIB: cannot access : %s: No such file or directory\n", path);
 			return NULL;
@@ -431,7 +433,7 @@ Resource *my_attrib(char *path) {
 
 		if (stat(path, &status) != 0) {
 			if (ep->d_type==4)
-				printf("Cannot open resource %s: Permission denied\n", path);
+				fprintf(stdout,"Cannot open resource %s: Permission denied\n", path);
 
 			return NULL;
 
@@ -534,7 +536,8 @@ Resource *my_attrib(char *path) {
 	 free(command);
 	 free(temp_path);
 	 free(name);*/
-
+	closedir(dp);
+	close(p);
 	return to_return;
 }
 
@@ -543,8 +546,6 @@ Resource *attrib_processNode(char *path) {
 	Resource *to_print=NULL;
 
 	to_print = my_attrib(path);
-
-	//to_dir = print_list(to_print, path, (char *)parameters_global);
 
 	return to_print;
 
@@ -576,7 +577,7 @@ Resource *attrib_followNode(char *path) {
 	//TODO no return, but it's return isn't void
 
 	//free(children);
-
+	return children;
 }
 
 void attrib(param *parameters) {
@@ -611,7 +612,7 @@ void attrib(param *parameters) {
 			else if (strcasecmp(p->name, "\\D") == 0)
 				d_option=1;
 			else {
-				printf("ATTRIB: not valid argument\n");
+				fprintf(stdout,"ATTRIB: not valid argument\n");
 				exit(1);
 			}
 		}
@@ -631,7 +632,7 @@ void attrib(param *parameters) {
 
 		if (p->type==0) {
 			c++;
-
+			
 			if (s_parameter==FALSE)
 
 				attrib_processNode(p->name);
@@ -651,6 +652,8 @@ void attrib(param *parameters) {
 		current_dir = (char *) malloc((unsigned int)MAXPATH);
 		getcwd(current_dir, MAXPATH);
 
+		
+		
 		if (s_parameter==FALSE)
 
 			attrib_processNode(current_dir);
