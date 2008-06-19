@@ -29,43 +29,24 @@
 #include <dirent.h>
 #include "parse.h"
 
-///*
-// * '-' and '_' are allowed for paths
-// */
-//int under_s(int ch)
-//{
-//	if (ch=='-' || ch =='_')
-//		return TRUE;
-//	else
-//		return FALSE;
-//}
-//
-///*
-// * check for forbidden characters
-// */
-//int alpha_num(char *path, char *ch)
-//{
-//	int i,count=strlen(path);
-//
-//	//printf ("here %s::%d-----\n", path, count);
-//
-//	// if name is alphaneumeric or contains '-' or '_' is OK
-//	for(i=0;i<strlen(path) && ( isalnum(path[i]) || under_s(path[i]) ); i++)
-//	{
-//		count--;
-//		//printf ("cnt = %d -- %c--\n",count,path[i]);
-//	}
-//
-//	if (count==0)
-//		return TRUE;
-//
-//	else
-//	{
-//		strncpy(ch,path+i,1);
-//		return FALSE;
-//	}
-//}
+// PROTOTYPES
 
+/*
+ * look inside the passed path
+ * check correctness and store in list
+ * path name
+ */
+param* parse_path(char *);
+/*
+ * md function
+ * 1 - parse line
+ * 2 - following path enters directories
+ * 3 - if directories don't exist 
+ * 		try to create it with same rights of parent directory
+ */
+void md(param *);
+
+	
 
 /*
  * look inside the passed path
@@ -162,7 +143,7 @@ void md(param *list)
 		stat(working_dir,&st);
 
 		while(p!=NULL){
-			//printf("%s to be parsed and type %d\n", p->name, p->type);
+			//fprintf(stdout,"%s to be parsed and type %d\n", p->name, p->type);
 
 			dir=opendir(p->name);
 

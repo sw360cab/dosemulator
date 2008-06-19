@@ -25,9 +25,11 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include "parse.h"
 
+// execute the command written inside shell
 void exec_com (char * command, char * options)
 {
 	param *parameter_list;
@@ -55,7 +57,6 @@ void exec_com (char * command, char * options)
 		else // second command after pipe -- need to be parsed from the beginning
 		{
 			// wait end of first command
-			//wait(&status);
 			waitpid(pid,&status,0);
 
 			// exit immediately if status is 1 -- something went wrong witn
@@ -69,7 +70,7 @@ void exec_com (char * command, char * options)
 
 			// retrieve string of command after pipe
 			line = pipe_string(options);
-			printf("PIPE: new line --%s--\n",line);
+			fprintf(stdout,"PIPE: new line --%s--\n",line);
 
 			// realloc command and options string
 			/*free(options);
@@ -78,7 +79,7 @@ void exec_com (char * command, char * options)
 
 			parse_line(&command, &options, line);
 			parameter_list=parse_options(options, &fd, &piped);	
-			printf("PIPE:  Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,options);
+			fprintf(stdout,"PIPE:  Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,options);
 		}
 	} // end command with pipe
 
@@ -90,14 +91,6 @@ void exec_com (char * command, char * options)
 		dup(fd);
 		close(fd);
 	}
-
-	/*
-	while (parameter_list!=NULL)
-	{
-		printf("---%s---\n", parameter_list->name);
-		parameter_list= parameter_list->next;
-	}
-	 */
 
 	getcwd(working_dir,BUF_MAX);
 	write(current_dir[1],working_dir,strlen(working_dir));
@@ -170,7 +163,7 @@ int main(int argc,char **argv)
 
 	while (running)
 	{		
-		printf("$$-WinShell-$$:%s >> ", working_dir);
+		fprintf(stdout,"$$-WinShell-$$:%s >> ", working_dir);
 
 		// get_line
 		line=get_line();
@@ -181,7 +174,7 @@ int main(int argc,char **argv)
 
 		parse_line(&command, &opt, line);
 
-		printf("Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,opt); 
+		fprintf(stdout,"Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,opt); 
 
 		if ( strcmp(command,"exit")==0 || strcmp(command,"quit")==0 )
 		{
@@ -191,32 +184,32 @@ int main(int argc,char **argv)
 			break;
 		}
 
-		/*if (fork() == 0)	// child
-		{*/
+		if (fork() == 0)	// child
+		{
 		//execl("/bin/ls", "ls", "-l", (char *)0);
-		//close(current_dir[0]);
 		exec_com(command,opt);
 		free(command);
 		free(opt);
-		/*}
+		}
 		else 	// father
 		{
 			wait(&status);
 
 			length=read(current_dir[0],buf,BUF_MAX);
 			buf[length]='\0';
-			//printf("--pipe--%d--%s--\n",length,buf);
+			//fprintf(stdout,"--pipe--%d--%s--\n",length,buf);
 
 			// buffer contains onvalidating char '*'
 			if( (new_dir=strrchr(buf,'*')) != NULL ) // working directory has changed in the child
 				{
 				chdir(new_dir+1);
-				printf("New dir --%s--\n",new_dir+1);
+				fprintf(stdout,"New dir --%s--\n",new_dir+1);
 
 				getcwd(working_dir,BUF_MAX);
 				}
-		}*/
+		}
 	}
+	return 0;
 }
 
 /*

@@ -1,7 +1,7 @@
 # The following are the flags to compile using the GCC compiler
 CFLAGS = -g 
 CC = gcc
-LDFLAGS = -lm 
+LDFLAGS = -lm -Wall
 # -Wall
 
 INCLUDES =	parse.h

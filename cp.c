@@ -30,12 +30,49 @@
 #include <fcntl.h>
 #include "parse.h"
 
+// PROTOTYPES
+
+// print error message, when files involved have problems
+void err ();
+// check if the source file is a concatenation --> contains '+'
+int concat (char *);
+// create the list of files in case of a concatetanation
+param* create_source(char *);
+//ask confirmation to override existing dest file
+int req_overridden(char *);
+// check if destination file exists
+// in case ask user what to do
+int overridden(char *);
+// copy files
+void cp(param *);
+// ask user permission to create file
+int create_confirmation(char *);
+// basic copy of file to file
+// used for recursive dir copy
+void basic_copy(char *, char *);
+/*
+ * recursive function that enter recursively
+ * directories, copy files and subdir to dest directory 
+ */
+void recur_dir_copy(char *src_path, char *dest_path);
+// copy dir recursively
+void xcp(param *);
+/*
+ * fake write on device floppy --> floppy.out
+ * !!! IMPORTANT must be ROOT to compile-execute this correctly
+ */
+void disk_copy(param *);
+// from rm.c
+extern int rd_only(char *);
+
+
 // global option flag
 // set all to 0 !!!
 int verify=0, override=0;
 int confirm=1, subdir=1, empty=0;
 int show_name=0, no_copy=1, no_file=1, overread=0;
 
+// print error message, when files involved have problems
 void err ()
 {
 	fprintf(stderr, "Error - check number or type of arguments,\nalternatively name or permissions of files\n");
@@ -79,7 +116,7 @@ param* create_source(char *files)
 		}
 		close(source_fd);
 
-		printf("%s to be parsed\n", p->name);
+		fprintf(stdout,"%s to be parsed\n", p->name);
 		p->type = 0;
 		p->next=NULL;
 
@@ -177,7 +214,7 @@ void cp(param *list)
 	// scroll list of parameters
 	while (list!=NULL)
 	{
-		printf("---%s---\n", list->name);
+		fprintf(stdout,"---%s---\n", list->name);
 		if ( list->type==0 ) //path
 		{
 			// take info about file / dir
@@ -256,18 +293,16 @@ void cp(param *list)
 				err();	
 		}
 
-		else if ( list->type==1 ) //opt
+		else if ( list->type==1 ) // options
 		{	
+			// check options
 			//if ( strcmp(list->name,"\A") ||  strcmp(list->name,"\B") )
-			if ( strcasecmp(list->name,"\V") )
+			if ( strcasecmp(list->name,"\\V")==0 )
 				verify=1;
-			else if ( strncasecmp(list->name,"\-Y",3) )
+			else if ( strcasecmp(list->name,"\\-Y")==0 )
 				override=0;
-			else if ( strcasecmp(list->name,"\\Y") ){
-
+			else if ( strcasecmp(list->name,"\\Y")==0 )
 				override=1;
-				printf(" here\n");
-			}
 			else
 			{
 				fprintf(stderr, "%s - unknown option\n",list->name );
@@ -437,10 +472,10 @@ void cp(param *list)
 		}
 
 		/*rd=read(source_fd, buf, st.st_size+1);
-	   	printf("read %d bytes of size %ld %u \n", rd,st.st_size, st.st_mode);
+	   	fprintf(stdout,"read %d bytes of size %ld %u \n", rd,st.st_size, st.st_mode);
 
 	   	rd=write(dest_fd, buf, rd);
-	   	printf("wrote %d bytes\n", rd);
+	   	fprintf(stdout,"wrote %d bytes\n", rd);
 		 */
 
 		while ((rd = read( source_fd, buf,BUF_MAX+1)) > 0 )
@@ -464,7 +499,7 @@ void cp(param *list)
 }
 
 // ask user permission to create file
-int confirmation(char *pth)
+int create_confirmation(char *pth)
 {
 	char *answ;
 
@@ -504,9 +539,9 @@ void basic_copy(char *src, char *dest)
 	stat(src,&st);
 
 	// ask confirm before creating file
-	if (confirm==1 && !confirmation(dest))
+	if (confirm==1 && !create_confirmation(dest))
 		return;
-	
+
 	// read-only file
 	if (overread==0 && rd_only(dest) )
 	{
@@ -583,7 +618,7 @@ void recur_dir_copy(char *src_path, char *dest_path)
 					dir_list=parse_options(temp_dest,0,0);
 					md(dir_list);
 
-					printf("Dir %s will create dir %s\n", temp_src, temp_dest);
+					fprintf(stdout,"Dir %s will create dir %s\n", temp_src, temp_dest);
 					recur_dir_copy(temp_src,temp_dest);
 				}
 			}
@@ -593,12 +628,12 @@ void recur_dir_copy(char *src_path, char *dest_path)
 				if (no_file==0 && strcmp(ep->d_name, ".") != 0 && strcmp(ep->d_name, "..")!= 0 )
 				{
 					if (no_copy!=0) // only print
-						printf("source file %s would becopied in %s\n", temp_src, temp_dest);
+						fprintf(stdout,"source file %s would becopied in %s\n", temp_src, temp_dest);
 					else // copy file
 					{
 						basic_copy(temp_src,temp_dest);
 						if (show_name!=0) // display names after copy
-							printf("source file %s copied in %s\n", temp_src, temp_dest);
+							fprintf(stdout,"source file %s copied in %s\n", temp_src, temp_dest);
 					}
 				}
 			}
@@ -621,19 +656,11 @@ void xcp(param *list)
 	param *dir_list=NULL;
 	struct stat st, st_dest;
 
-	// override=0; !!!
-	// global
-	/*
-	int verify=0, override=1;
-	int confirm=0, subdir=0, empty=0;
-	int show_name=0, no_copy=0, no_file=0, overread=0;
-	 */
-
 	int flag=0, dir=0, dest_dir=0;
 
 	if(list==NULL)
 	{
-		fprintf(stderr, "copy: missing file operand\n");
+		fprintf(stderr, "xcopy: missing file operand\n");
 		fprintf(stderr, "Try \'help copy\' for more information\n");
 		exit(1);
 	}
@@ -641,7 +668,7 @@ void xcp(param *list)
 	// scroll list of parameters
 	while (list!=NULL)
 	{
-		printf("---%s---\n", list->name);
+		fprintf(stdout,"---%s---\n", list->name);
 		if ( list->type==0 ) //path
 		{
 			// take info about file / dir
@@ -687,7 +714,7 @@ void xcp(param *list)
 					dest = (char *) malloc(sizeof(char)*strlen(list->name)+1);
 					strcpy(dest,list->name);
 					dest_dir=1;
-					printf("dest dir existing\n");
+					fprintf(stdout,"dest dir existing\n");
 				}	
 				else // dest is a file or a dir to be created
 				{
@@ -700,7 +727,7 @@ void xcp(param *list)
 						md(dir_list);
 
 						dest_dir=1;
-						printf("dest dir 1\n");
+						fprintf(stdout,"dest dir 1\n");
 					}
 
 					else  // file
@@ -724,33 +751,32 @@ void xcp(param *list)
 				err();	
 		}
 
-		else if ( list->type==1 ) //opt TODO
+		else if ( list->type==1 )  // options
 		{	
-			if ( strcasecmp(list->name,"\\V") )
+			// check options
+			if ( strcasecmp(list->name,"\\V")==0 )  // verify written files
 				verify=1;
-			else if ( strncasecmp(list->name,"\\-Y",3) )
+			else if ( strcasecmp(list->name,"\\-Y")==0 )	// disallow overwriting of existing files without asking
 				override=0;
-			else if ( strcasecmp(list->name,"\\Y") ){
+			else if ( strcasecmp(list->name,"\\Y")==0 )		// allow overwriting of existing files without asking
 				override=1;
-				printf(" here\n");
-			}
-			else if ( strncasecmp(list->name,"\\P",2) )
+			else if ( strcasecmp(list->name,"\\P")==0 )		// request confirmation before creating each dest file
 				confirm=1;
-			else if ( strncasecmp(list->name,"\\S",2) )
+			else if ( strcasecmp(list->name,"\\S")==0 )		// copy dir and subdir
 				subdir=1;
-			else if ( strncasecmp(list->name,"\\Q",2) )
+			else if ( strcasecmp(list->name,"\\Q")==0 )		// do not show names while copying
 				show_name=0;
-			else if ( strncasecmp(list->name,"\\F",2) )
+			else if ( strcasecmp(list->name,"\\F")==0 )		// show names while copying
 				show_name=1;
-			else if ( strncasecmp(list->name,"\\L",2) )
+			else if ( strcasecmp(list->name,"\\L")==0 )		// do not copy only show files that would be copied
 				no_copy=1;
-			else if ( strncasecmp(list->name,"\\R",2) )
+			else if ( strcasecmp(list->name,"\\R")==0 )		// overwrite read-only files
 				overread=1;
-			else if ( strncasecmp(list->name,"\\T",2) )
+			else if ( strcasecmp(list->name,"\\T")==0 )		// only crete directory tree structure - do not copy inner files
 				no_file=1;
-			else if ( strncasecmp(list->name,"\\E",2) )
+			else if ( strcasecmp(list->name,"\\E")==0 )		// do not avoid copying empty dir
 			{
-				if (subdir!=0 || no_file!=0)  // also \t or \s should be found
+				if (subdir!=0 || no_file!=0)  // also \S or \T should be found
 					empty=1;
 				else
 				{
@@ -782,7 +808,7 @@ void xcp(param *list)
 	{
 		if (dir==1) // dir-dir copy recursive
 		{
-			printf("dest dir 2\n");
+			fprintf(stdout,"dest dir 2\n");
 
 			// calling recursive function
 			recur_dir_copy(src_dir,dest); // verify,override,confirm,subdir,empty,show_name,no_copy,no_file,overread);
@@ -868,20 +894,27 @@ void disk_copy(param* list)
 	int rd, stat_res;
 	struct stat st;
 
+	if(list==NULL)
+	{
+		fprintf(stderr, "diskcopy: missing file operand\n");
+		fprintf(stderr, "Try \'help copy\' for more information\n");
+		exit(1);
+	}
+
 	buf= (char*)malloc(sizeof(char)*BUF_MAX);
 
 	strcpy(path,"floppy.out");
 
 	// dev file major-minor numbers --> http://www.lanana.org/docs/device-list/devices.txt
-	
+
 	// if device does not exist create it
 	if ( (floppy_fd=open (path, O_WRONLY)) == -1)
 	{
 		if ( mknod(path, S_IFBLK | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, makedev(2,28)) == -1)
-			{
+		{
 			fprintf(stderr, "Can't find floppy device %s\n",path);
 			exit(1);
-			}
+		}
 		close(floppy_fd);
 	}
 
@@ -937,11 +970,11 @@ void disk_copy(param* list)
 			fprintf(stderr, "%s - unknown option\n",list->name );
 			exit(1);
 		}
-		
-		 //free space
+
+		//free space
 		if (strlen(src)!=0)
 			free(src);
-		
+
 		list = list->next;
 	} // end while
 	close(floppy_fd);
