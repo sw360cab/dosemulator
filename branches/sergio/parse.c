@@ -38,6 +38,8 @@ int jolly_char(char *line)
 		return 1;
 	else if (strncmp( line, "-", 1)==0)
 		return 1;
+	else if (line[0]=='"')
+		return 1;
 	else 
 		return 0;
 }
@@ -94,7 +96,7 @@ int under_s(char ch, int dir)
 }
 
 /*
- * check for forbidden characters
+ * check for forbidden characters - in particular name cannot start with digit or '_' or '-'
  * 
  * dir is 1 --> name to check is a directory name
  * dir is 0 --> name to check is a file name --> '.' is a valid char
@@ -106,6 +108,13 @@ int alpha_num(char *path, char *ch, int dir)
 	// if name is alphaneumeric or contains '-' or '_' or '.' (in case of file name is OK
 	for(i=0;i<strlen(path) && ( isalnum(path[i]) || under_s(path[i],dir) ); i++)
 	{
+		// check differently first charcater
+		if (i==0)
+		{
+			if (isdigit(path[i]) || under_s(path[i],0) )
+				break;	// cannot start with digit or '_' or '-
+		}
+		
 		count--;
 		//printf ("cnt = %d-%s-%d-%d-\n",count,path, isalnum(path[i]),k);
 	}
@@ -191,8 +200,7 @@ int redirector(char *str_file, int str_len) {
 			exit(1);
 		}
 	}
-	
-	//fprintf(stdout,"end --%d-- \n", fd);
+
 	return fd;
 }
 
@@ -226,6 +234,10 @@ param* parse_options(char *opt, int *file_d, int *pipe)
 	
 	start=count;
 	
+	// skip extra blanks
+	while ( strncmp( opt, " ",1)==0 )
+		opt++;
+	
 	// return immediately if no options are present
 	if (strlen(opt)!=0)
 	{
@@ -242,7 +254,7 @@ param* parse_options(char *opt, int *file_d, int *pipe)
 				while ( strncmp( opt,"\0",1)!=0 )  // move to end of line in order to exit do-while
 					opt++;
 				}
-			if ( strncmp(opt,"|",1)== 0) // pipe command
+			else if ( strncmp(opt,"|",1)== 0) // pipe command
 				{
 				*pipe=1;
 				while ( strncmp( opt,"\0",1)!=0 )  // move to end of line in order to exit do-while
@@ -255,7 +267,6 @@ param* parse_options(char *opt, int *file_d, int *pipe)
 				p->name = (char *) malloc(sizeof(char)* (end) );
 				strncpy(p->name, opt, end);
 				//fprintf(stdout,"%s to be parsed\n", p->name);
-
 				p->type = jolly_char(opt);
 				p->next=NULL;
 
@@ -335,4 +346,18 @@ char *get_line(){
 	*cp ='\0';
 	count++;
 	return srealloc(line,count);
+}
+
+// wrap of free to fre memory allocated for a list
+void my_free(param** list)
+{
+	param* q = NULL;
+	
+	while ( (*list)!=NULL )
+	{
+		// if ( (*list)->next!=NULL )
+		q=(*list)->next;
+		
+		free((*list));
+	}
 }

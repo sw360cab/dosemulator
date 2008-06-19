@@ -23,6 +23,7 @@
 #define N 20
 #define TRUE 1
 #define FALSE 0
+#define STRING_LENGTH 1024
 
 typedef struct elem param;
 
@@ -46,7 +47,7 @@ void insert_e(param **, param *);
 param * new_elem();
 // '-' and '_' are allowed for paths --- '.' and '/' supposed allowed for files
 int under_s(char, int);
-// check for forbidden characters
+// check for forbidden characters - in particular name cannot start with digit or '_' or '-'
 int alpha_num(char *, char *, int);
 // function in charge of handling redirection
 // return file pointer in case of success
@@ -70,15 +71,25 @@ char *salloc (unsigned);
 char *srealloc(char *, unsigned);
 // dynamically get a line till return is pressed
 char *get_line();
+// wrap of free to fre memory allocated for a list
+void my_free(param**);
 
+extern char *cd(char*,param*);
+extern void attrib(param*);
+extern void cls(param*);
 extern void cp(param*);
 extern void xcp(param*);
 extern void disk_copy(param*);
-extern void md(param*);
+extern void date(param*);
 extern void del(param*);
 extern void deltree(param*);
 extern void rd(param*);
-extern void list(param*);
-extern void help(param*);
-extern char *cd(char*,param**);
+extern void dir(param*);
 extern void echo(param*);
+extern void fc(param*);
+extern void find(param*);
+extern void help(param*);
+extern void list(param*);
+extern void md(param*);
+extern void more(param*);
+extern int launch_exe(char*,param*);
