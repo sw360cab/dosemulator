@@ -29,7 +29,36 @@
 #include <fcntl.h>
 #include "parse.h"
 
+// PROTOTYPES
+
 extern char *get_line();
+// simply try o delete passed file
+void erase(char *);
+// check if file is a read_only file
+int rd_only(char *);
+// request for deleting file
+int request(char *, int);
+/*
+ * recursive function that enter recursively
+ * directories, delete files and at the end delete 
+ * also the specified directory --> rm -Rf
+ */
+void recur_del(char *, int);
+/*
+ * recursive function that enter recursively
+ * directories, delete files if they have specified name
+ */
+void recur_subdir(char *, char *);
+// del command with various options to delete given files 
+void del(param *);
+// deltree command --> rm -Rf
+void deltree(param *);
+// only checks if directory is empty --> return TRUE
+int empty_dir (char *);
+// rmdir
+void rd(param *);
+
+
 
 /*
  * simply try o delete passed file
@@ -41,7 +70,7 @@ void erase(char *pth)
 		fprintf(stderr, "Unable to delete file %s\n",pth);
 		exit(1);
 	}
-	//printf("file deleted %s\n",pth);
+	//fprintf(stdout,"file deleted %s\n",pth);
 	return;
 }
 
@@ -138,7 +167,7 @@ void recur_del(char *current_path, int ask)
 			fprintf(stderr, "Unable to delete directory %s\n Directory should be empty or there is a permission problem\n",current_path);
 			exit(1);
 		}
-		// printf("deleted %s\n", current_path);
+		// fprintf(stdout,"deleted %s\n", current_path);
 	}
 	free(temp_path);
 	return;
@@ -148,7 +177,7 @@ void recur_del(char *current_path, int ask)
  * recursive function that enter recursively
  * directories, delete files if they have specified name
  */
-void recur_subdir(char* current_path, char *file_name)
+void recur_subdir(char *current_path, char *file_name)
 {
 	DIR *dp;
 	struct dirent *ep;
@@ -197,7 +226,7 @@ void recur_subdir(char* current_path, char *file_name)
 						continue;
 					}	
 					erase(temp_path);
-					printf("Found and deleted %s\n", temp_path);
+					fprintf(stdout,"Found and deleted %s\n", temp_path);
 				}
 			}
 		}
@@ -210,7 +239,6 @@ void recur_subdir(char* current_path, char *file_name)
 /*
  * del command with various options to delete given files
  */ 
-//int main(int argc,char **argv)
 void del(param *list)
 { 	
 	param *p, *file_list=NULL;
@@ -255,29 +283,29 @@ void del(param *list)
 		else // parse option
 		{
 			// check options
-			if ( strcmp(param_name,"\P")==0 ) // req of deletion for each file
+			if ( strcasecmp(param_name,"\\P")==0 ) // req of deletion for each file
 				req=1;
-			else if ( strcmp(param_name,"\F")==0 ) // force deletion of read-only file
+			else if ( strcasecmp(param_name,"\\F")==0 ) // force deletion of read-only file
 				read_only=0;
-			else if ( strcmp(param_name,"\Q")==0 ) // delete everything without asking
+			else if ( strcasecmp(param_name,"\\Q")==0 ) // delete everything without asking
 			{
 				req=0;
 				read_only=0;
 			}
-			else if ( strcmp(param_name,"\S")==0 ) // look for file to be deleted in subdirectories
+			else if ( strcasecmp(param_name,"\\S")==0 ) // look for file to be deleted in subdirectories
 				sub_dir=1;
-			else if ( strcmp(param_name,"\A")==0 ) // delete according to attributes
+			else if ( strcasecmp(param_name,"\\A")==0 ) // delete according to attributes
 			{
 				attrib=1;
-				printf("attrib\n");
+				fprintf(stdout,"attrib\n");
 
-				if (strncmp(param_name+2,":H",2)==0) // delete only if hidden
+				if (strncasecmp(param_name+2,":H",2)==0) // delete only if hidden
 					hidden=1;
-				else if (strncmp(param_name+2,":-H",3)==0) // delete all but hidden
+				else if (strncasecmp(param_name+2,":-H",3)==0) // delete all but hidden
 					hidden=0;
-				if (strncmp(param_name+2,":R",2)==0) // delete only if readonly
+				if (strncasecmp(param_name+2,":R",2)==0) // delete only if readonly
 					ronly=1;
-				else if (strncmp(param_name+2,":-R",3)==0) // delete all but readonly
+				else if (strncasecmp(param_name+2,":-R",3)==0) // delete all but readonly
 					ronly=0;
 			}
 		}
@@ -445,7 +473,7 @@ void deltree(param *list)
 					exit(1);
 				}	
 				erase(list->name);
-				printf("Warning: file %s deleted, but you can use\n\'del\' command to delete single files\n",list->name);
+				fprintf(stdout,"Warning: file %s deleted, but you can use\n\'del\' command to delete single files\n",list->name);
 				close(source_fd);
 			} 
 
@@ -474,7 +502,7 @@ int empty_dir (char *path)
 
 	// open directory
 	dp = opendir(path);
-	
+
 	// check all elements of the directory
 	if (dp != NULL) {
 		while ( (ep = readdir(dp)) )
@@ -509,15 +537,18 @@ void rd(param *list)
 
 	while (list!=NULL)
 	{
-		if (list->type==1)
+		if (list->type==1) // options
 		{
-			if ( strcasecmp(list->name,"\S") )
+			// check options
+			if ( strcasecmp(list->name,"\\S")==0 ) // delete recursively also subdirectories
 				sub_dir=1;
-			else if ( strncasecmp(list->name,"\Q",2) )
+			else if ( strcasecmp(list->name,"\\Q")==0 ) // delete everything without asking
 				no_ask=1;
-
-			fprintf(stderr, "%s - unknown option\n",list->name );
-			exit(1);
+			else
+			{
+				fprintf(stderr, "%s - unknown option\n",list->name );
+				exit(1);
+			}
 		}
 		else // dir name
 		{
@@ -549,7 +580,7 @@ void rd(param *list)
 							exit(1);
 						}
 					}
-					
+
 					else // dir not empty
 					{
 						fprintf(stderr, "Unable to delete directory %s\n Directory should be empty or there is a permission problem\n",list->name);

@@ -38,15 +38,38 @@ int current_dir[2];
 // pipe for piped commands
 int pipe_comm[2];
 
+// check first string character to identify an option
 int jolly_char(char *);
+// insert a new element in a custom list of type *param
 void insert_e(param **, param *);
+// create a new element of type *param
 param * new_elem();
+// '-' and '_' are allowed for paths --- '.' and '/' supposed allowed for files
 int under_s(char, int);
+// check for forbidden characters
 int alpha_num(char *, char *, int);
+// function in charge of handling redirection
+// return file pointer in case of success
 int redirector(char *, int);
+// return the complete string following a pipe "|" character
 char* pipe_string(char *);
+/*
+ * parse a line passed as argument to identify all
+ * the strings that are options of a command
+ */
 param* parse_options(char *, int *, int *);
-char* get_line();
+
+/*
+ * parse a line passed as argument to identify first string
+ * as command and the rest as options
+ */
+void parse_line(char **, char **, char *);
+// wrap for malloc
+char *salloc (unsigned);
+// wrap for realloc
+char *srealloc(char *, unsigned);
+// dynamically get a line till return is pressed
+char *get_line();
 
 extern void cp(param*);
 extern void xcp(param*);

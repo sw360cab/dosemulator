@@ -1,38 +1,18 @@
-/*
- * authors: Sergio Matone & Antonio Vetrò
- * tutor: Marco Murciano
- * group: Politecnico di Torino - System Programming
- *
- ** ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1
- *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and  limitations under the
- * License.
- *
- * ***** END LICENSE BLOCK ***** 
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
-#include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "parse.h"
 
-// check first string character to identify an option
 int jolly_char(char *line)
 {
-	if (strncmp( line, "\\", 1)==0)
+	if (strncmp( line, ">", 1)==0 || strncmp( line, ">>", 2)==0) // redirection
+		return 2;
+	else if (strncmp( line, "\\", 1)==0)
 		return 1;
 	else if (strncmp( line, "+", 1)==0)
 		return 1;
@@ -42,7 +22,6 @@ int jolly_char(char *line)
 		return 0;
 }
 
-// insert a new element in a custom list of type *param
 void insert_e(param **p_list, param *p)
 {
 	param *temp;
@@ -61,12 +40,11 @@ void insert_e(param **p_list, param *p)
 		}
 }
 
-// create a new element of type *param
 param * new_elem()
 {
 	param *p;
 	if ((p=(param *)malloc(sizeof(param)))==NULL)
-	  { fprintf(stdout,"Error  : Memory allocation error\n");
+	  { printf("Error  : Memory allocation error\n");
 	    exit(1);
 	  }
 	return p;
@@ -74,23 +52,20 @@ param * new_elem()
 
 /*
  * '-' and '_' are allowed for paths
- * '.' and '/' supposed allowed for files
+ * '.' is supposed allowed for files
  */
-int under_s(char ch, int dir)
+int under_s(int ch, int dir)
 {
 	if (ch=='-' || ch =='_')
 		return TRUE;
 	else
 	{
 		if (dir==0) // '.' is allowed
-			{
-			if (ch=='.' || ch =='/')
+			if (ch=='.')
 					return TRUE;
-			}
 		else
 			return FALSE;
 	}
-	return FALSE;
 }
 
 /*
@@ -103,11 +78,13 @@ int alpha_num(char *path, char *ch, int dir)
 {
 	int i,count=strlen(path);
 
+	//printf ("here %s::%d-----\n", path, count);
+
 	// if name is alphaneumeric or contains '-' or '_' or '.' (in case of file name is OK
 	for(i=0;i<strlen(path) && ( isalnum(path[i]) || under_s(path[i],dir) ); i++)
 	{
 		count--;
-		//printf ("cnt = %d-%s-%d-%d-\n",count,path, isalnum(path[i]),k);
+		//printf ("cnt = %d -- %c--\n",count,path[i]);
 	}
 
 	if (count==0)
@@ -143,7 +120,7 @@ int redirector(char *str_file, int str_len) {
 	while ( strncmp( str_file," ",1)==0 )
 		str_file++;
 	
-	//fprintf(stdout,"okkk ---%s--%d---\n", str_file,str_len);
+	//printf("okkk ---%s--%d---\n", str_file,str_len);
 		
 	// check that only a parameter is specified as file name
 	// and that file name is valid
@@ -165,7 +142,7 @@ int redirector(char *str_file, int str_len) {
 	
 	// set file name
 	strcpy(file_name, str_file);
-	//fprintf(stdout,"done --%s-- \n", file_name);
+	//printf("done --%s-- \n", file_name);
 	
 	// retrieve file descriptor if everything was 0k
 	mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
@@ -192,33 +169,11 @@ int redirector(char *str_file, int str_len) {
 		}
 	}
 	
-	//fprintf(stdout,"end --%d-- \n", fd);
+	//printf("end --%d-- \n", fd);
 	return fd;
 }
 
-// return the complete string following a pipe "|" character
-char* pipe_string(char *str)
-{
-	char *line;
-	
-	line = (char *) malloc(sizeof(char)* strlen(str) );
-	// move until pipe
-	line = strchr(str,'|');
-	// move over pipe
-	line++;
-	
-	// check if blank space or not after pipe
-	if (strncmp(line," ",1)==0)
-		line++;
-
-	return line;
-}
-
-/*
- * parse a line passed as argument to identify all
- * the strings that are options of a command
- */
-param* parse_options(char *opt, int *file_d, int *pipe)
+param* parse_options(char *opt, int *file_d)
 {	
 	int start, end, count=0;
 	param *p;
@@ -242,19 +197,13 @@ param* parse_options(char *opt, int *file_d, int *pipe)
 				while ( strncmp( opt,"\0",1)!=0 )  // move to end of line in order to exit do-while
 					opt++;
 				}
-			if ( strncmp(opt,"|",1)== 0) // pipe command
-				{
-				*pipe=1;
-				while ( strncmp( opt,"\0",1)!=0 )  // move to end of line in order to exit do-while
-					opt++;
-				}
 			else
 			{
 				p=new_elem();
 
 				p->name = (char *) malloc(sizeof(char)* (end) );
 				strncpy(p->name, opt, end);
-				//fprintf(stdout,"%s to be parsed\n", p->name);
+				printf("%s to be parsed\n", p->name);
 
 				p->type = jolly_char(opt);
 				p->next=NULL;
@@ -271,10 +220,6 @@ param* parse_options(char *opt, int *file_d, int *pipe)
 	return pt;	
 }
 
-/*
- * parse a line passed as argument to identify first string
- * as command and the rest as options
- */
 void parse_line(char **comm, char ** opt, char * line)
 {	
 	int count=0;
@@ -282,13 +227,11 @@ void parse_line(char **comm, char ** opt, char * line)
 	while ( strncmp( line+count, " ",1)!=0 && strncmp( line+count, "\0",1)!=0 )
 		count++;
 	
-	strncpy(*comm,line,count);
-	
+	strncpy(*comm,line,count); // TODO Change function with strnchr or similar
 	if(strncmp( line+count, "\0",1)!=0)
 		strncpy(*opt,line+count+1, strlen(line) - count +1);
 }
 
-// wrap for malloc
 char *salloc (unsigned size)
 {
     char *ret;
@@ -297,18 +240,17 @@ char *salloc (unsigned size)
     return ret;
 }
 
-// wrap for realloc
 char *srealloc(char *str, unsigned u){
 	
 	char *ret;
 	unsigned int length = u + strlen(str);
+	
 	
 	ret = (char *) realloc(str,length);
 	    
 	return ret;	
 }
 
-// dynamically get a line till return is pressed
 char *get_line(){
 	
 	char *line;

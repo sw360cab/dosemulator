@@ -29,6 +29,13 @@
 #include <fcntl.h>
 #include "parse.h"
 
+// PROTOTYPES
+
+// help for a specific command
+void help(param *);
+// list available command
+void list(param *);
+
 // help for a specific command
 void help(param *list_par)
 {
