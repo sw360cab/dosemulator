@@ -47,7 +47,7 @@ param * new_elem()
 {
 	param *p;
 	if ((p=(param *)malloc(sizeof(param)))==NULL)
-	  { printf("Error  : Memory allocation error\n");
+	  { fprintf(stdout,"Error  : Memory allocation error\n");
 	    exit(1);
 	  }
 	return p;
@@ -73,7 +73,7 @@ param* parse_options(char *opt)
 			
 			p->name = (char *) malloc(sizeof(char)* (end) );
 			strncpy(p->name, opt, end);
-			//printf("%s to be parsed\n", p->name);
+			//fprintf(stdout,"%s to be parsed\n", p->name);
 			
 			p->type = jolly_char(opt);
 			p->next=NULL;

@@ -137,10 +137,10 @@ Resource *my_dir(char *path) {
 
 			if (stat(temp_path, &status) != 0) {
 				if (ep->d_type==4)
-					printf("Cannot open directory %s: Permission denied\n",
+					fprintf(stdout,"Cannot open directory %s: Permission denied\n",
 							temp_path);
 				else
-					printf("Cannot open file %s: Permission denied\n",
+					fprintf(stdout,"Cannot open file %s: Permission denied\n",
 							temp_path);
 				continue;
 
@@ -260,7 +260,7 @@ void dir(param *parameters) {
 				show_recursive = 1;
 
 			else {
-				printf("DIR : not valid argument\n");
+				fprintf(stdout,"DIR : not valid argument\n");
 				exit(1);
 			}
 

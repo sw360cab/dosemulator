@@ -26,11 +26,11 @@ int check_date(int dd, int mm, int yyyy) {
 		if (yyyy%4==0) {
 
 			if (dd>29) {
-				fprintf(stderr,"In year %d february month can have only 29 days");
+				fprintf(stderr,"In year %d february month can have only 29 days",dd);
 				return -1;
 			} else {
 				if (dd>28) {
-					fprintf(stderr,"In year %d february month can have only 28 days");
+					fprintf(stderr,"In year %d february month can have only 28 days",dd);
 					return -1;
 				}
 			}
@@ -49,7 +49,7 @@ void my_date() {
 	long time_accesible;
 	char *current_time_string = (char *)malloc(26);
 	short flag=FALSE;
-	int dd, mm, yyyy, tokens, n;
+	int dd, mm, yyyy,n;
 	char *line;
 	char *new_time = (char *)malloc(strlen("\"20040908 +01:22\""));
 
@@ -58,14 +58,14 @@ void my_date() {
 
 	time_ms = time(&time_accesible);
 	current_time_string = ctime(&rawtime);//it was &time_ms
-	printf("%s\n", current_time_string);
+	fprintf(stdout,"%s\n", current_time_string);
 
 	if (t_option == FALSE) {//if t option only show date and don't ask for new date,
 	
 		//TODO problem in while scanf: if i don't meet a number, 3 is returned
 		while (flag==FALSE) {
 
-			printf("Please specify a new date: (dd/mm/yyyy):");
+			fprintf(stdout,"Please specify a new date: (dd/mm/yyyy):");
 			line = get_line();
 			
 			if(strcmp(line,"quit")==0)
@@ -87,9 +87,9 @@ void my_date() {
 					timeinfo->tm_mon = mm;
 					timeinfo->tm_mday = dd;
 					*/
-//					printf("setted: d:%d m:%d y:%d\n",timeinfo->tm_mday,timeinfo->tm_mon ,
+//					fprintf(stdout,"setted: d:%d m:%d y:%d\n",timeinfo->tm_mday,timeinfo->tm_mon ,
 //					timeinfo->tm_year);
-//					printf("(asctime)time setted %s - ,\n", ctime(mktime(timeinfo)),asctime(timeinfo));
+//					fprintf(stdout,"(asctime)time setted %s - ,\n", ctime(mktime(timeinfo)),asctime(timeinfo));
 					
 					//September 8, 2004 01:22  --> date --set="20040908 01:22";
 					
@@ -130,9 +130,9 @@ void my_date() {
 }
 
 void date(param *parameters) {
-	time_t new_time;
+	
 	param *iterator = parameters;
-	char *current_time_string;
+	
 
 	if (iterator == NULL) {
 		

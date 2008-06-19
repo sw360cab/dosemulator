@@ -76,10 +76,10 @@ void cp(param **list)
    		}
    	
    	/*rd=read(source_fd, buf, st.st_size+1);
-   	printf("read %d bytes of size %ld %u \n", rd,st.st_size, st.st_mode);
+   	fprintf(stdout,"read %d bytes of size %ld %u \n", rd,st.st_size, st.st_mode);
    	
    	rd=write(dest_fd, buf, rd);
-   	printf("wrote %d bytes\n", rd);
+   	fprintf(stdout,"wrote %d bytes\n", rd);
    	*/
    	
    	while ((rd = read( source_fd, buf, st.st_size+1)) > 0 )

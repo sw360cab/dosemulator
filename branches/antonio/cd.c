@@ -31,8 +31,7 @@ char *cd(char *current, param *list) {
 	short int flag= FALSE, i;
 	char *path;
 	char *doublequotes, *temp;
-	char c;
-	
+		
 
 	while (p!=NULL && flag==FALSE) {
 
@@ -85,11 +84,11 @@ char *cd(char *current, param *list) {
 	}
 
 	if (chdir(path) != 0) {
-		printf("CD: Impossible to find path %s\n",path);
+		fprintf(stdout,"CD: Impossible to find path %s\n",path);
 		free(path);
 		return current;
 	} else {
-		printf("%s\n", path);
+		fprintf(stdout,"%s\n", path);
 		return path;
 	}
 }
