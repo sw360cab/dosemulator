@@ -53,10 +53,10 @@ void help(param *list_par)
 	if (list_par->next != NULL)
 		fprintf(stderr, "Warning: only a command help request can be satisfied a time\n\n");
 
-	src=(char*)malloc(sizeof(char)*strlen(list_par->name)+5);
+	src=(char*)malloc(sizeof(char)*strlen(list_par->name)+12);
 	strcpy(src, list_par->name);
 
-	sprintf(src,"%s.txt",list_par->name);
+	sprintf(src,"helper/%s.txt",list_par->name);
 	
 	// allocate buffer for copying
 	buf = (char *) malloc(sizeof(char)*BUF_MAX+1);
@@ -70,8 +70,8 @@ void help(param *list_par)
 	while ((rd = read( source_fd, buf, BUF_MAX)) > 0 )
 		write(1, buf, rd);
 	
-	free(buf);
 	close(source_fd);
+	free(buf);
 }
 
 // list available command
@@ -85,8 +85,8 @@ void list(param *list_par)
 	if (list_par != NULL)
 		fprintf(stderr, "Warning: \'list\' command does not requires parameters \n\n");
 
-	src=(char*)malloc(sizeof(char)*9);
-	strcpy(src,"list.txt");
+	src=(char*)malloc(sizeof(char)*16);
+	strcpy(src,"helper/list.txt");
 	if ( (source_fd=open (src, O_RDONLY)) == -1)
 	{
 		fprintf(stderr, "Problem with \'list\' command\n");
@@ -99,8 +99,8 @@ void list(param *list_par)
 	while ((rd = read( source_fd, buf, BUF_MAX)) > 0 )
 		write(1, buf, rd );
 
-	free(buf);
 	close(source_fd);
+	free(buf);
 }
 
 // help function version with file pointer

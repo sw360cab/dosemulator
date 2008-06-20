@@ -1,0 +1,7 @@
+Deletes a directory and all the subdirectories and files in it.
+
+DELTREE path
+
+    path 	Specifies the name of the directory you want to delete.
+
+Note: Use DELTREE cautiously. Every file and subdirectory within the specified directory will be deleted. Once deleted, you cannot recover the information.
