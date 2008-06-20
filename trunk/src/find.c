@@ -28,7 +28,13 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include "parse.h"
-//TODO use lioy function to read and not fgets
+
+/*look at the content of the file, line by line, and print the different ones */
+void my_find(char *, char *);
+
+/*look for paramters and launch my_find functions*/
+void find(param *parameters);
+
 short v_option; //show not matched
 short c_option; //show only the number of matches
 short n_option; //show also line number: it has effciency only if c=false
@@ -37,11 +43,15 @@ short i_options; //ignore uppercase
 
 extern char *extract_double_quotes(char *);
 
-void my_find(char *string, char *src) {
+/*look at the content of the file, line by line, and print the different ones */
+void my_find(char *string_to_search, char *src) {
 
 	int row_counter=0, nr_matches=0, i=0, i2=0;
 	FILE *fp;
 	char *buf, *output, *buf2;
+	char *string = (char *)malloc(strlen(string_to_search));
+	
+	strcpy(string,string_to_search);
 
 	short matched=FALSE;
 
@@ -67,9 +77,11 @@ void my_find(char *string, char *src) {
 		buf2=(char *) malloc((unsigned int)strlen(string));
 
 	while (fgets(buf, (int)STRING_LENGTH, fp) != NULL) {
-
+		matched = FALSE;
 		row_counter++;
-
+		
+		
+		
 		if (i_options==TRUE && strlen(buf)>=strlen(string) ) {
 
 			for (i=0; i< (strlen(buf)-strlen(string)); i++) {
@@ -88,7 +100,7 @@ void my_find(char *string, char *src) {
 
 		else {
 			output = strstr(buf, string);
-
+			
 			if (output != NULL)
 				matched = TRUE;
 		}
@@ -134,7 +146,7 @@ void my_find(char *string, char *src) {
 	//	free(buf2);
 
 }
-
+/*look for paramters and launch my_find functions*/
 void find(param *parameters) {
 
 	param *p = parameters;
@@ -156,6 +168,7 @@ void find(param *parameters) {
 
 	while (p!= NULL) {
 
+		
 		if (p->type==1) {
 
 			/*short v_option=FALSE; //show not matched
@@ -208,6 +221,7 @@ void find(param *parameters) {
 				p1=TRUE;
 				to_search
 						= (char *)malloc(strlen(extract_double_quotes(p->name)));
+				strcpy(to_search,extract_double_quotes(p->name));
 				break;
 
 			}
@@ -226,6 +240,7 @@ void find(param *parameters) {
 				src = (char *)malloc(strlen(p->name));
 				strcpy(src, p->name);
 				p2 = TRUE;
+				
 				my_find(to_search, src);
 			}
 			p=p->next;

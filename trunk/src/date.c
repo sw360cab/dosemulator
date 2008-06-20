@@ -3,9 +3,17 @@
 #include<string.h>
 #include<time.h>
 #include "parse.h"
+/* check correcteness of the date */
+int check_date(int, int, int);
+
+/*shows the current date and ask for a new date*/
+void my_date();
+
+/* check for paramters and launch my_date function */
+void date(param *);
 
 short t_option= FALSE;
-
+/* check correcteness of the date */
 int check_date(int dd, int mm, int yyyy) {
 
 	//general constraints
@@ -41,6 +49,7 @@ int check_date(int dd, int mm, int yyyy) {
 	return 0;
 }
 
+/*shows the current date and ask for a new date*/
 void my_date() {
 
 	time_t rawtime;
@@ -128,6 +137,7 @@ void my_date() {
 
 }
 
+/* check for paramters and launch my_date function */
 void date(param *parameters) {
 	
 	param *iterator = parameters;

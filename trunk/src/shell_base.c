@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
 
 		parse_line(&command, &opt, line);
 
-		fprintf(stdout,"Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,opt);
+		//fprintf(stdout,"Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,opt);
 
 		if (strcmp(command, "exit")==0 || strcmp(command, "quit")==0) {
 			running=FALSE;
@@ -207,7 +207,7 @@ int main(int argc, char **argv) {
 			if ( (new_dir=strrchr(buf, '*')) != NULL) // working directory has changed in the child
 			{
 				chdir(new_dir+1);
-				fprintf(stdout,"New dir --%s--\n",new_dir+1);
+				//fprintf(stdout,"New dir --%s--\n",new_dir+1);
 
 				getcwd(working_dir, BUF_MAX);
 			}

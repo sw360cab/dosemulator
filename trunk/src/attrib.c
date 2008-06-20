@@ -31,6 +31,34 @@
 #include "parse.h"
 #include "resource.h"
 
+/*returns the full path of the folder containing the file,
+ * whose path is passed as argument*/
+char *extract_path(char *);
+
+/*prints permissions (windows like format and meaning) of the resource and its 
+ * name (with full path) */
+void print_mask(int[], char *, char *);
+
+
+/* build the permission mask of the resource*/
+void print_attrib(Resource *, char *);
+
+/* print on the screen the failure of file access and exit*/
+void attrib_error();
+
+/* collect resources from the directory (if argument is a dir) in a list (if argument was a file , 
+ * only one element in the list). Check for recursion and filters arguments. Change permission bits of resource*/
+Resource *my_attrib(char *);
+
+/* element of the recursion alghoritm, it launhes my_attrib function and return its output*/
+Resource *attrib_processNode(char *);
+
+/* starting from a path, it process the node and recursively all its descent */
+Resource *attrib_followNode(char *);
+
+/* scan for parameters and launch the executive functions of attrib command*/
+void attrib(param *);
+
 extern Resource *create_res(struct stat, char[], unsigned char, char *);
 extern int is_read_only(long);
 extern void dec2bin(long, char*);
@@ -49,6 +77,48 @@ short int d_option=0; //d valid only if s_parameter is 1;
 
 struct stat st;
 
+/*returns the full path of the folder containing the file,
+whose path is passed as argument*/
+char *extract_path(char *fullname) {
+	int i=0, position=0;
+	char *new_string;
+	char *temp =(char *)malloc(2);
+	short flag= FALSE;
+
+	for (i=strlen(fullname)-1; i>-1; i--) {
+		if (fullname[i]=='/') {
+			position =i;
+			i=-1;
+			flag=TRUE;
+		}
+
+	}
+	if (flag==TRUE) {
+		new_string = (char *)malloc(position);
+
+		for (i=0; i<position; i++) {
+
+			sprintf(temp, "%c", fullname[i]);
+
+			if (i==0)
+				strcpy(new_string, temp);
+			else
+				strcat(new_string, temp);
+
+		}
+	} else {
+
+		new_string = (char *)malloc(MAXPATH);
+		getcwd(new_string, BUF_MAX);
+
+	}
+
+	return new_string;
+
+}
+
+/*prints permissions (windows like format and meaning) of the resource and its 
+ *  name (with full path) */
 void print_mask(int mask[], char *path, char *name) {
 
 	char *full_path = (char *) malloc(strlen(path)+ strlen(name) +2);
@@ -82,19 +152,24 @@ void print_mask(int mask[], char *path, char *name) {
 	else
 		attributes[3]=' ';
 
+	
 	fprintf(stdout,"%c%c%c%c   %s\n", attributes[0], attributes[1], attributes[2],
 	attributes[3], full_path);
 
 	//free(full_path);
 }
 
-
+/*build the permission mask of the resource */
 void print_attrib(Resource *res, char *path) {
 
 	Resource *first;
+	mode_t mode;
 	char binary[80];
 	int mask[4];//R,W,X,H
-
+	mask[0] = 0;
+	mask[1] = 0;
+	mask[2] = 0;
+	mask[3] = 0;
 
 	if (res == NULL)
 		return;
@@ -120,11 +195,18 @@ void print_attrib(Resource *res, char *path) {
 			mask[0]=1;
 
 		//at least one write enabled
-		if (binary[9]=='1' || binary[12]=='1' || binary[15]=='1')
+		//if (binary[9]=='1' || binary[12]=='1' || binary[15]=='1')
+		//	mask[1]=1;
+		mode = res->status.st_mode & S_IWRITE;
+		if (mode == S_IWRITE)
 			mask[1]=1;
 
 		//at least one execute enable
-		if (binary[10]=='1' || binary[13]=='1' || binary[16]=='1')
+		//if (binary[10]=='1' || binary[13]=='1' || binary[16]=='1')
+
+		mode = res->status.st_mode;
+		mode = res->status.st_mode & S_IEXEC;
+		if (mode == S_IEXEC)
 			mask[2]=1;
 
 		if (res->name[0]=='.') {
@@ -139,19 +221,24 @@ void print_attrib(Resource *res, char *path) {
 
 	}
 
-	if (res->status.st_mode == 33024 || res->status.st_mode == 33056
-			|| res->status.st_mode == 33060)
+	if (is_read_only((long)res->status.st_mode)==1)
 		mask[0]=1;
 
 	dec2bin((long)res->status.st_mode, (char *) &binary);
 	//8 9 10 - 11 12 13 - 14 15 16
 
 	//at least one write enabled
-	if (binary[9]=='1' || binary[12]=='1' || binary[15]=='1')
+	//if (binary[9]=='1' || binary[12]=='1' || binary[15]=='1')
+	mode = res->status.st_mode;
+	mode = res->status.st_mode & S_IWRITE;
+	if (mode == S_IWRITE)
 		mask[1]=1;
 
 	//at least one execute enable
-	if (binary[10]=='1' || binary[13]=='1' || binary[16]=='1')
+	//if (binary[10]=='1' || binary[13]=='1' || binary[16]=='1')
+	mode = res->status.st_mode;
+	mode = res->status.st_mode & S_IEXEC;
+	if (mode == S_IEXEC)
 		mask[2]=1;
 
 	if (res->name[0]=='.')
@@ -160,9 +247,7 @@ void print_attrib(Resource *res, char *path) {
 	print_mask(mask, path, res->name);
 
 }
-
-
-
+/* print on the screen the failure of file access and exit*/
 void attrib_error() {
 
 	fprintf(stdout,"ATTRIB: permission denied\n");
@@ -170,6 +255,8 @@ void attrib_error() {
 
 }
 
+/* collect resources from the directory (if argument is a dir) in a list (if argument was a file , 
+ * only one element in the list). Check for recursion and filters arguments. Change permission bits of resource*/
 Resource *my_attrib(char *path) {
 
 	DIR *dp;
@@ -182,117 +269,135 @@ Resource *my_attrib(char *path) {
 	mode_t mode;
 	struct stat status;
 	char binary[80];
+	char *extracted_path=(char *)malloc(MAXPATH);
 
 	strcpy(temp_path, path);
 
 	//if no parameters, print info
 	if (r_option + w_option + h_option + x_option == 0) {
 
-		dp = opendir(path);
+		if (stat(path, &status) == -1) {
+			fprintf(stderr,"ATTRIB: can't access %s\n",path);
+			exit(1);
+		}
+		if (S_ISDIR(status.st_mode)) {
 
-		//scan for files
-		if (dp != NULL) {
-			while ( (ep=readdir(dp) )) {
-				strcpy(temp_path, path);
-				if (ep->d_name[strlen(ep->d_name)-1] == '~')
-					continue;
+			dp = opendir(path);
 
-				strcpy(temp_path, (char *)build_path(path, ep->d_name));
-
-				if ( (p= open(temp_path, O_RDONLY)) == -1) {
-
-					fprintf(stderr,"ATTRIB: cannot access : %s: No such file or directory\n",
-					temp_path);
-					//no need to exit; continue;
-				}
-
-				if (stat(temp_path, &status) != 0) {
-					if (ep->d_type==4)
-						fprintf(stdout,"Cannot open directory %s: Permission denied\n",
-						temp_path);
-					else
-						fprintf(stdout,"Cannot open file %s: Permission denied\n",
-						temp_path);
-					continue;
-
-				}
-
-				strcpy(name, ep->d_name);
-
-				if (strcmp(name, ".")==0 || strcmp(name, "..")==0)
-					continue;
-
-				//if hidden, yes
-				if (name[0] == '.') {
-
-					temp2 = create_res(status, ep->d_name, ep->d_type, path);
-					insert_resource(&to_print, temp2);
-
-				}
-
-				if (d_option==FALSE) {//no folders
-					if (! (ep->d_name[0]=='.' || strcmp(name, "..")==0
-							|| ep->d_name[strlen(ep->d_name)-1] == '~' || ep->d_type==4)) {
-						temp2
-								= create_res(status, ep->d_name, ep->d_type,
-										path);
-						insert_resource(&to_print, temp2);
-					}
-				} else {//yes folders
-
-					if (! (ep->d_name[0]=='.' || strcmp(name, "..")==0
-							|| ep->d_name[strlen(ep->d_name)-1] == '~')) {
-						temp2
-								= create_res(status, ep->d_name, ep->d_type,
-										path);
-						insert_resource(&to_print, temp2);
-					}
-
-				}
-				//if folder
-				//attrib /home/folletto/temp \S
-				if (ep->d_type == 4) {
-
-					if (s_parameter==0) {
-						close(p);
+			//scan for files
+			if (dp != NULL) {
+				while ( (ep=readdir(dp) )) {
+					strcpy(temp_path, path);
+					if (ep->d_name[strlen(ep->d_name)-1] == '~')
 						continue;
-					} else {//s_paramter != 0, return list of directories
 
+					strcpy(temp_path, (char *)build_path(path, ep->d_name));
 
-						/*if (ep->d_name[0]=='.' || ep->d_name[0]=='..' || ep->d_name
-						 =='~')
-						 continue;*/
-						if (strcmp(ep->d_name, "..")==0 || strcmp(ep->d_name,
-								"..")==0 || ep->d_name[strlen(ep->d_name)-1] == '~')
-							continue;
+					strcpy(name, ep->d_name);
 
-						else {
-							temp = create_res(status, ep->d_name, ep->d_type,
+					if (strcmp(name, ".")==0 || strcmp(name, "..")==0)
+						continue;
+
+					if ( (p= open(temp_path, O_RDONLY)) == -1) {
+
+						fprintf(stderr,"ATTRIB: 1cannot access : %s: No such file or directory\n",
+						temp_path);
+						//no need to exit; continue;
+					}
+
+					if (stat(temp_path, &status) != 0) {
+						if (ep->d_type==4)
+							fprintf(stdout,"Cannot open directory %s: Permission denied\n",
+							temp_path);
+						else
+							fprintf(stdout,"Cannot open file %s: Permission denied\n",
+							temp_path);
+						continue;
+
+					}
+
+					//if hidden, yes
+					if (name[0] == '.') {
+
+						temp2
+								= create_res(status, ep->d_name, ep->d_type,
+										path);
+						insert_resource(&to_print, temp2);
+
+					}
+
+					if (d_option==FALSE) {//no folders
+						if (! (ep->d_name[0]=='.' || strcmp(name, "..")==0
+								|| ep->d_name[strlen(ep->d_name)-1] == '~' || ep->d_type==4)) {
+							temp2 = create_res(status, ep->d_name, ep->d_type,
 									path);
-							insert_resource(&to_return, temp);
-							//fprintf(stdout,"resource %s inserted, if folder type 4, %d\n",temp->name, temp->type);
+							insert_resource(&to_print, temp2);
+						}
+					} else {//yes folders
+
+						if (! (ep->d_name[0]=='.' || strcmp(name, "..")==0
+								|| ep->d_name[strlen(ep->d_name)-1] == '~')) {
+							temp2 = create_res(status, ep->d_name, ep->d_type,
+									path);
+							insert_resource(&to_print, temp2);
 						}
 
-						if (d_option==0)//if d option, don't process folder
+					}
+					//if folder
+					//attrib /home/folletto/temp \S
+					if (ep->d_type == 4) {
+
+						if (s_parameter==0) {
+							close(p);
 							continue;
+						} else {//s_paramter != 0, return list of directories
+
+
+							/*if (ep->d_name[0]=='.' || ep->d_name[0]=='..' || ep->d_name
+							 =='~')
+							 continue;*/
+							if (strcmp(ep->d_name, "..")==0 || strcmp(
+									ep->d_name, "..")==0 || ep->d_name[strlen(ep->d_name)-1] == '~')
+								continue;
+
+							else {
+								temp = create_res(status, ep->d_name,
+										ep->d_type, path);
+								insert_resource(&to_return, temp);
+								//fprintf(stdout,"resource %s inserted, if folder type 4, %d\n",temp->name, temp->type);
+							}
+
+							if (d_option==0)//if d option, don't process folder
+								continue;
+
+						}
 
 					}
-
+					close(p);
 				}
-				close(p);
+
+				print_attrib(to_print, path);
+				closedir(dp);
 			}
+		} else {//if file
 
-			print_attrib(to_print, path);
-			closedir(dp);
+
+			stat(path, &status);
+
+			strcpy(extracted_path, extract_path(temp_path));
+
+			temp = create_res(status, path, (unsigned char)8,
+					extract_path(temp_path));
+			insert_resource(&to_print, temp);
+
+			print_attrib(to_print, extracted_path);
 		}
-		
-	}
 
-	else {
+	} else {
 
 		if ( (p = open(path, O_RDONLY)) == -1) {
 
-			fprintf(stderr,"ATTRIB: cannot access : %s: No such file or directory, or permission denied\n", path);
+			fprintf(stderr,"ATTRIB: 2cannot access : %s: No such file or directory, or permission denied\n", path);
 			return NULL;
 		}
 
@@ -372,10 +477,10 @@ Resource *my_attrib(char *path) {
 	 free(temp_path);
 	 free(name);*/
 
-	
 	return to_return;
 }
 
+/* element of the recursion alghoritm, it launhes my_attrib function and return its output*/
 Resource *attrib_processNode(char *path) {
 
 	Resource *to_print=NULL;
@@ -386,6 +491,7 @@ Resource *attrib_processNode(char *path) {
 
 }
 
+/* starting from a path, it process the node and recursively all its descent */
 Resource *attrib_followNode(char *path) {
 
 	Resource *children=NULL, *first;
@@ -415,6 +521,7 @@ Resource *attrib_followNode(char *path) {
 	return children;
 }
 
+/* scan for parameters and launch the executive functions of attrib command*/
 void attrib(param *parameters) {
 
 	param *p = parameters;

@@ -31,6 +31,15 @@
 #include "parse.h"
 #include "resource.h"
 
+/*print differences between list of strings*/
+void print_differences(Resource *, Resource *);
+
+/*reads content of 2 files and build 2 lists with the strings contained in the file  */
+void my_fc(char *, char *);
+
+/* check for parameters and launch my_fc function*/
+void fc(param *);
+
 short show_line_option= FALSE;
 short case_sensitive= TRUE;
 
@@ -38,6 +47,7 @@ int smaller_lines=0;
 int bigger_lines=0;
 
 //paramters are already the firts in the list
+/*print differences between list of strings*/
 void print_differences(Resource *smaller, Resource *bigger) {
 
 	Resource  *copy_smaller, *copy_bigger;
@@ -131,6 +141,7 @@ void print_differences(Resource *smaller, Resource *bigger) {
 	fprintf(stdout,"\n");
 }
 
+/*reads content of 2 files and build 2 lists with the strings contained in the file  */
 void my_fc(char *path1, char *path2) {
 
 	//TODO use lioy function to read and not fgets
@@ -287,6 +298,7 @@ void my_fc(char *path1, char *path2) {
 
 }
 
+/* check for parameters and launch my_fc function*/
 void fc(param *parameters) {
 
 	param *p = parameters;

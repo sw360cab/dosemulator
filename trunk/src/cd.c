@@ -25,6 +25,14 @@
 #include <string.h>
 #include "parse.h"
 
+/*
+ * change the current directory
+ */
+char *cd(char *, param *);
+
+/*
+ * change the current directory
+ */
 char *cd(char *current, param *list) {
 
 	param *p = list;

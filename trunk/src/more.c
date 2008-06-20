@@ -24,12 +24,18 @@
 #include <stdio.h>
 #include <string.h>
 #include "parse.h"
-//TODO use lioy function to read and not fgets
+
+/* look for parameters and launch my_more function*/
+void more(param *);
+
+/* show content of one or more files, with respect to options */
+void my_more(char *);
 
 short int c_option= FALSE;
 short n_option=FALSE;
 short int s_option = FALSE;
 
+/* show content of one or more files, with respect to options */
 void my_more(char *src) {
 
 	char *buf;
@@ -77,6 +83,7 @@ void my_more(char *src) {
 
 }
 
+/* look for parameters and launch my_more function*/
 void more(param *parameters) {
 
 	param *p = parameters;

@@ -19,10 +19,8 @@
  * ***** END LICENSE BLOCK ***** 
  */
 
-//BUG dir /home/folletto/temp : a commma appears before size
-//TODO printout formatting functions -> most common functions: see my_commands.doc  
-//TODO readonly dir ?
-//TODO! close fd in all my functions!!
+//BUG dir /home/folletto/temp : sometimes strange chars appear before size
+
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -36,6 +34,23 @@
 #include <semaphore.h>
 #include "resource.h"
 #include "parse.h"
+
+//it initialize the mask with default options
+void initialize() ;
+
+
+/* it fills and return the list of all resources fuonded in the path
+(with respect to filter arguements */
+Resource *my_dir(char *);
+
+/* launch my_dir capturing the return  and launch the printing function*/
+Resource *processNode(char *) ;
+
+/* process the path passed as argument, then for all children resource, it launches itself for recursion  */
+void followNode(char *);
+
+/* check for and set parameters, launch dir execution functions */
+void dir(param *);
 
 /* 
  * D  Directory, R  File sola lettura, H  File nascosti
@@ -71,7 +86,7 @@ void initialize() {
 }
 
 
-
+/* it fills and return the list of all resources fuonded in the path(with respect to filter arguements */
 Resource *my_dir(char *path) {
 
 	DIR *dp;
@@ -179,6 +194,7 @@ Resource *my_dir(char *path) {
 	return to_print;
 }
 
+/* launch my_dir capturing the return  and launch the printing function*/
 Resource *processNode(char *path) {
 
 	Resource *to_print=NULL, *to_dir=NULL;
@@ -190,7 +206,7 @@ Resource *processNode(char *path) {
 }
 
 
-
+/* process the path passed as argument, then for all children resource, it launches itself for recursion  */
 void followNode(char *path) {
 
 	Resource *children=NULL, *first;
@@ -213,8 +229,8 @@ void followNode(char *path) {
 	}
 }
 
-//int main(int argc, char **argv) {
 
+/* check for and set parameters, launch dir execution functions */
 void dir(param *parameters) {
 
 	char *current_dir;

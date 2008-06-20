@@ -34,6 +34,7 @@
 
 Resource *free_resources= NULL; /* Pointer to my free_list of events */
 
+/*converts a decimal number into a binary one as array of chars */
 void dec2bin(long decimal, char *binary) {
 
 	int k = 0, n = 0;
@@ -97,7 +98,7 @@ void dec2bin(long decimal, char *binary) {
 
 }
 
-
+/*given a string , it extracts double quotes from beginning and end*/
 char *extract_double_quotes(char *src){
 	
 	char *doublequotes, *temp;
@@ -124,7 +125,7 @@ char *extract_double_quotes(char *src){
 	
 }
 
-
+/*tells wheter resource is read only*/
 int is_read_only(long st_mode) {
 
 	char binary[80];
@@ -155,6 +156,7 @@ int is_read_only(long st_mode) {
 
 }
 
+/* build the full path of a resource, given its name and folder parent containing path */
 char *build_path(char *parent_path, char* resource_name) {
 
 	char *new_path = malloc((unsigned int) MAXPATH);
@@ -165,7 +167,7 @@ char *build_path(char *parent_path, char* resource_name) {
 	return new_path;
 
 }
-
+/*create a resource with parameters*/
 Resource *create_res(struct stat status, char res_name[], unsigned char type,
 		char *path) {
 
@@ -230,7 +232,7 @@ void delete_resource(Resource **last, Resource *elem) {
 
 	return;
 }
-
+/* pop an element from list */
 Resource* delete_resource_POP(Resource **last, Resource *elem) {
 
 	if (elem==NULL)
@@ -258,6 +260,7 @@ Resource* delete_resource_POP(Resource **last, Resource *elem) {
 
 	return elem;
 }
+
 
 /* 
  **  Function:    void insert_resource_order_by_type(Event **last, Event *elem)
@@ -449,10 +452,9 @@ void release_resource(Resource *elem) {
 	insert_resource(&free_resources, elem);
 }
 
-void timespec2string(struct timespec *ts, char buffer[], int len)
 /* It reads the time from ts and puts it in buffer (of size len) */
 /* as a string */
-{
+void timespec2string(struct timespec *ts, char buffer[], int len){
 	//ctime_r(&(ts->tv_sec), buffer, len);
 	ctime_r(&(ts->tv_sec), buffer);
 	/* ctime_r terminates the time with a carriage return. We eliminate it.*/
@@ -461,6 +463,7 @@ void timespec2string(struct timespec *ts, char buffer[], int len)
 	sprintf(&buffer[24], " %d ", (int)ts->tv_sec);
 }
 
+/* standard resource info printing */
 void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 
 	struct timespec t;
@@ -500,6 +503,7 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 
 }
 
+/* time info print of folder . and .. */
 void strdprint_time_parents(struct stat status, int father) {
 
 	struct timespec t;
@@ -526,6 +530,7 @@ void strdprint_time_parents(struct stat status, int father) {
 	//can't free
 }
 
+/* folder . and .. info print */
 void stdprint_parents(char *path) {
 
 	struct stat status;
@@ -554,7 +559,7 @@ void stdprint_parents(char *path) {
 		fprintf(stdout,"dir: cannot access : %s: No such file or directory\n", path);
 
 }
-
+/*print a list of resources - the third argument is a generic pointer parameter, to be used  through a cast to the specific type */
 Resource *print_list(Resource *res_list, char *path, char *options) {
 	Resource *last, *first, *res;
 	Resource *dirs_list=NULL;
