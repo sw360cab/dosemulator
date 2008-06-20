@@ -3,6 +3,14 @@
 #include<string.h>
 #include "parse.h"
 
+/*
+ * clear the terminal window
+ */
+void cls(param *);
+
+/*
+ * clear the terminal window
+ */
 void cls(param *parameters){
 	
 	param *iterator = parameters;

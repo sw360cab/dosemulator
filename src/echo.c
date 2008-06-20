@@ -23,13 +23,15 @@
 #include <string.h>
 #include "parse.h"
 #define BUF 512;
+/* print to sdout what you typed in command line*/
+void echo(param *);
 
 short redirection_out= FALSE;
 short redirection_in= FALSE;
 short append_out= FALSE;
 short append_in= FALSE;
 
-
+/* print to sdout what you typed */
 void echo(param *paramaters) {
 
 	param *p = paramaters;

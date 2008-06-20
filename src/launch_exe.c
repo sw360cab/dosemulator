@@ -31,8 +31,12 @@
 #include "parse.h"
 #include "resource.h"
 
+/* look if there is an executable file whose name is the specified one,and if so it launches it */
+int launch_exe(char *, param *);
+
 extern void dec2bin(long, char*);
 
+/* look if there is an executable file whose name is the specified one,and if so it launches it */
 int launch_exe(char *command_path, param *parameters) {
 
 	param *par = parameters;
