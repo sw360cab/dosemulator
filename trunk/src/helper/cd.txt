@@ -1,0 +1,10 @@
+Displays the name of or changes the current directory.
+
+CHDIR [path]
+CHDIR [..]
+CD [path]
+CD [..]
+
+  ..   Specifies that you want to change to the parent directory.
+
+Type CD without parameters to display the current drive and directory.

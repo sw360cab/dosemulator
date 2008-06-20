@@ -1,0 +1,4 @@
+Displays messages.
+
+  ECHO [message]
+

@@ -1,0 +1,24 @@
+Copies files and directory trees.
+
+XCOPY source [destination] [/P] [/S] [/E] [/V] [/Y] [/-Y]
+                           [/Q] [/F] [/L] [/H] [/R] [/T]
+
+  source       Specifies the file(s) to copy.
+  destination  Specifies the location and/or name of new files.
+  /P           Prompts you before creating each destination file.
+  /S           Copies directories and subdirectories except empty ones.
+  /E           Copies directories and subdirectories, including empty ones.
+               Same as /S /E. May be used to modify /T.
+  /V           Verifies each new file.
+  /Q           Does not display file names while copying.
+  /F           Displays full source and destination file names while copying.
+  /L           Displays files that would be copied.
+  /H           Copies hidden and system files also.
+  /R           Overwrites read-only files.
+  /T           Creates directory structure, but does not copy files. Does not
+               include empty directories or subdirectories. /T /E includes
+               empty directories and subdirectories.
+  /Y           Suppresses prompting to confirm you want to overwrite an
+               existing destination file.
+  /-Y          Causes prompting to confirm you want to overwrite an
+               existing destination file.
