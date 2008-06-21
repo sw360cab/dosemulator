@@ -474,25 +474,29 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 	char *dirindication = (char *)malloc(l);
 	char buffer[TIMLEN];
 	char *sizeandname;
-
+	int size=0;
+	
 	t = res_list->status.st_mtim;
 	rawtime = t.tv_sec;
 	timeinfo = localtime((long *)&rawtime);
 	strftime(buffer, 80, "%d/%m/%Y  %H.%M    ", timeinfo);
 	if (res_list->type == 4) {
 		dirindication="<DIR>               ";
-		sizeandname = malloc(1);
+		sizeandname = malloc(2);
 		sizeandname = " ";
 		(*dir)++;
 	} else {
-
+		
 		sprintf(dirindication, "%d", (int)res_list->status.st_size);
-		sizeandname = malloc(21-strlen(dirindication)+1);
-		for (i=0; i<( 21-strlen(dirindication)); i++) {
+		size = strlen(dirindication);
+		
+		sizeandname =(char *) malloc(21-size+2);
+		for (i=0; i<21-size+1; i++) {
+			
 			sizeandname[i]=' ';
 			
 		}
-
+		//printf("dirindication: %s--,%d\nsizeandname: %s--,%d and theoric : %d\n",dirindication,size ,sizeandname,strlen(sizeandname),21-strlen(dirindication));
 		(*files)++;
 		*file_size+= (int)res_list->status.st_size;
 
@@ -500,7 +504,7 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 
 	
 	fprintf(stdout,"%s %s %s %s\n", buffer, sizeandname, dirindication, res_list->name);
-
+	
 }
 
 /* time info print of folder . and .. */
@@ -545,7 +549,7 @@ void stdprint_parents(char *path) {
 		}
 		close(p);
 	} else
-		fprintf(stdout,"dir: cannot access : %s: No such file or directory\n", path);
+		fprintf(stdout,"DIR: problems opening : %s: \n", path);
 
 	strcat(path, "/..");
 	if ( (p=open(path, O_RDONLY)) != -1) {
@@ -556,7 +560,7 @@ void stdprint_parents(char *path) {
 		}
 		close(p);
 	} else
-		fprintf(stdout,"dir: cannot access : %s: No such file or directory\n", path);
+		fprintf(stdout,"DIR: problems opening : %s: \n", path);
 
 }
 /*print a list of resources - the third argument is a generic pointer parameter, to be used  through a cast to the specific type */

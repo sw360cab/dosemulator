@@ -142,7 +142,7 @@ Resource *my_dir(char *path) {
 				continue;
 			}
 
-			//TODO! change all p = (int *) open
+			
 			if ( (p= open(temp_path, O_RDONLY)) == -1) {
 
 				fprintf(stderr,"DIR: cannot access : %s: No such file or directory\n",
@@ -290,13 +290,15 @@ void dir(param *parameters) {
 
 	//second list check: look for paths
 	while (temp != NULL) {
-
+		flag = FALSE;
+		count++;
+		
 		if (temp->type == 0) {
 
 			current_dir = (char *)malloc((unsigned int)strlen(temp->name));
 			strcpy(current_dir, temp->name);
 			flag = TRUE;
-			count++;
+			
 		}
 
 		if (flag==FALSE) {
@@ -311,7 +313,7 @@ void dir(param *parameters) {
 		} else
 			followNode(current_dir);
 
-		flag = FALSE;
+
 		temp = temp->next;
 	}
 	
