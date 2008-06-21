@@ -1,0 +1,10 @@
+FILE					|BEHAVIOR 
+------------------------|-----------------------
+dir.c					|sometimes strange character in file print
+dir.c					|dir \S \AD : command executed twice: double prints
+dir.c 					|dir /home \S : the hell...
+launch_exe or parse.c	|space after argument,command isn't launched
+parse.c					|argument -"ciao "--- is passed as --"ciao ----
+parse.c					|sometimes a char is added to the command(ex:cls ENTER is not executed sometimes)
+
+  

@@ -67,7 +67,7 @@ void exec_com(char * command, char * options) {
 
 			// retrieve string of command after pipe
 			line = pipe_string(options);
-			fprintf(stdout,"PIPE: new line --%s--\n",line);
+			//fprintf(stdout,"PIPE: new line --%s--\n",line);
 
 			// realloc command and options string
 			/*free(options);
@@ -76,7 +76,7 @@ void exec_com(char * command, char * options) {
 
 			parse_line(&command, &options, line);
 			parameter_list=parse_options(options, &fd, &piped);
-			fprintf(stdout,"PIPE:  Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,options);
+			//fprintf(stdout,"PIPE:  Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,options);
 		}
 	} // end command with pipe
 
