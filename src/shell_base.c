@@ -33,6 +33,7 @@
 void exec_com(char * command, char * options) {
 	param *parameter_list;
 	char working_dir[MAXPATH], buf[2];
+	char *command2, *options2;
 	char *new_dir;
 	char *line;
 	int status;
@@ -51,7 +52,9 @@ void exec_com(char * command, char * options) {
 			close(1);
 			dup(pipe_comm[1]);
 			close(pipe_comm[1]);
-		} else // second command after pipe -- need to be parsed from the beginning
+		} 
+		
+		else // second command after pipe -- need to be parsed from the beginning
 		{
 			// wait end of first command
 			waitpid(pid, &status, 0);
@@ -69,24 +72,22 @@ void exec_com(char * command, char * options) {
 			line = pipe_string(options);
 			//fprintf(stdout,"PIPE: new line --%s--\n",line);
 
-			// realloc command and options string
-			/*free(options);
-			 command = (char *) realloc(command, sizeof(char)*20);
-			 options = (char *) malloc(sizeof(char)*strlen(line));*/
+			command2 = (char *) malloc(sizeof(char)*20);
+			options2 = (char *) malloc(sizeof(char)*strlen(line));
 
-			parse_line(&command, &options, line);
-			parameter_list=parse_options(options, &fd, &piped);
+			parse_line(&command2, &options2, line);
+			parameter_list=parse_options(options2, &fd, &piped);
 			//fprintf(stdout,"PIPE:  Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,options);
 		}
 	} // end command with pipe
 
 	if (fd>0 && piped==0) // there is a redirection - not valid with first command of a pipe
 	{
-		close(1);
-		dup(fd);
-		close(2);
-		dup(fd);
-		close(fd);
+		close(1);  // close stdout
+		dup(fd);   // duplicate fd -> this goes in the entry where there was stdout
+		close(2);  // close stdout
+		dup(fd);   // duplicate fd -> this goes in the entry where there was stderr
+		close(fd); // close original fd
 	}
 
 	getcwd(working_dir, BUF_MAX);
@@ -116,11 +117,11 @@ void exec_com(char * command, char * options) {
 		disk_copy(parameter_list);
 	else if (strcmp(command, "date") == 0)
 		date(parameter_list);
-	else if (strcasecmp(command, "del")==0)
+	else if (strcasecmp(command, "del")==0 || strcasecmp(command, "erase")==0)
 		del(parameter_list);
 	else if (strcasecmp(command, "deltree")==0)
 		deltree(parameter_list);
-	else if (strcasecmp(command, "rd")==0)
+	else if (strcasecmp(command, "rd")==0 || strcasecmp(command, "rmdir")==0)
 		rd(parameter_list);
 	else if (strcmp(command, "dir") == 0)
 		dir(parameter_list);
@@ -144,7 +145,7 @@ void exec_com(char * command, char * options) {
 		exit(1);
 	}
 
-	//my_free(&parameter_list);
+	my_free(&parameter_list);
 	exit(0);
 }
 
@@ -159,7 +160,7 @@ int main(int argc, char **argv) {
 
 	printf("\n-- This is Windows DOS shell emulation 1.0\n");
 	printf("-- you can type windows command or run programs\n");
-	printf("-- type 'help' for a list of command or 'exit' to quit\n\n");
+	printf("-- type 'list' for a list of command or 'exit' to quit\n\n");
 
 	working_dir = (char *) malloc(sizeof(char)*BUF_MAX);
 	new_dir = (char *) malloc(sizeof(char)*BUF_MAX);
@@ -180,7 +181,7 @@ int main(int argc, char **argv) {
 
 		parse_line(&command, &opt, line);
 
-		//fprintf(stdout,"Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,opt);
+		fprintf(stdout,"Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,opt);
 
 		if (strcmp(command, "exit")==0 || strcmp(command, "quit")==0) {
 			running=FALSE;
@@ -188,14 +189,14 @@ int main(int argc, char **argv) {
 			free(opt);
 			break;
 		}
-
+/*
 		if (fork() == 0) // child
-		{
+		{*/
 			//execl("/bin/ls", "ls", "-l", (char *)0);
 			exec_com(command, opt);
 			free(command);
 			free(opt);
-		} else // father
+	/*	} else // father
 		{
 			wait(&status);
 
@@ -211,7 +212,7 @@ int main(int argc, char **argv) {
 
 				getcwd(working_dir, BUF_MAX);
 			}
-		}
+		}*/
 	}
 	return 0;
 }
