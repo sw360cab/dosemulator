@@ -49,9 +49,9 @@ void exec_com(char * command, char * options) {
 		// fork to distinguish between command before and after pipe
 		if ((pid=fork())==0) // first command just open pipe and then exec command normally
 		{
-			close(1);
+			/*/close(1);
 			dup(pipe_comm[1]);
-			close(pipe_comm[1]);
+			close(pipe_comm[1]);*/
 		} 
 		
 		else // second command after pipe -- need to be parsed from the beginning
@@ -76,8 +76,11 @@ void exec_com(char * command, char * options) {
 			options2 = (char *) malloc(sizeof(char)*strlen(line));
 
 			parse_line(&command2, &options2, line);
+			strcpy(command, command2);
 			parameter_list=parse_options(options2, &fd, &piped);
 			//fprintf(stdout,"PIPE:  Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,options);
+			// free(command2);
+			// free(options2);
 		}
 	} // end command with pipe
 

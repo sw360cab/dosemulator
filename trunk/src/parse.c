@@ -75,12 +75,12 @@ param * new_elem()
 }
 
 /*
- * '-' and '_' are allowed for paths
+ * '-' and '_' are allowed for paths and also blanks
  * '.' and '/' supposed allowed for files
  */
 int under_s(char ch, int dir)
 {
-	if (ch=='-' || ch =='_')
+	if (ch=='-' || ch =='_' || ch ==' ')
 		return TRUE;
 	else
 	{
@@ -103,16 +103,23 @@ int under_s(char ch, int dir)
  */
 int alpha_num(char *path, char *ch, int dir)
 {
-	int i,count=strlen(path);
+	int i,k,count=strlen(path);
 
+	// special case path->'..' and dir->1
+	if (strcmp(path,"..")==0 && dir==1)
+		return TRUE;
+	
+	k=0;  //this allow to have '.' as first
+	
 	// if name is alphaneumeric or contains '-' or '_' or '.' (in case of file name is OK
-	for(i=0;i<strlen(path) && ( isalnum(path[i]) || under_s(path[i],dir) ); i++)
+	for(i=0;i<strlen(path) && ( isalnum(path[i]) || under_s(path[i],k) ); i++)
 	{
 		// check differently first charcater
 		if (i==0)
 		{
-			if (isdigit(path[i]) || under_s(path[i],0) )
-				break;	// cannot start with digit or '_' or '-
+			k=dir; // restore original value for next one
+			if (isdigit(path[i]) || path[i]=='-' || path[i] =='_' || path[i] ==' ')
+				break;	// cannot start with digit or '_' or '-' or blank
 		}
 		
 		count--;
@@ -264,9 +271,9 @@ param* parse_options(char *opt, int *file_d, int *pipe)
 			{
 				p=new_elem();
 
-				p->name = (char *) malloc(sizeof(char)* (end) );
+				p->name = (char *) malloc(sizeof(char)* (end+1) );
 				strncpy(p->name, opt, end);
-				//fprintf(stdout,"%s to be parsed\n", p->name);
+				fprintf(stdout,"%s to be parsed\n", p->name);
 				p->type = jolly_char(opt);
 				p->next=NULL;
 
@@ -294,6 +301,10 @@ param* parse_options(char *opt, int *file_d, int *pipe)
 void parse_line(char **comm, char ** opt, char * line)
 {	
 	int count=0;
+	
+	// skip extra blanks
+	while ( strncmp(line, " ",1)==0 )
+		line++;
 	
 	while ( strncmp( line+count, " ",1)!=0 && strncmp( line+count, "\0",1)!=0 )
 		count++;
@@ -364,4 +375,25 @@ void my_free(param** list)
 		q=(*list)->next;
 		free((*list));
 	}
+}
+
+// checks if directory is empty --> return TRUE
+int empty_dir (char *path)
+{
+	DIR *dp;
+	struct dirent *ep;
+
+	// open directory
+	dp = opendir(path);
+
+	// check all elements of the directory
+	if (dp != NULL) {
+		while ( (ep = readdir(dp)) )
+		{
+			if (strcmp(ep->d_name, ".") != 0  && strcmp(ep->d_name, "..")!= 0 )
+				return FALSE; // dir contain something
+		}
+	}
+	closedir(dp);
+	return TRUE;
 }

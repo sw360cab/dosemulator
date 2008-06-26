@@ -46,7 +46,8 @@ void help(param *list_par)
 
 	if (list_par == NULL)
 	{
-		fprintf(stderr, "Type help \'command\'\n");
+		list(list_par);
+		fprintf(stderr, "Type help \'command\'\n\n");
 		exit(1);
 	}
 
@@ -69,6 +70,7 @@ void help(param *list_par)
 
 	while ((rd = read( source_fd, buf, BUF_MAX)) > 0 )
 		write(1, buf, rd);
+	fprintf(stdout, "\n");
 	
 	close(source_fd);
 	free(buf);
@@ -98,6 +100,7 @@ void list(param *list_par)
 
 	while ((rd = read( source_fd, buf, BUF_MAX)) > 0 )
 		write(1, buf, rd );
+	fprintf(stdout, "\n");
 
 	close(source_fd);
 	free(buf);

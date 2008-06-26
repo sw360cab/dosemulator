@@ -6,14 +6,14 @@ MD path
 If Command Extensions are enabled MKDIR changes as follows:
 
 MKDIR creates any intermediate directories in the path, if needed.
-For example, assume \a does not exist then:
+For example, assume /a does not exist then:
 
-    mkdir \a\b\c\d
+    mkdir /a/b/c/d
 
 is the same as:
 
-    mkdir \a
-    chdir \a
+    mkdir /a
+    chdir /a
     mkdir b
     chdir b
     mkdir c

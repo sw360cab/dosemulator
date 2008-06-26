@@ -1,13 +1,13 @@
 Copies one or more files to another location.
 
-COPY [/V] [/Y] [/-Y] source[+source[+ ...]] [destination]
+COPY [\V] [\Y] [\-Y] source[+source[+ ...]] [destination]
 
   source       Specifies the file or files to be copied.
-  destination  Specifies the directory and/or filename for the new file(s).
-  /V           Verifies that new files are written correctly.
-  /Y           Suppresses prompting to confirm you want to overwrite an
+  destination  Specifies the directory and\or filename for the new file(s).
+  \V           Verifies that new files are written correctly.
+  \Y           Suppresses prompting to confirm you want to overwrite an
                existing destination file.
-  /-Y          Causes prompting to confirm you want to overwrite an
+  \-Y          Causes prompting to confirm you want to overwrite an
                existing destination file.
 
 To append files, specify a single file for destination, but multiple files
