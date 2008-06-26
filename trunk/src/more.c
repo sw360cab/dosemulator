@@ -77,7 +77,7 @@ void my_more(char *src) {
 
 		row++;
 	}
-	fprintf(stdout,"\n");
+	//fprintf(stdout,"\n");
 	fclose(fp);
 	//free(buf);
 
@@ -90,8 +90,8 @@ void more(param *parameters) {
 	short int files = 0;
 	
 	if (p==NULL) {
-			fprintf(stderr, "md: missing file operand\n");
-			fprintf(stderr, "Try \'help md\' for more information\n");
+			fprintf(stderr, "more: missing file operand\n");
+			fprintf(stderr, "Try \'help more\' for more information\n");
 			exit(1);
 		}
 	

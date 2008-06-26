@@ -155,8 +155,8 @@ void find(param *parameters) {
 	short int p1= FALSE, p2=FALSE; //p2 is the file, p1 is the string to search
 
 	if (p==NULL) {
-		fprintf(stderr, "md: missing file operand\n");
-		fprintf(stderr, "Try \'help md\' for more information\n");
+		fprintf(stderr, "find: missing file operand\n");
+		fprintf(stderr, "Try \'help find\' for more information\n");
 		exit(1);
 	}
 
