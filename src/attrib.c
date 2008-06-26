@@ -39,7 +39,6 @@ char *extract_path(char *);
  * name (with full path) */
 void print_mask(int[], char *, char *);
 
-
 /* build the permission mask of the resource*/
 void print_attrib(Resource *, char *);
 
@@ -78,7 +77,7 @@ short int d_option=0; //d valid only if s_parameter is 1;
 struct stat st;
 
 /*returns the full path of the folder containing the file,
-whose path is passed as argument*/
+ whose path is passed as argument*/
 char *extract_path(char *fullname) {
 	int i=0, position=0;
 	char *new_string;
@@ -152,7 +151,6 @@ void print_mask(int mask[], char *path, char *name) {
 	else
 		attributes[3]=' ';
 
-	
 	fprintf(stdout,"%c%c%c%c   %s\n", attributes[0], attributes[1], attributes[2],
 	attributes[3], full_path);
 
@@ -220,6 +218,11 @@ void print_attrib(Resource *res, char *path) {
 		res=res->next;
 
 	}
+
+	mask[0] = 0;
+	mask[1] = 0;
+	mask[2] = 0;
+	mask[3] = 0;
 
 	if (is_read_only((long)res->status.st_mode)==1)
 		mask[0]=1;

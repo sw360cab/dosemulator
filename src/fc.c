@@ -304,8 +304,8 @@ void fc(param *parameters) {
 	param *p = parameters;
 
 	if (p==NULL) {
-		fprintf(stderr, "md: missing file operand\n");
-		fprintf(stderr, "Try \'help md\' for more information\n");
+		fprintf(stderr, "fc: missing file operand\n");
+		fprintf(stderr, "Try \'help fc\' for more information\n");
 		exit(1);
 	}
 

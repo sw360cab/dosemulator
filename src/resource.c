@@ -469,7 +469,7 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 	struct timespec t;
 	struct tm * timeinfo;
 	time_t rawtime;
-	unsigned int l = 21;
+	unsigned int l = 21;//21
 	int i=0;
 	char *dirindication = (char *)malloc(l);
 	char buffer[TIMLEN];
@@ -491,7 +491,7 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 		size = strlen(dirindication);
 		
 		sizeandname =(char *) malloc(21-size+2);
-		for (i=0; i<21-size+1; i++) {
+		for (i=0; i<21-size+1; i++) {//<21-size+1
 			
 			sizeandname[i]=' ';
 			
