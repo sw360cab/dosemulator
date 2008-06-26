@@ -150,16 +150,22 @@ void my_find(char *string_to_search, char *src) {
 void find(param *parameters) {
 
 	param *p = parameters;
+	char *buffer=(char *)malloc(MAXPATH);
 	char *to_search;
 	char *src;
 	short int p1= FALSE, p2=FALSE; //p2 is the file, p1 is the string to search
 
 	if (p==NULL) {
-		fprintf(stderr, "find: missing file operand\n");
+		read(0,buffer,20);
+		*(buffer+(strlen(buffer)-1))='\0';
+		parameters = parse_options(buffer,0,0);
+		
+		
+		/*	fprintf(stderr, "find: missing file operand\n");
 		fprintf(stderr, "Try \'help find\' for more information\n");
-		exit(1);
+		exit(1);*/
 	}
-
+	p = parameters;
 	//initialization of params to default values
 	v_option=FALSE; //show not matched
 	c_option=FALSE; //show only the number of matches
