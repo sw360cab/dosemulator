@@ -45,7 +45,7 @@ int jolly_char(char *);
 void insert_e(param **, param *);
 // create a new element of type *param
 param * new_elem();
-// '-' and '_' are allowed for paths --- '.' and '/' supposed allowed for files
+// '-' and '_' are allowed for paths and also blanks --- '.' and '/' supposed allowed for files
 int under_s(char, int);
 // check for forbidden characters - in particular name cannot start with digit or '_' or '-'
 int alpha_num(char *, char *, int);
@@ -59,7 +59,6 @@ char* pipe_string(char *);
  * the strings that are options of a command
  */
 param* parse_options(char *, int *, int *);
-
 /*
  * parse a line passed as argument to identify first string
  * as command and the rest as options
@@ -73,6 +72,8 @@ char *srealloc(char *, unsigned);
 char *get_line();
 // wrap of free to fre memory allocated for a list
 void my_free(param**);
+// checks if directory is empty --> return TRUE
+int empty_dir (char *path);
 
 extern char *cd(char*,param*);
 extern void attrib(param*);

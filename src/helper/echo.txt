@@ -1,4 +1,3 @@
 Displays messages.
 
   ECHO [message]
-

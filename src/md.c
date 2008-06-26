@@ -60,6 +60,7 @@ param* parse_path(char *str)
 	param *p;
 	param *pt=NULL;
 
+	//printf ("parse_dir ++%s++\n", str);
 	if (strncmp( str, "/",1)==0) // starting from root of filesystem
 	{
 		p=new_elem();
@@ -77,18 +78,19 @@ param* parse_path(char *str)
 	{
 		while ( strncmp( str+count, "/",1)!=0 && strncmp( str+count,"\0",1)!=0 )
 			count++ ;
-
+		
 		p=new_elem();
-
+		//printf ("parse_dir ++%s++\n", str);
 		p->name = (char *) malloc(sizeof(char)* count+1 );
-
 		strncpy(p->name, str, count);
-
+		//printf ("parse_dir ++%s++\n", str);
+		//printf ("parse_2222dir ++%s++\n", p->name);
+		
 		// check correctness of temporay string -> relative path
 		// TODO can have problems with last string of path
 		if (!alpha_num(p->name,&c,1))
 		{
-			printf ("Unexpected char \'%c\'\n", c);
+			fprintf (stdout,"Unexpected char \'%c\'\n", c);
 			exit(1);
 		}
 
@@ -101,8 +103,10 @@ param* parse_path(char *str)
 		insert_e(&pt,p);
 
 		str+=count+1;
+		
+		//printf ("parse_333dir ++%s++\n", str);
 		count=0;
-	}while ( strncmp( str, "\0",1)!=0 );
+	}while ( strncmp( str-1, "\0",1)!=0 && strncmp( str, "\0",1)!=0);
 
 	return pt;	
 }
@@ -149,7 +153,7 @@ void md(param *list)
 
 			if (dir!=NULL && p->type==1) // path existing
 			{
-				printf ("Path already exists !\n");
+				fprintf (stdout,"Path already exists !\n");
 				exit(1);
 			}
 			else if (dir!=NULL)
@@ -162,7 +166,7 @@ void md(param *list)
 			{
 				if (mkdir(p->name, st.st_mode) < 0 )
 				{
-					printf ("Unable to create directory or you don't have permission to do so\n");
+					fprintf (stdout,"Unable to create directory or you don't have permission to do so\n");
 					exit(1);
 				}
 			}
@@ -179,24 +183,5 @@ void md(param *list)
 		// return to working directory
 		chdir(working_dir);
 	}
-	printf ("done\n");
-	/*
-	 * dir=opendir(path);
-
-	if (dir == NULL)
-		printf ("Failed !\n");
-	else
-		printf ("Path already exist !\n");
-
-
-	chdir(path);
-	stat(argv[1],&st);
-
-	dir=opendir(argv[2]);
-
-	if (dir == NULL)
-		mkdir(argv[2], st.st_mode);
-	else
-		printf ("already\n");
-	 */
+	fprintf (stdout,"done\n");
 }
