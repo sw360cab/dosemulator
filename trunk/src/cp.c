@@ -692,9 +692,8 @@ int recur_dir_copy(char *src_path, char *dest_path)
 {
 	DIR *dp;
 	struct dirent *ep;
-	struct stat st;
 	char *temp_src, *temp_dest;
-	int dest_fd, count=0, ret =0;
+	int count=0, ret =0;
 
 	temp_src = (char *) malloc( sizeof(char)*MAXPATH+1 );
 	temp_dest = (char *) malloc( sizeof(char)*MAXPATH+1 );
@@ -794,7 +793,7 @@ int is_dest_dir(char *pth)
 void xcp(param *list)
 {
 	char *buf, *temp_path, c;
-	char *src, *dest, *temp_dest;
+	char *src, *dest;
 	char *src_dir;
 	int source_fd, dest_fd;
 	int rd, stat_res;

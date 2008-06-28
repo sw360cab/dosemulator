@@ -30,6 +30,7 @@
 #include "parse.h"
 
 // execute the command written inside shell
+// *** receive command, options *** 
 void exec_com(char * command, char * options) {
 	param *parameter_list;
 	char working_dir[MAXPATH], buf[2];
@@ -79,8 +80,8 @@ void exec_com(char * command, char * options) {
 			strcpy(command, command2);
 			parameter_list=parse_options(options2, &fd, &piped);
 			//fprintf(stdout,"PIPE:  Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,options);
-			// free(command2);
-			// free(options2);
+			//free(command2);
+			//free(options2);
 		}
 	} // end command with pipe
 
@@ -161,9 +162,10 @@ int main(int argc, char **argv) {
 	char buf[MAXPATH];
 	int length;
 
-	printf("\n-- This is Windows DOS shell emulation 1.0\n");
-	printf("-- you can type windows command or run programs\n");
-	printf("-- type 'list' for a list of command or 'exit' to quit\n\n");
+	fprintf(stdout,"\n-- This is Windows DOS shell emulator 1.0\n");
+	fprintf(stdout,"-- you can type windows command or run programs\n");
+	fprintf(stdout,"-- type \'list\' for a list or \'help command\' for help");
+	fprintf(stdout,"-- otherwise type \'quit\' or \'exit\' to quit\n\n");
 
 	working_dir = (char *) malloc(sizeof(char)*BUF_MAX);
 	new_dir = (char *) malloc(sizeof(char)*BUF_MAX);
@@ -192,21 +194,21 @@ int main(int argc, char **argv) {
 			free(opt);
 			break;
 		}
-/*
+
 		if (fork() == 0) // child
-		{*/
+		{
 			//execl("/bin/ls", "ls", "-l", (char *)0);
 			exec_com(command, opt);
 			free(command);
 			free(opt);
-	/*	} else // father
+		} else // father
 		{
 			wait(&status);
-
+	
+			// routines to detect if need to move to new dir
 			length=read(current_dir[0], buf, BUF_MAX);
 			buf[length]='\0';
-			//fprintf(stdout,"--pipe--%d--%s--\n",length,buf);
-
+			
 			// buffer contains onvalidating char '*'
 			if ( (new_dir=strrchr(buf, '*')) != NULL) // working directory has changed in the child
 			{
@@ -215,15 +217,7 @@ int main(int argc, char **argv) {
 
 				getcwd(working_dir, BUF_MAX);
 			}
-		}*/
+		}
 	}
 	return 0;
 }
-
-/*
- * commad type:
- * - help --> stampa "help"
- * - exit --> esce
- * - command --> esegue relativo comando / funzione
- * - unknown --> stampa "WinShell: 'command' - command not found "
- */
