@@ -182,7 +182,7 @@ Resource *my_dir(char *path) {
 
 	} else {
 		fprintf(stderr,"DIR: cannot access : %s: No such file or directory\n", path);
-		exit(1);
+		//exit(1);
 
 	}
 	return to_print;
@@ -287,7 +287,7 @@ void dir(param *parameters) {
 		
 		if (temp->type == 0) {
 			count++;
-			current_dir = (char *)malloc((unsigned int)strlen(temp->name));
+			current_dir = (char *)malloc((unsigned int)strlen(temp->name)+1);
 			strcpy(current_dir, temp->name);
 			flag = TRUE;
 			

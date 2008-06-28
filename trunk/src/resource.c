@@ -469,41 +469,63 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 	struct timespec t;
 	struct tm * timeinfo;
 	time_t rawtime;
-	unsigned int l = 21;//21
+	unsigned int l = 23;//21
 	int i=0;
 	char *dirindication = (char *)malloc(l);
 	char buffer[TIMLEN];
 	char *sizeandname;
 	int size=0;
+	char space = ' ';
+	char *temp = (char *)malloc(2);
 	
+		
 	t = res_list->status.st_mtim;
 	rawtime = t.tv_sec;
 	timeinfo = localtime((long *)&rawtime);
 	strftime(buffer, 80, "%d/%m/%Y  %H.%M    ", timeinfo);
 	if (res_list->type == 4) {
-		dirindication="<DIR>               ";
+		strcpy(dirindication,"<DIR>               ");
+		//dirindication="<DIR>               ";
 		sizeandname = malloc(2);
-		sizeandname = " ";
+		strcpy(sizeandname," ");
+		//sizeandname = " ";
 		(*dir)++;
+		
+		fprintf(stdout,"%s %s %s %s\n", buffer, sizeandname, dirindication, res_list->name);
+		
 	} else {
 		
 		sprintf(dirindication, "%d", (int)res_list->status.st_size);
 		size = strlen(dirindication);
 		
-		sizeandname =(char *) malloc(21-size+2);
-		for (i=0; i<21-size+1; i++) {//<21-size+1
+		//if(size == 0)
+			sizeandname = (char *) malloc(22);//22
+		//else
+		//	sizeandname =(char *) malloc(21-size+2);
 			
-			sizeandname[i]=' ';
+		
+		for (i=0; i<20-size+1; i++) {//<21-size+1
+			
+			sprintf(temp,"%c",space);
+			if(i==0)
+				strcpy(sizeandname,temp);
+			else
+				strcat(sizeandname,temp);
+			
+			//sizeandname[i]=' ';
+			
 			
 		}
+		
 		//printf("dirindication: %s--,%d\nsizeandname: %s--,%d and theoric : %d\n",dirindication,size ,sizeandname,strlen(sizeandname),21-strlen(dirindication));
 		(*files)++;
 		*file_size+= (int)res_list->status.st_size;
 
+		fprintf(stdout,"%s %s %s %s\n", buffer, sizeandname, dirindication, res_list->name);
 	}
 
 	
-	fprintf(stdout,"%s %s %s %s\n", buffer, sizeandname, dirindication, res_list->name);
+	//fprintf(stdout,"%s %s %s %s\n", buffer, sizeandname, dirindication, res_list->name);
 	
 }
 
