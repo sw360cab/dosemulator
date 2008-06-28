@@ -32,12 +32,15 @@
 #include "resource.h"
 
 /*print differences between list of strings*/
+// *** receive source resources , dest path resources ***
 void print_differences(Resource *, Resource *);
 
 /*reads content of 2 files and build 2 lists with the strings contained in the file  */
+// *** receive source path name, dest path name ***
 void my_fc(char *, char *);
 
 /* check for parameters and launch my_fc function*/
+// *** receive list with path and options ***
 void fc(param *);
 
 short show_line_option= FALSE;
@@ -285,7 +288,7 @@ void my_fc(char *path1, char *path2) {
 		res_temp = (Resource *)create_res(status_bigger, "", row, path_bigger);
 		res_temp->flag=TRUE;
 		insert_resource(&list_bigger, res_temp);
-		
+
 	}
 
 
@@ -302,22 +305,41 @@ void my_fc(char *path1, char *path2) {
 void fc(param *parameters) {
 
 	param *p = parameters;
-	char *buffer=(char *)malloc(MAXPATH);
-
-	if (p==NULL) {
-		read(0,buffer,20);
-		*(buffer+(strlen(buffer)-1))='\0';
-		parameters = parse_options(buffer,0,0);
-		
-		/*
-		fprintf(stderr, "fc: missing file operand\n");
-		fprintf(stderr, "Try \'help fc\' for more information\n");
-		exit(1);*/
-	}
-	p = parameters;
-
 	char *file1, *file2;
 	short int count_files = 0;
+	char *buffer=(char *)malloc(MAXPATH);
+	fd_set rds;
+	struct timeval tv;
+	int retval;
+
+	FD_ZERO (&rds);
+
+	if (p==NULL) {
+
+		FD_SET(0,&rds);	// add read to select control
+		tv.tv_sec=1;	// set timeout for select
+		tv.tv_usec=0;
+
+		retval = select(1,&rds,NULL,NULL, &tv); // select try to read input from stdin 
+												// (or pipe) but only until timeout expires
+
+		if (retval) // select read from stdin/pipe
+		{
+			if (FD_ISSET(0,&rds))
+			{
+				read(0,buffer,BUF_MAX/2);
+				*(buffer+(strlen(buffer)-1))='\0';
+				parameters = parse_options(buffer,0,0);
+			}
+		}
+		else // timeout expires so nothing from input
+		{
+			fprintf(stderr, "fc: missing file operand\n");
+			fprintf(stderr, "Try \'help fc\' for more information\n");
+			exit(1);
+		}
+	}
+	p = parameters;
 
 	while (p!= NULL) {
 

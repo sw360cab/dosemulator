@@ -5,8 +5,10 @@
 
 /*
  * clear the terminal window
+ * *** receive list with path and options ***
  */
 void cls(param *);
+
 
 /*
  * clear the terminal window

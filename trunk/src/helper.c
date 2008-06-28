@@ -32,9 +32,13 @@
 // PROTOTYPES
 
 // help for a specific command
+// *** receive list with path and options ***
 void help(param *);
+
 // list available command
+// *** receive list with path and options ***
 void list(param *);
+
 
 // help for a specific command
 void help(param *list_par)
@@ -58,7 +62,7 @@ void help(param *list_par)
 	strcpy(src, list_par->name);
 
 	sprintf(src,"helper/%s.txt",list_par->name);
-	
+
 	// allocate buffer for copying
 	buf = (char *) malloc(sizeof(char)*BUF_MAX+1);
 
@@ -71,7 +75,7 @@ void help(param *list_par)
 	while ((rd = read( source_fd, buf, BUF_MAX)) > 0 )
 		write(1, buf, rd);
 	fprintf(stdout, "\n");
-	
+
 	close(source_fd);
 	free(buf);
 }
@@ -94,7 +98,7 @@ void list(param *list_par)
 		fprintf(stderr, "Problem with \'list\' command\n");
 		exit(1);
 	}
-	
+
 	// allocate buffer for copying
 	buf = (char *) malloc(sizeof(char)*BUF_MAX+1);
 
@@ -127,7 +131,7 @@ void help(param *list_par)
 
 	src=(char*)malloc(sizeof(char)*strlen(list_par->name)+5);
 	strcpy(src, list_par->name);
-	
+
 	// concatenated doesn't work at all with file pointers
 	sprintf(src,"%s.txt",list_par->name);
 

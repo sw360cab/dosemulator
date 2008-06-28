@@ -25,11 +25,14 @@
 #include <string.h>
 #include "parse.h"
 
+/* show content of one or more files, with respect to options */
+// *** receive path name ***
+void my_more(char *);
+
 /* look for parameters and launch my_more function*/
+// *** receive list with path and options ***
 void more(param *);
 
-/* show content of one or more files, with respect to options */
-void my_more(char *);
 
 short int c_option= FALSE;
 short n_option=FALSE;

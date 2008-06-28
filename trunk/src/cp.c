@@ -34,40 +34,71 @@
 
 // print error message, when files involved have problems
 void err ();
+
 // check if the source file is a concatenation --> contains '+'
+// *** receive path name - return TRUE -> if concatenation / FALSE -> else ***
 int concat (char *);
+
 // create the list of files in case of a concatetanation
+// *** receive a string with a concatenation of file names - return list with path ***
 param* create_source(char *);
-//ask confirmation to override existing dest -  0-> dir 1->file
+
+// ask confirmation to override existing dest -  0-> dir 1->file
+// *** receive path name, 0-> dir 1->file / 0 else - return 1 -> Yes / 0 -> No ***
 int req_overridden(char *, int);
+
 // check if destination file exists
 // in case ask user what to do  -  0-> dir 1->file
+// *** receive path name, 0-> dir - 1->file ***
+// *** return FALSE -> if file exist yet and user does not agree to overwrite / TRUE -> else ***
 int overridden(char *, int);
+
 // copy files
+// *** receive list with path and options ***
 void cp(param *);
+
 // ask user permission to create dest -  0-> dir 1->file
+// *** receive path name, 0-> dir - 1->file ***
+// *** return FALSE -> if user does not agree to create resource / TRUE -> else ***
 int create_confirmation(char *, int);
+
 // basic copy of file to file
 // used for recursive dir copy
+// *** receive source file name, dest file name ***
 void basic_copy(char *, char *);
+
 // basic copy of dir, if dir exist erase it
 // otherwise only create it
-void basic_dir_copy(char *, char *);
+// return -1 if user refuse to copy/create dir
+// *** receive source dir name, dest dir name ***
+// *** return -1 -> if user does not agree to any request made / 0 -> else ***
+int basic_dir_copy(char *, char *);
+
 /*
  * recursive function that enter recursively
  * directories, copy files and subdir to dest directory 
  */
-int recur_dir_copy(char *src_path, char *dest_path);
+// *** receive source path name, dest path name - return count of copied files ***
+int recur_dir_copy(char *, char *);
+
 // ask user if path is intended as dir -> true or as a file -> false
+// *** receive path name - return TRUE -> if intended as a dir / FALSE -> if intended as a file ***
 int is_dest_dir(char *);
+
 // copy dir recursively
+// *** receive list with path and options ***
 void xcp(param *);
+
 /*
  * fake write on device floppy --> floppy.out
  * !!! IMPORTANT must be ROOT to compile-execute this correctly
  */
+// *** receive list with path and options ***
 void disk_copy(param *);
+
 // from rm.c
+// check if file is a read_only file
+// *** receive path name ***
 extern int rd_only(char *);
 
 
@@ -144,7 +175,7 @@ int req_overridden(char *pth, int file)
 		if (file==1) // file
 			fprintf(stdout,"File %s already exists, Do you want to overwrite it? [Yes or No or All]\n", pth);
 		else // dir
-			fprintf(stdout,"Direcory %s already exists, Do you want to overwrite it? [Yes or No or All]\n", pth);
+			fprintf(stdout,"Directory %s already exists, Do you want to overwrite it? [Yes or No or All]\n", pth);
 
 		answ=get_line();
 		if (strcasecmp(answ,"yes")==0 || strcasecmp(answ,"y")==0 || strcmp(answ,"Yes")==0 )
@@ -420,14 +451,14 @@ void cp(param *list)
 		// for each file open, copy, close it
 		stat(files->name,&st);
 
-		//		if (src==NULL) // src not already allocated
-		//			src = (char *) malloc(sizeof(char)*strlen(files->name)+1);
+		// if (src==NULL) // src not already allocated
+		//	src = (char *) malloc(sizeof(char)*strlen(files->name)+1);
 
 		// override not allowed
 		if (override==0 && !overridden(dest,1))
 			exit(0);
 
-		if ( !alpha_num(dest,&c,0) || (dest_fd=open (dest, O_CREAT | O_WRONLY | O_TRUNC, st.st_mode)) == -1)
+		if ( !create_dest_path(dest) || !alpha_num(dest,&c,0) || (dest_fd=open (dest, O_CREAT | O_WRONLY | O_TRUNC, st.st_mode)) == -1)
 		{
 			fprintf(stderr, "Can't create dest file %s\n",dest);
 			exit(1);
@@ -479,9 +510,9 @@ void cp(param *list)
 		if (override==0 && !overridden(dest,1))
 			exit(0);
 
-		if ( !alpha_num(dest,&c,0) || (dest_fd=open (dest, O_CREAT | O_WRONLY | O_TRUNC, st.st_mode)) == -1)
+		if ( !create_dest_path(dest) || !alpha_num(dest,&c,0) || (dest_fd=open (dest, O_CREAT | O_WRONLY | O_TRUNC, st.st_mode)) == -1)
 		{
-			fprintf(stderr, "Can't open dest file %s\n",dest);
+			fprintf(stderr, "Can't create dest file %s\n",dest);
 			exit(1);
 		}
 
@@ -524,7 +555,7 @@ int create_confirmation(char *pth, int file)
 			fprintf(stdout,"Are you sure to create file %s?[Yes or No or All]\n", pth);
 		else // dir
 			fprintf(stdout,"Are you sure to create directory %s?[Yes or No or All]\n", pth);
-					
+
 		answ=get_line();
 		if (strcasecmp(answ,"yes")==0 || strcasecmp(answ,"y")==0 || strcmp(answ,"Yes")==0 )
 			return 1;
@@ -578,9 +609,9 @@ void basic_copy(char *src, char *dest)
 	else if (override==0 && !overridden(dest,1))
 		return;
 
-	if ((dest_fd=open (dest, O_CREAT | O_WRONLY | O_TRUNC, st.st_mode)) == -1)
+	if ( (dest_fd=open (dest, O_CREAT | O_WRONLY | O_TRUNC, st.st_mode)) == -1)
 	{
-		fprintf(stderr, "Can't open dest file %s\n",dest);
+		fprintf(stderr, "Can't create dest file %s\n",dest);
 		return;
 	}
 
@@ -593,8 +624,6 @@ void basic_copy(char *src, char *dest)
 		stat(dest,&st_dest);
 		if (st.st_size == st_dest.st_size) // problems with copy -> if files of different sizes
 			fprintf(stdout,"Source file %s succesfully copied\n",src);
-		else 
-			fprintf(stdout,"Pain\n");
 	}
 
 	free(buf);
@@ -605,31 +634,31 @@ void basic_copy(char *src, char *dest)
 
 // basic copy of dir, if dir exist erase it
 // otherwise only create it
-void basic_dir_copy(char *src, char *dest)
+// return -1 if user refuse to copy/create dir
+int basic_dir_copy(char *src, char *dest)
 {
 	struct stat st, st_dest;
 	int stat_res;
 	param *p;
 
-	//md(dir_list);
-	fprintf(stdout,"Dir %s will create dir %s\n", src, dest);
+	//fprintf(stdout,"Dir %s will create dir %s\n", src, dest);
 
 	stat(src,&st);
 	stat_res=stat(dest,&st_dest);
 
 	if (no_copy!=0) // no_copy flag -- only print
-		fprintf(stdout,"source directory %s would be created as %s\n", src, dest);					
+		fprintf(stdout,"Source directory %s would be created as %s\n", src, dest);					
 	else 
 	{
+		// ask confirm before creating directory
+		if (confirm==1 && !create_confirmation(dest,0))
+			return -1;
+
 		if ( S_ISDIR(st_dest.st_mode) && stat_res>=0 ) // directory already exist -> erase before creting
 		{
-			// ask confirm before creating file
-			if (confirm==1 && !create_confirmation(dest,0))
-				return;
-
 			// override not allowed
-			else if (override==0 && !overridden(dest,0))
-				return;
+			if (override==0 && !overridden(dest,0))
+				return -1;
 
 			// erase directory
 			p=new_elem();
@@ -642,15 +671,17 @@ void basic_dir_copy(char *src, char *dest)
 			free(p);
 		}
 
-		//md(dir_list);
+		//md(p);
 		if (mkdir(dest, st.st_mode) < 0 )
 		{
-			fprintf (stdout,"Unable to create directory or you don't have permission to do so\n");
-			exit(1);
+			fprintf (stdout,"Unable to create directory %s or you don't have permission to do so\n", dest);
+			return -1;
 		}
 		if (show_name!=0) // display names after copy
-			fprintf(stdout,"source directory %s created as %s\n", src, dest);		
+			fprintf(stdout,"Source directory %s created as %s\n", src, dest);
+
 	}
+	return 0;
 }
 
 /*
@@ -663,7 +694,7 @@ int recur_dir_copy(char *src_path, char *dest_path)
 	struct dirent *ep;
 	struct stat st;
 	char *temp_src, *temp_dest;
-	int dest_fd, count=0;
+	int dest_fd, count=0, ret =0;
 
 	temp_src = (char *) malloc( sizeof(char)*MAXPATH+1 );
 	temp_dest = (char *) malloc( sizeof(char)*MAXPATH+1 );
@@ -701,13 +732,14 @@ int recur_dir_copy(char *src_path, char *dest_path)
 							fprintf (stdout,"Unable to create directory or you don't have permission to do so\n");
 							exit(1);
 						}*/
-						
-						basic_dir_copy(temp_src,temp_dest);
+
+						ret = basic_dir_copy(temp_src,temp_dest);
 						// recursive call
-						count+=recur_dir_copy(temp_src,temp_dest);
+						if (ret >= 0) // otherwise the user refused to copy/create directory 
+							count+=recur_dir_copy(temp_src,temp_dest);
 					}
 					else
-						fprintf (stderr,"Skipping %s empty directory\n", temp_dest);
+						fprintf (stderr,"Skipping %s empty directory.\n", temp_src);
 
 				}
 			}
@@ -718,13 +750,13 @@ int recur_dir_copy(char *src_path, char *dest_path)
 				if (no_file==0 && strcmp(ep->d_name, ".") != 0 && strcmp(ep->d_name, "..")!= 0 )
 				{
 					if (no_copy!=0) // no_copy flag -- only print
-						fprintf(stdout,"source file %s would be copied in %s\n", temp_src, temp_dest);
+						fprintf(stdout,"Source file %s would be copied in %s\n", temp_src, temp_dest);
 					else // copy file
 					{
 						basic_copy(temp_src,temp_dest);
 						count++;
 						if (show_name!=0) // display names after copy
-							fprintf(stdout,"source file %s copied in %s\n", temp_src, temp_dest);
+							fprintf(stdout,"Source file %s copied in %s\n", temp_src, temp_dest);
 					}
 				}
 			}
@@ -767,7 +799,7 @@ void xcp(param *list)
 	int source_fd, dest_fd;
 	int rd, stat_res;
 	struct stat st, st_dest;
-	// param *dir_list=NULL;
+	param *p=NULL;
 
 	int flag=0, dir=0, dest_dir=0, count=0;
 
@@ -781,7 +813,7 @@ void xcp(param *list)
 	// scroll list of parameters
 	while (list!=NULL)
 	{
-		fprintf(stdout,"---%s---\n", list->name);
+		//fprintf(stdout,"---%s---\n", list->name);
 		if ( list->type==0 ) //path
 		{
 			// take info about file / dir
@@ -825,11 +857,11 @@ void xcp(param *list)
 						err();
 					dest = (char *) malloc(sizeof(char)*strlen(list->name)+1);
 					strcpy(dest,list->name);
-					
+
 					dest_dir=1;
-					fprintf(stdout,"dest dir existing\n");
+					//fprintf(stdout,"dest dir existing\n");
 				}	
-				
+
 				else if ( S_ISREG(st.st_mode) && stat_res>=0 )// dest is a file existing
 				{
 					if (dir==1) // dest file is not valid if source is a dir
@@ -850,13 +882,21 @@ void xcp(param *list)
 					dest = (char *) malloc(sizeof(char)*strlen(list->name)+1);
 					strcpy(dest,list->name);
 					// create dir
-					//dir_list=parse_options(list->name,&dest_fd,0); // dest_fd just to avoid warning, useless
-					//md(dir_list)
-					if (mkdir(dest, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0 ) // d rwxr-xr-x
+					p=new_elem();
+					p->name = (char *) malloc(sizeof(char)*strlen(dest)+1);
+					strcpy(p->name, dest);
+					p->type = 0;
+					p->next=NULL;
+
+					md(p);
+					free(p);
+
+
+					/*if (mkdir(dest, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0 ) // d rwxr-xr-x
 					{
-						fprintf (stdout,"Unable to create directory or you don't have permission to do so\n");
+						fprintf (stdout,"Unable to create directory %s or you don't have permission to do so\n", dest);
 						exit(1);
-					}
+					}*/
 
 					dest_dir=1;
 				}
@@ -913,7 +953,7 @@ void xcp(param *list)
 					empty=1;
 				else
 				{
-					fprintf(stderr, "%s should be set with \\S or \\T\n",list->name );
+					fprintf(stderr, "\\E should be set with \\S or \\T\n");
 					err();
 				}
 			}
@@ -932,7 +972,7 @@ void xcp(param *list)
 	// check that enough resources were specified
 	if (flag<2) 
 	{
-		fprintf(stderr,"source or destination file missing\n");
+		fprintf(stderr,"Source or destination file missing\n");
 		err();
 	}
 
@@ -944,11 +984,12 @@ void xcp(param *list)
 	{
 		if (dir==1) // dir-dir copy recursive
 		{
-			fprintf(stdout,"dest dir 2\n");
-
 			// calling recursive function
 			count=recur_dir_copy(src_dir,dest);
-			fprintf(stdout,"\n%d files copied\n\n", count);
+			if (empty==0)
+				fprintf(stdout,"\nUse \\E option to include empty directories.\n");
+			if (no_file==0)
+				fprintf(stdout,"\n%d files copied\n\n", count);
 		}
 		else // file-dir copy  - open dir / create path-file / copy file in directory
 		{
@@ -964,7 +1005,7 @@ void xcp(param *list)
 			if ( dest[strlen(dest)-1] != '/')
 				strcat(temp_path, "/");				
 			strcat(temp_path, src);
-			
+
 			// ask confirm before creating file
 			if (confirm==1 && !create_confirmation(temp_path,1))
 				exit(0);
@@ -980,7 +1021,7 @@ void xcp(param *list)
 			else if (override==0 && !overridden(temp_path,1))
 				exit(0);
 
-			if (  (dest_fd=open (temp_path, O_CREAT | O_WRONLY | O_TRUNC, st.st_mode)) == -1)
+			if ( (dest_fd=open (temp_path, O_CREAT | O_WRONLY | O_TRUNC, st.st_mode)) == -1)
 			{
 				fprintf(stderr, "Can't create dest file %s\n",temp_path);
 				exit(1);
@@ -990,6 +1031,7 @@ void xcp(param *list)
 			while ((rd = read( source_fd, buf,BUF_MAX+1)) > 0 )
 				write( dest_fd, buf, rd );
 
+			fprintf(stdout,"\n1 file copied\n\n");
 			// verify
 			if (verify==1)
 			{
@@ -1026,14 +1068,15 @@ void xcp(param *list)
 		else if (override==0 && !overridden(dest,1))
 			exit(0);
 
-		if ( !alpha_num(dest,&c,0) || (dest_fd=open (dest, O_CREAT | O_WRONLY | O_TRUNC, st.st_mode)) == -1)
+		if ( !create_dest_path(dest) || !alpha_num(dest,&c,0) || (dest_fd=open (dest, O_CREAT | O_WRONLY | O_TRUNC, st.st_mode)) == -1)
 		{
-			fprintf(stderr, "Can't open dest file %s\n",dest);
+			fprintf(stderr, "Can't create dest file %s\n",dest);
 			exit(1);
 		}
 
 		while ((rd = read( source_fd, buf,BUF_MAX+1)) > 0 )
 			write( dest_fd, buf, rd );
+		fprintf(stdout,"\n1 file copied\n\n");
 
 		// verify
 		if (verify==1)

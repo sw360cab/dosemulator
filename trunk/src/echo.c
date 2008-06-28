@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "parse.h"
-#define BUF 512;
+
 /* print to sdout what you typed in command line*/
 void echo(param *);
 
@@ -32,6 +32,7 @@ short append_out= FALSE;
 short append_in= FALSE;
 
 /* print to sdout what you typed */
+// *** receive list with path and options ***
 void echo(param *paramaters) {
 
 	param *p = paramaters;

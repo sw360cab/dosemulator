@@ -3,16 +3,21 @@
 #include<string.h>
 #include<time.h>
 #include "parse.h"
+
 /* check correcteness of the date */
+// *** receive day, month, year ***
 int check_date(int, int, int);
 
 /*shows the current date and ask for a new date*/
 void my_date();
 
 /* check for paramters and launch my_date function */
+// *** receive list with path and options ***
 void date(param *);
 
+
 short t_option= FALSE;
+
 /* check correcteness of the date */
 int check_date(int dd, int mm, int yyyy) {
 

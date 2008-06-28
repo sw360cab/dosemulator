@@ -27,8 +27,10 @@
 
 /*
  * change the current directory
+ * *** receive current directory, list with path and options - return new current dir ***
  */
 char *cd(char *, param *);
+
 
 /*
  * change the current directory
