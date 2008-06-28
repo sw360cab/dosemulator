@@ -49,9 +49,9 @@ void exec_com(char * command, char * options) {
 		// fork to distinguish between command before and after pipe
 		if ((pid=fork())==0) // first command just open pipe and then exec command normally
 		{
-			/*/close(1);
+			close(1);
 			dup(pipe_comm[1]);
-			close(pipe_comm[1]);*/
+			close(pipe_comm[1]);
 		} 
 		
 		else // second command after pipe -- need to be parsed from the beginning

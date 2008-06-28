@@ -826,17 +826,8 @@ void xcp(param *list)
 					dest = (char *) malloc(sizeof(char)*strlen(list->name)+1);
 					strcpy(dest,list->name);
 					
-					if (dir==1) // source is a dir open dest dir
-					{
-						dest_dir=1;
-						fprintf(stdout,"dest dir existing\n");
-					}
-					else //source is a file - enter in dest directory
-					{
-						chdir(dest);
-						fprintf(stdout,"File %s would be copied in directory %s\n",src,dest);
-						strcpy(dest,src);
-					} 
+					dest_dir=1;
+					fprintf(stdout,"dest dir existing\n");
 				}	
 				
 				else if ( S_ISREG(st.st_mode) && stat_res>=0 )// dest is a file existing
@@ -861,25 +852,13 @@ void xcp(param *list)
 					// create dir
 					//dir_list=parse_options(list->name,&dest_fd,0); // dest_fd just to avoid warning, useless
 					//md(dir_list)
-					if (mkdir(dest, st.st_mode) < 0 )
+					if (mkdir(dest, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0 ) // d rwxr-xr-x
 					{
 						fprintf (stdout,"Unable to create directory or you don't have permission to do so\n");
 						exit(1);
 					}
 
-					if (dir==1) // source is a dir and dest is a dir to be created
-					{
-						dest_dir=1;
-					}
-					else //source is a file - enter in dest directory
-					{
-						chdir(dest);
-						//fprintf(stdout,"File %s would be copied into created directory %s\n",src,dest);
-						fprintf(stdout,"chdir to %s\n",dest);				
-						dest = (char *) realloc(dest, sizeof(char)*strlen(src)+1);
-						strcpy(dest,src);
-						fprintf(stdout,"new dir is %s\n",dest);
-					}
+					dest_dir=1;
 				}
 
 				else // dest is a file
@@ -985,21 +964,42 @@ void xcp(param *list)
 			if ( dest[strlen(dest)-1] != '/')
 				strcat(temp_path, "/");				
 			strcat(temp_path, src);
+			
+			// ask confirm before creating file
+			if (confirm==1 && !create_confirmation(temp_path,1))
+				exit(0);
+
+			// read-only file
+			if (overread==0 && rd_only(temp_path) )  // overread flag -- ask before overwriting
+			{									//					read-only file
+				fprintf(stdout,"Read-Only file %s\n",temp_path);
+				if (!overridden(temp_path,1))
+					exit(0);
+			}	
+			// override not allowed
+			else if (override==0 && !overridden(temp_path,1))
+				exit(0);
 
 			if (  (dest_fd=open (temp_path, O_CREAT | O_WRONLY | O_TRUNC, st.st_mode)) == -1)
 			{
 				fprintf(stderr, "Can't create dest file %s\n",temp_path);
 				exit(1);
 			}
+			fprintf(stdout,"File %s will be copied in %s\n",src,temp_path);
 
 			while ((rd = read( source_fd, buf,BUF_MAX+1)) > 0 )
 				write( dest_fd, buf, rd );
 
+			// verify
+			if (verify==1)
+			{
+				stat(temp_path,&st_dest);
+				if (st.st_size == st_dest.st_size) // problems with copy -> if files of different sizes
+					fprintf(stdout,"Source file %s succesfully copied in %s\n",src,temp_path);
+			}
+
 			close(source_fd);
 			close(dest_fd);
-
-			fprintf(stdout,"File %s succesfully copied\n", temp_path);
-
 			free(buf);
 			free(src);
 			free(dest);

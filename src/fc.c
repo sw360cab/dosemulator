@@ -302,12 +302,19 @@ void my_fc(char *path1, char *path2) {
 void fc(param *parameters) {
 
 	param *p = parameters;
+	char *buffer=(char *)malloc(MAXPATH);
 
 	if (p==NULL) {
+		read(0,buffer,20);
+		*(buffer+(strlen(buffer)-1))='\0';
+		parameters = parse_options(buffer,0,0);
+		
+		/*
 		fprintf(stderr, "fc: missing file operand\n");
 		fprintf(stderr, "Try \'help fc\' for more information\n");
-		exit(1);
+		exit(1);*/
 	}
+	p = parameters;
 
 	char *file1, *file2;
 	short int count_files = 0;
