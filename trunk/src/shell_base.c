@@ -109,9 +109,9 @@ void exec_com(char * command, char * options) {
 			write(current_dir[1], new_dir, strlen(new_dir));
 		}
 	} 
-	else if (strcmp(command, "attrib") == 0)
+	else if (strcasecmp(command, "attrib") == 0)
 		attrib(parameter_list);
-	else if (strcmp(command, "cls") == 0)
+	else if (strcasecmp(command, "cls") == 0)
 		cls(parameter_list);
 	else if (strcasecmp(command, "copy")==0)
 		cp(parameter_list);
@@ -119,7 +119,7 @@ void exec_com(char * command, char * options) {
 		xcp(parameter_list);
 	else if (strcasecmp(command, "diskcopy")==0)
 		disk_copy(parameter_list);
-	else if (strcmp(command, "date") == 0)
+	else if (strcasecmp(command, "date") == 0)
 		date(parameter_list);
 	else if (strcasecmp(command, "del")==0 || strcasecmp(command, "erase")==0)
 		del(parameter_list);
@@ -127,13 +127,13 @@ void exec_com(char * command, char * options) {
 		deltree(parameter_list);
 	else if (strcasecmp(command, "rd")==0 || strcasecmp(command, "rmdir")==0)
 		rd(parameter_list);
-	else if (strcmp(command, "dir") == 0)
+	else if (strcasecmp(command, "dir") == 0)
 		dir(parameter_list);
-	else if (strcmp(command, "echo") == 0)
+	else if (strcasecmp(command, "echo") == 0)
 		echo(parameter_list);
-	else if (strcmp(command, "fc") == 0)
+	else if (strcasecmp(command, "fc") == 0)
 		fc(parameter_list);
-	else if (strcmp(command, "find") == 0)
+	else if (strcasecmp(command, "find") == 0)
 		find(parameter_list);
 	else if (strcasecmp(command, "help")==0)	
 		help(parameter_list);
@@ -141,7 +141,7 @@ void exec_com(char * command, char * options) {
 		list(parameter_list);
 	else if (strcasecmp(command, "md")==0 || strcasecmp(command, "mkdir")==0)
 		md(parameter_list);
-	else if (strcmp(command, "more") == 0)
+	else if (strcasecmp(command, "more") == 0)
 		more(parameter_list);
 	else if (launch_exe(command, parameter_list)<0) {
 		fprintf(stderr,"Error: \'%s\' unknown or bad typed command\n", command);
@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
 
 	fprintf(stdout,"\n-- This is Windows DOS shell emulator 1.0\n");
 	fprintf(stdout,"-- you can type windows command or run programs\n");
-	fprintf(stdout,"-- type \'list\' for a list or \'help command\' for help");
+	fprintf(stdout,"-- type \'list\' for a list or \'help command\' for help\n");
 	fprintf(stdout,"-- otherwise type \'quit\' or \'exit\' to quit\n\n");
 
 	working_dir = (char *) malloc(sizeof(char)*BUF_MAX);
@@ -186,10 +186,12 @@ int main(int argc, char **argv) {
 
 		parse_line(&command, &opt, line);
 
-		fprintf(stdout,"Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,opt);
+		// fprintf(stdout,"Found COMMAND ---%s---\n and OPTIONS ---%s---\n", command,opt);
 
-		if (strcmp(command, "exit")==0 || strcmp(command, "quit")==0) {
+		if (strcasecmp(command, "exit")==0 || strcasecmp(command, "quit")==0) {
 			running=FALSE;
+			
+			fprintf(stdout,"\n !! Bye Bye !!\n\n");
 			free(command);
 			free(opt);
 			break;
