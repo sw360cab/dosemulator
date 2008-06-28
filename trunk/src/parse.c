@@ -75,12 +75,12 @@ param * new_elem()
 }
 
 /*
- * '-' and '_' are allowed for paths and also blanks
+ * '-' and '_' are allowed for paths
  * '.' and '/' supposed allowed for files
  */
 int under_s(char ch, int dir)
 {
-	if (ch=='-' || ch =='_' || ch ==' ')
+	if (ch=='-' || ch =='_')
 		return TRUE;
 	else
 	{
@@ -111,15 +111,15 @@ int alpha_num(char *path, char *ch, int dir)
 	
 	k=0;  //this allow to have '.' as first
 	
-	// if name is alphaneumeric or contains '-' or '_' or '.' (in case of file name is OK
+	// if name is alphaneumeric or contains '-' or '_' or '.' (in case of file name is OK)
 	for(i=0;i<strlen(path) && ( isalnum(path[i]) || under_s(path[i],k) ); i++)
 	{
 		// check differently first charcater
 		if (i==0)
 		{
 			k=dir; // restore original value for next one
-			if (isdigit(path[i]) || path[i]=='-' || path[i] =='_' || path[i] ==' ')
-				break;	// cannot start with digit or '_' or '-' or blank
+			if (isdigit(path[i]) || path[i]=='-' || path[i] =='_' )
+				break;	// cannot start with digit or '_' or '-'
 		}
 		
 		count--;
@@ -273,7 +273,7 @@ param* parse_options(char *opt, int *file_d, int *pipe)
 
 				p->name = (char *) malloc(sizeof(char)* (end+1) );
 				strncpy(p->name, opt, end);
-				fprintf(stdout,"%s to be parsed\n", p->name);
+				//fprintf(stdout,"%s to be parsed\n", p->name);
 				p->type = jolly_char(opt);
 				p->next=NULL;
 

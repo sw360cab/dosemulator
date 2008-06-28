@@ -60,7 +60,6 @@ param* parse_path(char *str)
 	param *p;
 	param *pt=NULL;
 
-	//printf ("parse_dir ++%s++\n", str);
 	if (strncmp( str, "/",1)==0) // starting from root of filesystem
 	{
 		p=new_elem();
@@ -83,11 +82,8 @@ param* parse_path(char *str)
 		//printf ("parse_dir ++%s++\n", str);
 		p->name = (char *) malloc(sizeof(char)* count+1 );
 		strncpy(p->name, str, count);
-		//printf ("parse_dir ++%s++\n", str);
-		//printf ("parse_2222dir ++%s++\n", p->name);
 		
 		// check correctness of temporay string -> relative path
-		// TODO can have problems with last string of path
 		if (!alpha_num(p->name,&c,1))
 		{
 			fprintf (stdout,"Unexpected char \'%c\'\n", c);
@@ -104,7 +100,6 @@ param* parse_path(char *str)
 
 		str+=count+1;
 		
-		//printf ("parse_333dir ++%s++\n", str);
 		count=0;
 	}while ( strncmp( str-1, "\0",1)!=0 && strncmp( str, "\0",1)!=0);
 
@@ -124,6 +119,8 @@ void md(param *list)
 	DIR *dir;
 	struct stat st;
 	param *p;
+	mode_t st_mode, mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH ;
+	int stat_res;
 	
 	if(list==NULL)
 	{
@@ -144,7 +141,7 @@ void md(param *list)
 		p=parse_path(path);
 
 		// get permission of working directory
-		stat(working_dir,&st);
+		stat_res = stat(working_dir,&st);
 
 		while(p!=NULL){
 			//fprintf(stdout,"%s to be parsed and type %d\n", p->name, p->type);
@@ -153,18 +150,23 @@ void md(param *list)
 
 			if (dir!=NULL && p->type==1) // path existing
 			{
-				fprintf (stdout,"Path already exists !\n");
+				fprintf (stderr,"Cannot create path. Path already exists !\n");
 				exit(1);
 			}
-			else if (dir!=NULL)
+			else if (dir!=NULL) // parent directory existing
 			{
-				stat(p->name,&st); // parent inode 
+				stat_res = stat(p->name,&st); // parent inode 
 				// 	---> changes only when descending in an existing dir
-				// printf ("Path mode %d!\n", st.st_mode);
+				//fprintf (stdout,"Path OK !\n");
 			}
-			else if (dir==NULL)
+			else if (dir==NULL) // create directory from scratch
 			{
-				if (mkdir(p->name, st.st_mode) < 0 )
+				if (stat_res >= 0) // previus stat result ok
+					st_mode = st.st_mode;
+				else 
+					st_mode = mode;
+				
+				if (mkdir(p->name, st_mode) < 0 )
 				{
 					fprintf (stdout,"Unable to create directory or you don't have permission to do so\n");
 					exit(1);
@@ -176,10 +178,9 @@ void md(param *list)
 			p=p->next;
 		}
 
-		//free(p);
+		my_free(&p);
 		list=list->next;
-		if (list!=NULL)
-			path = (char *)realloc(path, sizeof(char)*strlen(list->name));
+
 		// return to working directory
 		chdir(working_dir);
 	}
