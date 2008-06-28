@@ -31,7 +31,7 @@
 
 // execute the command written inside shell
 void exec_com(char * command, char * options) {
-	param *parameter_list;
+	param *parameter_list, *p2;
 	char working_dir[MAXPATH], buf[2];
 	char *command2, *options2;
 	char *new_dir;
@@ -52,10 +52,12 @@ void exec_com(char * command, char * options) {
 			close(1);
 			dup(pipe_comm[1]);
 			close(pipe_comm[1]);
+			
+			
 		} 
 		
 		else // second command after pipe -- need to be parsed from the beginning
-		{
+		{	
 			// wait end of first command
 			waitpid(pid, &status, 0);
 
@@ -78,7 +80,7 @@ void exec_com(char * command, char * options) {
 			parse_line(&command2, &options2, line);
 			strcpy(command, command2);
 			parameter_list=parse_options(options2, &fd, &piped);
-			//fprintf(stdout,"PIPE:  Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,options);
+			fprintf(stdout,"PIPE:  Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command2,options2);
 			// free(command2);
 			// free(options2);
 		}
@@ -184,7 +186,7 @@ int main(int argc, char **argv) {
 
 		parse_line(&command, &opt, line);
 
-		fprintf(stdout,"Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,opt);
+		//fprintf(stdout,"Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,opt);
 
 		if (strcmp(command, "exit")==0 || strcmp(command, "quit")==0) {
 			running=FALSE;
@@ -192,14 +194,14 @@ int main(int argc, char **argv) {
 			free(opt);
 			break;
 		}
-/*
+
 		if (fork() == 0) // child
-		{*/
+		{
 			//execl("/bin/ls", "ls", "-l", (char *)0);
 			exec_com(command, opt);
 			free(command);
 			free(opt);
-	/*	} else // father
+		} else // father
 		{
 			wait(&status);
 
@@ -215,7 +217,7 @@ int main(int argc, char **argv) {
 
 				getcwd(working_dir, BUF_MAX);
 			}
-		}*/
+		}
 	}
 	return 0;
 }
