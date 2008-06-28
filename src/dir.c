@@ -145,17 +145,17 @@ Resource *my_dir(char *path) {
 			if ( (p= open(temp_path, O_RDONLY)) == -1) {
 
 				fprintf(stderr,"DIR: cannot access : %s: No such file or directory\n",
-				temp_path);
+						temp_path);
 				//exit(1);no need to exit
 			}
 
 			if (stat(temp_path, &status) != 0) {
 				if (ep->d_type==4)
 					fprintf(stdout,"Cannot open directory %s: Permission denied\n",
-					temp_path);
+							temp_path);
 				else
 					fprintf(stdout,"Cannot open file %s: Permission denied\n",
-					temp_path);
+							temp_path);
 				continue;
 
 			}
@@ -247,7 +247,7 @@ void dir(param *parameters) {
 		 show_hidden_files = 0;
 		 show_owner = 0; // /Q option 
 		 show_recursive = 0;
-		 
+
 		 0=default
 		 1=show only
 		 2=exclude
@@ -285,30 +285,30 @@ void dir(param *parameters) {
 	//second list check: look for paths
 	while (temp != NULL) {
 		flag = FALSE;
-		
-		
+
+
 		if (temp->type == 0) {
 			count++;
 			current_dir = (char *)malloc((unsigned int)strlen(temp->name)+1);
 			strcpy(current_dir, temp->name);
 			flag = TRUE;
-			
+
 			if (flag==FALSE) {
 
 				current_dir = (char *)malloc((unsigned int)MAXPATH);
 				getcwd(current_dir, MAXPATH);
 			}
-		
+
 
 			if (show_recursive == 0) {
-				
+
 				processNode(current_dir);
 			} else {
-				
+
 				followNode(current_dir);
 			}
 		}
-		
+
 		temp = temp->next;
 	}
 
@@ -318,10 +318,10 @@ void dir(param *parameters) {
 		getcwd(current_dir, MAXPATH);
 
 		if (show_recursive == 0) {
-			
+
 			processNode(current_dir);
 		} else {
-			
+
 			followNode(current_dir);
 		}
 	}

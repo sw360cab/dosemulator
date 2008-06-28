@@ -41,7 +41,7 @@ char *cd(char *current, param *list) {
 	short int flag= FALSE, i;
 	char *path;
 	char *doublequotes, *temp;
-		
+
 
 	while (p!=NULL && flag==FALSE) {
 
@@ -62,12 +62,12 @@ char *cd(char *current, param *list) {
 	}
 
 	if(flag==TRUE && p != NULL){
-		
+
 		fprintf(stderr,"CD: too many arguments\n");
 		exit(1);
 	}
-		
-	
+
+
 	if (flag == FALSE) {
 		path = (char *)malloc(2);
 		strcpy(path, ".");

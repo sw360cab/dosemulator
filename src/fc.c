@@ -55,7 +55,7 @@ void print_differences(Resource *smaller, Resource *bigger) {
 
 	Resource  *copy_smaller, *copy_bigger;
 	Resource *last_smaller, *last_bigger;
-	
+
 	int i =0;
 
 	//fprintf(stdout,"%s smaller than %s \n",smaller->path,bigger->path);
@@ -70,7 +70,7 @@ void print_differences(Resource *smaller, Resource *bigger) {
 	//first= mark all equals lines 
 
 	if ( (int)copy_smaller->flag != TRUE && (int)copy_smaller != TRUE) {
-		
+
 		for (i= 0; i<smaller_lines; i++) {
 
 			if (case_sensitive==TRUE) {
@@ -106,40 +106,40 @@ void print_differences(Resource *smaller, Resource *bigger) {
 
 	fprintf(stdout,"\n****** %s *******\n\n", smaller->path);
 
-	
-		for (i=0; i<smaller_lines; i++) {
 
-			if (copy_smaller->flag!=TRUE) {
+	for (i=0; i<smaller_lines; i++) {
 
-				if (show_line_option==FALSE)
-					fprintf(stdout,"%s", copy_smaller->name);
-				else
-					fprintf(stdout,"%d   %s", copy_smaller->type, copy_smaller->name);
-			}
-			copy_smaller = copy_smaller->next;
+		if (copy_smaller->flag!=TRUE) {
+
+			if (show_line_option==FALSE)
+				fprintf(stdout,"%s", copy_smaller->name);
+			else
+				fprintf(stdout,"%d   %s", copy_smaller->type, copy_smaller->name);
 		}
+		copy_smaller = copy_smaller->next;
+	}
 
-	
+
 
 	fprintf(stdout,"\n****** %s *******\n\n", bigger->path);
 
-	
 
 
-		for (i=0; i<bigger_lines; i++) {
 
-			if (copy_bigger->flag!=TRUE) {
+	for (i=0; i<bigger_lines; i++) {
 
-				if (show_line_option==FALSE)
-					fprintf(stdout,"%s", copy_bigger->name);
-				else
-					fprintf(stdout,"%d   %s", copy_bigger->type, copy_bigger->name);
-			}
+		if (copy_bigger->flag!=TRUE) {
 
-			copy_bigger = copy_bigger->next;
+			if (show_line_option==FALSE)
+				fprintf(stdout,"%s", copy_bigger->name);
+			else
+				fprintf(stdout,"%d   %s", copy_bigger->type, copy_bigger->name);
 		}
 
-	
+		copy_bigger = copy_bigger->next;
+	}
+
+
 
 	fprintf(stdout,"\n");
 }
@@ -154,12 +154,12 @@ void my_fc(char *path1, char *path2) {
 	int count_lines1=0, count_lines2=0;
 
 	//here i use reource as line container: name is the string, and type is number line
-//	Resource *list_bigger=(Resource *) malloc(sizeof( Resource));
-//	Resource *list_smaller=(Resource *) malloc(sizeof(Resource));
+	//	Resource *list_bigger=(Resource *) malloc(sizeof( Resource));
+	//	Resource *list_smaller=(Resource *) malloc(sizeof(Resource));
 
 	Resource *list_bigger=NULL;
 	Resource *list_smaller=NULL;
-	
+
 	Resource *res_temp;
 
 	char *buf_bigger, *buf_smaller;
@@ -247,7 +247,7 @@ void my_fc(char *path1, char *path2) {
 	fp_smaller=fopen(path_smaller, "r");
 	fp_bigger=fopen(path_bigger, "r");
 
-	
+
 
 	while (fgets(buf_smaller, (int)STRING_LENGTH, fp_smaller) != NULL) {
 
@@ -260,7 +260,7 @@ void my_fc(char *path1, char *path2) {
 	}
 
 	if (row==1) {
-		
+
 		res_temp = new_resource();
 		res_temp = (Resource *)create_res(status_smaller, "", row, path_smaller);
 		res_temp->flag = TRUE;
@@ -269,8 +269,8 @@ void my_fc(char *path1, char *path2) {
 	}
 
 	//fprintf(stdout,"fgets on %s \n",list_smaller->path);
-	
-	
+
+
 	row=1;
 
 	while (fgets(buf_bigger, (int)STRING_LENGTH, fp_bigger) != NULL) {
@@ -321,7 +321,7 @@ void fc(param *parameters) {
 		tv.tv_usec=0;
 
 		retval = select(1,&rds,NULL,NULL, &tv); // select try to read input from stdin 
-												// (or pipe) but only until timeout expires
+		// (or pipe) but only until timeout expires
 
 		if (retval) // select read from stdin/pipe
 		{
@@ -382,8 +382,8 @@ void fc(param *parameters) {
 		exit(1);
 
 	} else
-		
+
 		my_fc(file1, file2);
-	
+
 }
 

@@ -100,29 +100,29 @@ void dec2bin(long decimal, char *binary) {
 
 /*given a string , it extracts double quotes from beginning and end*/
 char *extract_double_quotes(char *src){
-	
+
 	char *doublequotes, *temp;
 	int i;
-	
+
 	if(src[0]=='"' && src[strlen(src)-1]=='"'){
-	
-	doublequotes = (char *)malloc(strlen(src)-2);
-	temp = (char *)malloc(1);
 
-			for (i=1; i<strlen(src)-1; i++) {
+		doublequotes = (char *)malloc(strlen(src)-2);
+		temp = (char *)malloc(1);
 
-				sprintf(temp, "%c", src[i]);
-				if (i==1)
-					strcpy(doublequotes, temp);
-				else
-					strcat(doublequotes, temp);
-			}
+		for (i=1; i<strlen(src)-1; i++) {
+
+			sprintf(temp, "%c", src[i]);
+			if (i==1)
+				strcpy(doublequotes, temp);
+			else
+				strcat(doublequotes, temp);
+		}
 
 		return doublequotes;
 	}
 	else
 		return src;
-	
+
 }
 
 /*tells wheter resource is read only*/
@@ -295,10 +295,10 @@ void insert_resource_order_by_type(Resource **last, Resource *elem) {
 		(*last)->next = elem;
 		(*last) = elem;
 	} else
-	/* 
-	 ** lookup the correct position for elem, starting from the end
-	 ** of the list, i.e. following the prev pointer
-	 */
+		/* 
+		 ** lookup the correct position for elem, starting from the end
+		 ** of the list, i.e. following the prev pointer
+		 */
 	{
 		p = (*last);
 		//while (elem->time < p->time && p->prev!=(*last))
@@ -357,10 +357,10 @@ void insert_resource(Resource **last, Resource *elem) {
 		(*last)->next = elem;
 		(*last) = elem;
 	} else
-	/* 
-	 ** lookup the correct position for elem, starting from the end
-	 ** of the list, i.e. following the prev pointer
-	 */
+		/* 
+		 ** lookup the correct position for elem, starting from the end
+		 ** of the list, i.e. following the prev pointer
+		 */
 	{
 		p = (*last);
 		//while (elem->time < p->time && p->prev!=(*last))
@@ -477,8 +477,8 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 	int size=0;
 	char space = ' ';
 	char *temp = (char *)malloc(2);
-	
-		
+
+
 	t = res_list->status.st_mtim;
 	rawtime = t.tv_sec;
 	timeinfo = localtime((long *)&rawtime);
@@ -490,33 +490,33 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 		strcpy(sizeandname," ");
 		//sizeandname = " ";
 		(*dir)++;
-		
+
 		fprintf(stdout,"%s %s %s %s\n", buffer, sizeandname, dirindication, res_list->name);
-		
+
 	} else {
-		
+
 		sprintf(dirindication, "%d", (int)res_list->status.st_size);
 		size = strlen(dirindication);
-		
+
 		//if(size == 0)
-			sizeandname = (char *) malloc(22);//22
+		sizeandname = (char *) malloc(22);//22
 		//else
 		//	sizeandname =(char *) malloc(21-size+2);
-			
-		
+
+
 		for (i=0; i<20-size+1; i++) {//<21-size+1
-			
+
 			sprintf(temp,"%c",space);
 			if(i==0)
 				strcpy(sizeandname,temp);
 			else
 				strcat(sizeandname,temp);
-			
+
 			//sizeandname[i]=' ';
-			
-			
+
+
 		}
-		
+
 		//printf("dirindication: %s--,%d\nsizeandname: %s--,%d and theoric : %d\n",dirindication,size ,sizeandname,strlen(sizeandname),21-strlen(dirindication));
 		(*files)++;
 		*file_size+= (int)res_list->status.st_size;
@@ -524,9 +524,9 @@ void stdprint(Resource *res_list, int *dir, int *files, int *file_size) {
 		fprintf(stdout,"%s %s %s %s\n", buffer, sizeandname, dirindication, res_list->name);
 	}
 
-	
+
 	//fprintf(stdout,"%s %s %s %s\n", buffer, sizeandname, dirindication, res_list->name);
-	
+
 }
 
 /* time info print of folder . and .. */
@@ -567,7 +567,7 @@ void stdprint_parents(char *path) {
 		if (stat(path, &status) == 0) {
 
 			strdprint_time_parents(status, 0);
-			
+
 		}
 		close(p);
 	} else

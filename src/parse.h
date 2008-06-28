@@ -40,59 +40,76 @@ int current_dir[2];
 int pipe_comm[2];
 
 // check first string character to identify an option
+// *** receive pased string - return 1 -> Yes / 0 -> No ***
 int jolly_char(char *);
 
 // insert a new element in a custom list of type *param
+// *** receive list by reference , element to insert in lis *** 
 void insert_e(param **, param *);
 
 // create a new element of type *param
+// *** return the new allocated element ***
 param * new_elem();
 
-// '-' and '_' are allowed for paths --- '.' and '/' supposed allowed for files
+// '-' and '_' are allowed for dir --- '.' and '/' supposed allowed for files
+// space not handled
+// *** receive path name, 0-> dir 1->file - return TRUE -> Ok / FALSE -> Forbidden ***
 int under_s(char, int);
 
 // check for forbidden characters - in particular name cannot start with digit or '_' or '-'
+// *** receive path name, character to store errors by reference,  0-> dir 1->file ***
+// *** return TRUE -> Ok / FALSE -> Forbidden ***
 int alpha_num(char *, char *, int);
 
 // function in charge of handling redirection
 // return file pointer in case of success
+// *** receive path name, length of name - return file descriptor to use ***
 int redirector(char *, int);
 
 // create supporting directories if a dest file
 // for copy or redirectorie is specified with not existing dir
 // ex -> a/b/c/d.txt
 // *** receive path - return TRUE -> created / FALSE -> not a file ***
-int create_dest_path (char *path);
+int create_dest_path (char *);
 
 // return the complete string following a pipe "|" character
+// *** receive a line to be parsed - return the string following a pipe ***
 char* pipe_string(char *);
 
 /*
  * parse a line passed as argument to identify all
  * the strings that are options of a command
+ * *** receive a line to be parsed, a file descriptor by reference, a flag for pipe by reference ***
+ * *** return list with paths and options ***  
  */
 param* parse_options(char *, int *, int *);
 
 /*
  * parse a line passed as argument to identify first string
  * as command and the rest as options
+ * *** receive a line to be parsed, a string for command by reference, a string for options by reference ***
  */
 void parse_line(char **, char **, char *);
 
 // wrap for malloc
+// *** receive the size of memory to allocate - return the reference to memory allocated ***
 char *salloc (unsigned);
 
 // wrap for realloc
+// *** receive the reference to memory allocated, the size of memory to allocate *** 
+// *** return the reference to memory reallocated ***
 char *srealloc(char *, unsigned);
 
 // dynamically get a line till return is pressed
+// *** return read line ***
 char *get_line();
 
 // wrap of free to fre memory allocated for a list
 void my_free(param**);
 
 // checks if directory is empty --> return TRUE
-int empty_dir (char *path);
+// *** receive path name ***
+int empty_dir (char *;
 
 
 extern char *cd(char*,param*);

@@ -152,7 +152,7 @@ void print_mask(int mask[], char *path, char *name) {
 		attributes[3]=' ';
 
 	fprintf(stdout,"%c%c%c%c   %s\n", attributes[0], attributes[1], attributes[2],
-	attributes[3], full_path);
+			attributes[3], full_path);
 
 	//free(full_path);
 }
@@ -304,17 +304,17 @@ Resource *my_attrib(char *path) {
 					if ( (p= open(temp_path, O_RDONLY)) == -1) {
 
 						fprintf(stderr,"ATTRIB: 1cannot access : %s: No such file or directory\n",
-						temp_path);
+								temp_path);
 						//no need to exit; continue;
 					}
 
 					if (stat(temp_path, &status) != 0) {
 						if (ep->d_type==4)
 							fprintf(stdout,"Cannot open directory %s: Permission denied\n",
-							temp_path);
+									temp_path);
 						else
 							fprintf(stdout,"Cannot open file %s: Permission denied\n",
-							temp_path);
+									temp_path);
 						continue;
 
 					}
@@ -323,8 +323,8 @@ Resource *my_attrib(char *path) {
 					if (name[0] == '.') {
 
 						temp2
-								= create_res(status, ep->d_name, ep->d_type,
-										path);
+						= create_res(status, ep->d_name, ep->d_type,
+								path);
 						insert_resource(&to_print, temp2);
 
 					}
