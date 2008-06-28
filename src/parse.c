@@ -106,7 +106,7 @@ int alpha_num(char *path, char *ch, int dir)
 	int i,k,count=strlen(path);
 
 	// special case path->'..' and dir->1
-	if (strcmp(path,"..")==0 && dir==1)
+	if ( (strcmp(path,".")==0 || strcmp(path,"..")==0) && dir==1)
 		return TRUE;
 	
 	k=0;  //this allow to have '.' as first
@@ -134,6 +134,50 @@ int alpha_num(char *path, char *ch, int dir)
 		strncpy(ch,path+i,1);
 		return FALSE;
 	}
+}
+
+// create supporting directories if a dest file
+// for copy or redirectorie is specified with not existing dir
+// ex -> a/b/c/d.txt
+// *** receive path - return TRUE -> created / FALSE -> not a file ***
+int create_dest_path (char *path)
+{
+	char *line, *new_line;
+	int len=0;
+	param *p;
+	DIR *dir;
+	
+	line = strrchr(path,'/');
+	//fprintf(stdout,"path: %s\n", line);
+	
+	if (line==NULL) // only file name no dir specified
+		return TRUE;
+		
+	if ( strncmp(path+strlen(path)-1,"/",1)==0 ) // no file name - wrong
+		return FALSE;
+	
+	// length of string not composing file name
+	len = strlen(path)-strlen(line);
+	
+	new_line = (char*)malloc(sizeof(char)*len+1);
+	strncpy(new_line, path, len);
+	//fprintf(stdout,"New path: %s\n", new_line);
+	
+	dir=opendir(new_line);
+	if (dir!=NULL) // dir already exist - does not need to create it
+		return TRUE;					
+	
+	// create dir 
+	p=new_elem();
+	p->name = (char *) malloc(sizeof(char)*strlen(new_line)+1);
+	strcpy(p->name, new_line);
+	p->type = 0;
+	p->next=NULL;
+
+	md(p);
+	free(p);
+	
+	return TRUE;
 }
 
 // function in charge of handling redirection
@@ -191,7 +235,7 @@ int redirector(char *str_file, int str_len) {
 		if ( (fd=open (file_name, O_APPEND | O_WRONLY, mode)) == -1)
 		{
 			fprintf(stderr, "Can't open file %s, file will be created\n",file_name);
-			if ( (fd=open (file_name, O_CREAT | O_WRONLY | O_TRUNC, mode)) == -1)
+			if ( !create_dest_path(file_name) || (fd=open (file_name, O_CREAT | O_WRONLY | O_TRUNC, mode)) == -1)
 			{
 				fprintf(stderr, "Can't create file %s\n",file_name);
 				exit(1);
@@ -200,8 +244,9 @@ int redirector(char *str_file, int str_len) {
 	}
 	else  // write mode
 	{
+		
 		//open in write mode
-		if ( (fd=open (file_name, O_CREAT | O_WRONLY | O_TRUNC, mode)) == -1)
+		if ( !create_dest_path(file_name) || (fd=open (file_name, O_CREAT | O_WRONLY | O_TRUNC, mode)) == -1)
 		{
 			fprintf(stderr, "Can't create file %s\n",file_name);
 			exit(1);

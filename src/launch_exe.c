@@ -32,6 +32,7 @@
 #include "resource.h"
 
 /* look if there is an executable file whose name is the specified one,and if so it launches it */
+// *** receive command path, list with path and options/arguments ***
 int launch_exe(char *, param *);
 
 extern void dec2bin(long, char*);

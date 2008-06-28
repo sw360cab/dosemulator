@@ -35,18 +35,21 @@
  * look inside the passed path
  * check correctness and store in list
  * path name
+ * *** receive path - return list with parsed path ***
  */
 param* parse_path(char *);
+
 /*
  * md function
  * 1 - parse line
  * 2 - following path enters directories
  * 3 - if directories don't exist 
  * 		try to create it with same rights of parent directory
+ * *** receive list with path and options ***
  */
 void md(param *);
 
-	
+
 
 /*
  * look inside the passed path
@@ -77,12 +80,12 @@ param* parse_path(char *str)
 	{
 		while ( strncmp( str+count, "/",1)!=0 && strncmp( str+count,"\0",1)!=0 )
 			count++ ;
-		
+
 		p=new_elem();
 		//printf ("parse_dir ++%s++\n", str);
 		p->name = (char *) malloc(sizeof(char)* count+1 );
 		strncpy(p->name, str, count);
-		
+
 		// check correctness of temporay string -> relative path
 		if (!alpha_num(p->name,&c,1))
 		{
@@ -99,7 +102,7 @@ param* parse_path(char *str)
 		insert_e(&pt,p);
 
 		str+=count+1;
-		
+
 		count=0;
 	}while ( strncmp( str-1, "\0",1)!=0 && strncmp( str, "\0",1)!=0);
 
@@ -121,7 +124,7 @@ void md(param *list)
 	param *p;
 	mode_t st_mode, mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH ;
 	int stat_res;
-	
+
 	if(list==NULL)
 	{
 		fprintf(stderr, "md: missing file operand\n");
@@ -165,7 +168,7 @@ void md(param *list)
 					st_mode = st.st_mode;
 				else 
 					st_mode = mode;
-				
+
 				if (mkdir(p->name, st_mode) < 0 )
 				{
 					fprintf (stdout,"Unable to create directory or you don't have permission to do so\n");
@@ -184,5 +187,5 @@ void md(param *list)
 		// return to working directory
 		chdir(working_dir);
 	}
-	fprintf (stdout,"done\n");
+	//fprintf (stdout,"done\n");
 }

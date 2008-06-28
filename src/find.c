@@ -28,20 +28,23 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include "parse.h"
+#include "resource.h"
 
 /*look at the content of the file, line by line, and print the different ones */
+// *** receive string to be found, path name ***
 void my_find(char *, char *);
 
 /*look for paramters and launch my_find functions*/
+// *** receive list with path and options ***
 void find(param *parameters);
+
+extern char *extract_double_quotes(char *);
 
 short v_option; //show not matched
 short c_option; //show only the number of matches
 short n_option; //show also line number: it has effciency only if c=false
 short i_options; //ignore uppercase
 
-
-extern char *extract_double_quotes(char *);
 
 /*look at the content of the file, line by line, and print the different ones */
 void my_find(char *string_to_search, char *src) {
@@ -154,17 +157,39 @@ void find(param *parameters) {
 	char *to_search;
 	char *src;
 	short int p1= FALSE, p2=FALSE; //p2 is the file, p1 is the string to search
+	fd_set rds;
+	struct timeval tv;
+	int retval;
+	
+	FD_ZERO (&rds);
 
 	if (p==NULL) {
-		read(0,buffer,BUF_MAX/2);
-		*(buffer+(strlen(buffer)-1))='\0';
-		parameters = parse_options(buffer,0,0);
-			
-		/*	fprintf(stderr, "find: missing file operand\n");
-		fprintf(stderr, "Try \'help find\' for more information\n");
-		exit(1);*/
+
+		FD_SET(0,&rds);	// add read to select control
+		tv.tv_sec=1;	// set timeout for select
+		tv.tv_usec=0;
+
+		retval = select(1,&rds,NULL,NULL, &tv); // select try to read input from stdin 
+		// (or pipe) but only until timeout expires
+
+		if (retval) // select read from stdin/pipe
+		{
+			if (FD_ISSET(0,&rds))
+			{
+				read(0,buffer,BUF_MAX/2);
+				*(buffer+(strlen(buffer)-1))='\0';
+				parameters = parse_options(buffer,0,0);
+			}
+		}
+		else // timeout expires so nothing from input
+		{
+			fprintf(stderr, "find: missing file operand\n");
+			fprintf(stderr, "Try \'help find\' for more information\n");
+			exit(1);
+		}
 	}
 	p = parameters;
+	
 	//initialization of params to default values
 	v_option=FALSE; //show not matched
 	c_option=FALSE; //show only the number of matches

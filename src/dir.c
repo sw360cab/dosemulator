@@ -42,13 +42,15 @@ void initialize();
  (with respect to filter arguements */
 Resource *my_dir(char *);
 
-/* launch my_dir capturing the return  and launch the printing function*/
+/* launch my_dir capturing the return and launch the printing function*/
 Resource *processNode(char *);
 
 /* process the path passed as argument, then for all children resource, it launches itself for recursion  */
+//  *** receive parent path ***
 void followNode(char *);
 
 /* check for and set parameters, launch dir execution functions */
+// *** receive list with path and options ***
 void dir(param *);
 
 /* 

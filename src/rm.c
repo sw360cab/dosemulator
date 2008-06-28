@@ -31,31 +31,44 @@
 
 // PROTOTYPES
 
-extern char *get_line();
 // simply try o delete passed file
+// *** receive path name ***
 void erase(char *);
+
 // check if file is a read_only file
+// *** receive path name ***
 int rd_only(char *);
+
 // request for deleting file
+// *** receive path name, 1 for read only / 0 else - return 1 -> Yes / 0 -> No ***
 int request(char *, int);
+
 /*
  * recursive function that enter recursively
  * directories, delete files and at the end delete 
  * also the specified directory --> rm -Rf
+ * *** receive path name, ask flag ***
  */
 void recur_del(char *, int);
+
 /*
  * recursive function that enter recursively
  * directories, delete files if they have specified name
+ * *** receive path name, file name  *** 
  */
 void recur_subdir(char *, char *);
-// del command with various options to delete given files 
-void del(param *);
-// deltree command --> rm -Rf
-void deltree(param *);
-// rmdir
-void rd(param *);
 
+// del command with various options to delete given files
+// *** receive list with path and options ***
+void del(param *);
+
+// deltree command --> rm -Rf
+// *** receive list with path and options ***
+void deltree(param *);
+
+// rmdir
+// *** receive list with path and options ***
+void rd(param *);
 
 
 int req=0;
@@ -70,8 +83,8 @@ void erase(char *pth)
 	{
 		if ( unlink(pth) == -1)
 		{
-		fprintf(stderr, "Unable to delete file %s\n",pth);
-		exit(1);
+			fprintf(stderr, "Unable to delete file %s\n",pth);
+			exit(1);
 		}
 	}
 	//fprintf(stdout,"file deleted %s\n",pth);
@@ -165,8 +178,8 @@ void recur_del(char *current_path, int ask)
 
 		if ( rmdir(current_path) == -1)
 		{
-			fprintf(stderr, "Unable to delete directory %s\n Directory should be empty or there is a permission problem\n",current_path);
-			exit(1);
+			fprintf(stderr, "Unable to delete directory %s\nDirectory should be empty or there is a permission problem\n",current_path);
+			//exit(1);
 		}
 		//fprintf(stdout,"deleted dir %s\n", current_path);
 	}
@@ -253,7 +266,7 @@ void del(param *list)
 	int ronly=0;
 	int attrib=0;
 	int sub_dir=0;
-	
+
 	// additional flag to inform that file has been erased yet
 	// by other satisfying condition - avoid to try to delete again
 	// a deleted file
@@ -303,8 +316,6 @@ void del(param *list)
 			else if ( strncasecmp(param_name,"\\A",2)==0 ) // delete according to attributes
 			{
 				attrib=1;
-				fprintf(stdout,"attrib\n");
-
 				if (strncasecmp(param_name+2,":H",2)==0) // delete only if hidden
 					hidden=1;
 				else if (strncasecmp(param_name+2,":-H",3)==0) // delete all but hidden
@@ -353,7 +364,7 @@ void del(param *list)
 			recur_subdir(working_dir,path);
 			erased=1;
 		}
-		
+
 		// delete according to given attribute
 		if(attrib==1)
 		{
@@ -378,7 +389,7 @@ void del(param *list)
 			{
 				if ( strncmp(path,".",1)==0 )
 				{
-					fprintf(stdout,"here hidde\n");
+					//fprintf(stdout,"here hidden\n");
 					erase(path);
 					close(source_fd);
 				}
@@ -387,7 +398,6 @@ void del(param *list)
 			{
 				if ( strncmp(path,".",1)!=0 && erased!=1)
 				{
-					fprintf(stdout,"here non hidb\n");
 					erase(path);
 					close(source_fd);
 				}
@@ -443,7 +453,7 @@ void deltree(param *list)
 	struct stat st;
 	int source_fd;
 	req=0;
-	
+
 	if(list==NULL)
 	{
 		fprintf(stderr, "deltree: missing file operand\n");
@@ -515,11 +525,11 @@ void rd(param *list)
 	struct stat st;
 	int sub_dir=0, no_ask=0;
 	req=0;
-	
+
 	if(list==NULL)
 	{
-		fprintf(stderr, "rmdir: missing file operand\n");
-		fprintf(stderr, "Try \'help deltree\' for more information\n");
+		fprintf(stderr, "rd: missing file operand\n");
+		fprintf(stderr, "Try \'help rd\' for more information\n");
 		exit(1);
 	}
 
