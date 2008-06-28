@@ -44,7 +44,7 @@ void my_more(char *src) {
 	FILE *fp;
 
 	if ( (fp = fopen(src, "r")) == NULL) {
-		fprintf(stderr,"MORE: cannot access : %s: No such file or directory\n",
+		fprintf(stderr,"MORE: cannot access %s: No such file or directory\n",
 		src);
 		//exit(1);
 		return;

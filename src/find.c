@@ -156,12 +156,10 @@ void find(param *parameters) {
 	short int p1= FALSE, p2=FALSE; //p2 is the file, p1 is the string to search
 
 	if (p==NULL) {
-		
-		read(0,buffer,20);
+		read(0,buffer,BUF_MAX/2);
 		*(buffer+(strlen(buffer)-1))='\0';
 		parameters = parse_options(buffer,0,0);
-		//printf("%s\n",parameters->name);
-		
+			
 		/*	fprintf(stderr, "find: missing file operand\n");
 		fprintf(stderr, "Try \'help find\' for more information\n");
 		exit(1);*/
