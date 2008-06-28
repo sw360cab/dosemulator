@@ -36,15 +36,14 @@
 #include "parse.h"
 
 //it initialize the mask with default options
-void initialize() ;
-
+void initialize();
 
 /* it fills and return the list of all resources fuonded in the path
-(with respect to filter arguements */
+ (with respect to filter arguements */
 Resource *my_dir(char *);
 
 /* launch my_dir capturing the return  and launch the printing function*/
-Resource *processNode(char *) ;
+Resource *processNode(char *);
 
 /* process the path passed as argument, then for all children resource, it launches itself for recursion  */
 void followNode(char *);
@@ -68,8 +67,8 @@ short show_recursive; // /S option
 Resource *resources_list;
 param *parameters_global;
 
-extern Resource *create_res(struct stat,char[],unsigned char,char*);
-extern char *build_path(char*,char*);
+extern Resource *create_res(struct stat, char[], unsigned char, char*);
+extern char *build_path(char*, char*);
 extern int is_read_only(long);
 
 //it initialize tha mask with default options
@@ -84,7 +83,6 @@ void initialize() {
 	resources_list = NULL;
 	parameters_global = NULL;
 }
-
 
 /* it fills and return the list of all resources fuonded in the path(with respect to filter arguements */
 Resource *my_dir(char *path) {
@@ -142,7 +140,6 @@ Resource *my_dir(char *path) {
 				continue;
 			}
 
-			
 			if ( (p= open(temp_path, O_RDONLY)) == -1) {
 
 				fprintf(stderr,"DIR: cannot access : %s: No such file or directory\n",
@@ -153,10 +150,10 @@ Resource *my_dir(char *path) {
 			if (stat(temp_path, &status) != 0) {
 				if (ep->d_type==4)
 					fprintf(stdout,"Cannot open directory %s: Permission denied\n",
-							temp_path);
+					temp_path);
 				else
 					fprintf(stdout,"Cannot open file %s: Permission denied\n",
-							temp_path);
+					temp_path);
 				continue;
 
 			}
@@ -164,18 +161,16 @@ Resource *my_dir(char *path) {
 			//if stat succeeded, statvfs will succeed, no errors check
 
 			//st.mode 400 (user read only)-> 33024
-			
-			
-			if (show_read_only==1
-					&& (is_read_only(status.st_mode)==0))
+
+
+			if (show_read_only==1 && (is_read_only(status.st_mode)==0))
 				continue;
-			if (show_read_only==2
-					&& (is_read_only(status.st_mode)==1))
+			if (show_read_only==2 && (is_read_only(status.st_mode)==1))
 				continue;
 
 			res = create_res(status, ep->d_name, ep->d_type, path);
 			insert_resource(&resources_list, res);
-			
+
 			close(p);
 		}
 		(void) closedir(dp);
@@ -184,8 +179,7 @@ Resource *my_dir(char *path) {
 			insert_resource(&to_print, get_resource(&resources_list));
 		}
 		resources_list = NULL;
-		
-		
+
 	} else {
 		fprintf(stderr,"DIR: cannot access : %s: No such file or directory\n", path);
 		exit(1);
@@ -204,7 +198,6 @@ Resource *processNode(char *path) {
 
 	return to_dir;
 }
-
 
 /* process the path passed as argument, then for all children resource, it launches itself for recursion  */
 void followNode(char *path) {
@@ -228,7 +221,6 @@ void followNode(char *path) {
 		followNode(build_path(children->path, children->name));
 	}
 }
-
 
 /* check for and set parameters, launch dir execution functions */
 void dir(param *parameters) {
@@ -291,45 +283,45 @@ void dir(param *parameters) {
 	//second list check: look for paths
 	while (temp != NULL) {
 		flag = FALSE;
-		count++;
+		
 		
 		if (temp->type == 0) {
-
+			count++;
 			current_dir = (char *)malloc((unsigned int)strlen(temp->name));
 			strcpy(current_dir, temp->name);
 			flag = TRUE;
 			
+			if (flag==FALSE) {
+
+				current_dir = (char *)malloc((unsigned int)MAXPATH);
+				getcwd(current_dir, MAXPATH);
+			}
+		
+
+			if (show_recursive == 0) {
+				
+				processNode(current_dir);
+			} else {
+				
+				followNode(current_dir);
+			}
 		}
-
-		if (flag==FALSE) {
-
-			current_dir = (char *)malloc((unsigned int)MAXPATH);
-			getcwd(current_dir, MAXPATH);
-		}
-
-		if (show_recursive == 0) {
-
-			processNode(current_dir);
-		} else
-			followNode(current_dir);
-
-
+		
 		temp = temp->next;
 	}
-	
-	
-	
-	if ( flag==FALSE && count==0) {
+
+	if (flag==FALSE && count==0) {
 
 		current_dir = (char *)malloc((unsigned int)MAXPATH);
 		getcwd(current_dir, MAXPATH);
 
 		if (show_recursive == 0) {
-
+			
 			processNode(current_dir);
-		} else
+		} else {
+			
 			followNode(current_dir);
-
+		}
 	}
 
 	//free(current_dir);
