@@ -36,21 +36,21 @@ short append_in= FALSE;
 void echo(param *paramaters) {
 
 	param *p = paramaters;
-	
+
 	if( p == NULL ){
-		
+
 		fprintf(stdout," \n");
-		
+
 	}
-	
+
 	while (p!= NULL) {
 
 		fprintf(stdout,"%s ",p->name);
-			
+
 		p=p->next;
-		
+
 	}
 
 	fprintf(stdout,"\n");
-	
+
 }

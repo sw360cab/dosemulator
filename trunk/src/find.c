@@ -53,14 +53,14 @@ void my_find(char *string_to_search, char *src) {
 	FILE *fp;
 	char *buf, *output, *buf2;
 	char *string = (char *)malloc(strlen(string_to_search));
-	
+
 	strcpy(string,string_to_search);
 
 	short matched=FALSE;
 
 	if ( (fp = fopen(src, "r")) == NULL) {
 		fprintf(stderr,"FIND: cannot access : %s: No such file or directory\n",
-		src);
+				src);
 		exit(1);
 		return;
 	}
@@ -82,9 +82,9 @@ void my_find(char *string_to_search, char *src) {
 	while (fgets(buf, (int)STRING_LENGTH, fp) != NULL) {
 		matched = FALSE;
 		row_counter++;
-		
-		
-		
+
+
+
 		if (i_options==TRUE && strlen(buf)>=strlen(string) ) {
 
 			for (i=0; i< (strlen(buf)-strlen(string)); i++) {
@@ -103,7 +103,7 @@ void my_find(char *string_to_search, char *src) {
 
 		else {
 			output = strstr(buf, string);
-			
+
 			if (output != NULL)
 				matched = TRUE;
 		}
@@ -160,7 +160,7 @@ void find(param *parameters) {
 	fd_set rds;
 	struct timeval tv;
 	int retval;
-	
+
 	FD_ZERO (&rds);
 
 	if (p==NULL) {
@@ -189,7 +189,7 @@ void find(param *parameters) {
 		}
 	}
 	p = parameters;
-	
+
 	//initialization of params to default values
 	v_option=FALSE; //show not matched
 	c_option=FALSE; //show only the number of matches
@@ -198,7 +198,7 @@ void find(param *parameters) {
 
 	while (p!= NULL) {
 
-		
+
 		if (p->type==1) {
 
 			/*short v_option=FALSE; //show not matched
@@ -250,7 +250,7 @@ void find(param *parameters) {
 			} else {
 				p1=TRUE;
 				to_search
-						= (char *)malloc(strlen(extract_double_quotes(p->name)));
+				= (char *)malloc(strlen(extract_double_quotes(p->name)));
 				strcpy(to_search,extract_double_quotes(p->name));
 				break;
 
@@ -270,7 +270,7 @@ void find(param *parameters) {
 				src = (char *)malloc(strlen(p->name));
 				strcpy(src, p->name);
 				p2 = TRUE;
-				
+
 				my_find(to_search, src);
 			}
 			p=p->next;

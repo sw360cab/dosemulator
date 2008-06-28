@@ -44,7 +44,7 @@ int concat (char *);
 param* create_source(char *);
 
 // ask confirmation to override existing dest -  0-> dir 1->file
-// *** receive path name, 0-> dir 1->file / 0 else - return 1 -> Yes / 0 -> No ***
+// *** receive path name, 0-> dir 1->file - return 1 -> Yes / 0 -> No ***
 int req_overridden(char *, int);
 
 // check if destination file exists
@@ -103,7 +103,6 @@ extern int rd_only(char *);
 
 
 // global option flag
-// set all to 0 !!!
 int verify=0, override=0;
 int confirm=0, subdir=1, empty=0;
 int show_name=0, no_copy=0, no_file=0, overread=0;

@@ -48,19 +48,19 @@ int jolly_char(char *line)
 void insert_e(param **p_list, param *p)
 {
 	param *temp;
-	
+
 	temp=(*p_list);
-	
+
 	if ((*p_list)==NULL)
 		(*p_list)=p;
 	else
-		{ 
+	{ 
 		// find last 
 		while (temp->next!=NULL)
 			temp=temp->next;
-			
+
 		temp->next=p;
-		}
+	}
 }
 
 // create a new element of type *param
@@ -68,9 +68,9 @@ param * new_elem()
 {
 	param *p;
 	if ((p=(param *)malloc(sizeof(param)))==NULL)
-	  { fprintf(stdout,"Error  : Memory allocation error\n");
-	    exit(1);
-	  }
+	{ fprintf(stdout,"Error  : Memory allocation error\n");
+	exit(1);
+	}
 	return p;
 }
 
@@ -85,10 +85,10 @@ int under_s(char ch, int dir)
 	else
 	{
 		if (dir==0) // '.' is allowed
-			{
+		{
 			if (ch=='.' || ch =='/')
-					return TRUE;
-			}
+				return TRUE;
+		}
 		else
 			return FALSE;
 	}
@@ -108,9 +108,9 @@ int alpha_num(char *path, char *ch, int dir)
 	// special case path->'..' and dir->1
 	if ( (strcmp(path,".")==0 || strcmp(path,"..")==0) && dir==1)
 		return TRUE;
-	
+
 	k=0;  //this allow to have '.' as first
-	
+
 	// if name is alphaneumeric or contains '-' or '_' or '.' (in case of file name is OK)
 	for(i=0;i<strlen(path) && ( isalnum(path[i]) || under_s(path[i],k) ); i++)
 	{
@@ -121,7 +121,7 @@ int alpha_num(char *path, char *ch, int dir)
 			if (isdigit(path[i]) || path[i]=='-' || path[i] =='_' )
 				break;	// cannot start with digit or '_' or '-'
 		}
-		
+
 		count--;
 		//printf ("cnt = %d-%s-%d-%d-\n",count,path, isalnum(path[i]),k);
 	}
@@ -146,27 +146,27 @@ int create_dest_path (char *path)
 	int len=0;
 	param *p;
 	DIR *dir;
-	
+
 	line = strrchr(path,'/');
 	//fprintf(stdout,"path: %s\n", line);
-	
+
 	if (line==NULL) // only file name no dir specified
 		return TRUE;
-		
+
 	if ( strncmp(path+strlen(path)-1,"/",1)==0 ) // no file name - wrong
 		return FALSE;
-	
+
 	// length of string not composing file name
 	len = strlen(path)-strlen(line);
-	
+
 	new_line = (char*)malloc(sizeof(char)*len+1);
 	strncpy(new_line, path, len);
 	//fprintf(stdout,"New path: %s\n", new_line);
-	
+
 	dir=opendir(new_line);
 	if (dir!=NULL) // dir already exist - does not need to create it
 		return TRUE;					
-	
+
 	// create dir 
 	p=new_elem();
 	p->name = (char *) malloc(sizeof(char)*strlen(new_line)+1);
@@ -176,7 +176,7 @@ int create_dest_path (char *path)
 
 	md(p);
 	free(p);
-	
+
 	return TRUE;
 }
 
@@ -188,9 +188,9 @@ int redirector(char *str_file, int str_len) {
 	char c;
 	mode_t mode;
 	int fd;
-	
+
 	file_name= (char*)malloc(sizeof(char)*str_len);
-	
+
 	if (strncmp(str_file,">>",2)== 0) // appeding mode
 	{
 		append=1;
@@ -198,13 +198,13 @@ int redirector(char *str_file, int str_len) {
 	}
 	else
 		str_file+=1;
-	
+
 	// avoid blank spaces before file name
 	while ( strncmp( str_file," ",1)==0 )
 		str_file++;
-	
+
 	//fprintf(stdout,"okkk ---%s--%d---\n", str_file,str_len);
-		
+
 	// check that only a parameter is specified as file name
 	// and that file name is valid
 	while ( strncmp( str_file+count,"\0",1)!=0 )
@@ -214,7 +214,7 @@ int redirector(char *str_file, int str_len) {
 			fprintf(stderr,"Only one file name allowed as parameter\n");
 			exit(1);
 		}
-		
+
 		if (!alpha_num(str_file,&c,0)) // unexpected char
 		{
 			fprintf (stderr,"Invalid file name, unexpected char %c\n", c);
@@ -222,11 +222,11 @@ int redirector(char *str_file, int str_len) {
 		}
 		count ++;
 	}
-	
+
 	// set file name
 	strcpy(file_name, str_file);
 	//fprintf(stdout,"done --%s-- \n", file_name);
-	
+
 	// retrieve file descriptor if everything was 0k
 	mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
 	if(append==1) // append mode
@@ -244,7 +244,7 @@ int redirector(char *str_file, int str_len) {
 	}
 	else  // write mode
 	{
-		
+
 		//open in write mode
 		if ( !create_dest_path(file_name) || (fd=open (file_name, O_CREAT | O_WRONLY | O_TRUNC, mode)) == -1)
 		{
@@ -260,13 +260,13 @@ int redirector(char *str_file, int str_len) {
 char* pipe_string(char *str)
 {
 	char *line;
-	
+
 	line = (char *) malloc(sizeof(char)* strlen(str) );
 	// move until pipe
 	line = strchr(str,'|');
 	// move over pipe
 	line++;
-	
+
 	// check if blank space or not after pipe
 	if (strncmp(line," ",1)==0)
 		line++;
@@ -283,13 +283,13 @@ param* parse_options(char *opt, int *file_d, int *pipe)
 	int start, end, count=0;
 	param *p;
 	param *pt=NULL;
-	
+
 	start=count;
-	
+
 	// skip extra blanks
 	while ( strncmp( opt, " ",1)==0 )
 		opt++;
-	
+
 	// return immediately if no options are present
 	if (strlen(opt)!=0)
 	{
@@ -298,20 +298,20 @@ param* parse_options(char *opt, int *file_d, int *pipe)
 			while ( strncmp( opt+count, " ",1)!=0 && strncmp( opt+count,"\0",1)!=0 )
 				count++ ;
 			end=count;
-			
+
 			if ( strncmp(opt,">",1)== 0) // redirection was asked
-				{
+			{
 				*file_d = redirector(opt,strlen(opt));
-				
+
 				while ( strncmp( opt,"\0",1)!=0 )  // move to end of line in order to exit do-while
 					opt++;
-				}
+			}
 			else if ( strncmp(opt,"|",1)== 0) // pipe command
-				{
+			{
 				*pipe=1;
 				while ( strncmp( opt,"\0",1)!=0 )  // move to end of line in order to exit do-while
 					opt++;
-				}
+			}
 			else
 			{
 				p=new_elem();
@@ -329,13 +329,13 @@ param* parse_options(char *opt, int *file_d, int *pipe)
 				// TODO: check
 				while ( strncmp( opt, " ",1)==0 )
 					opt++;
-				
+
 				start=end+1;
 				count=0;
 			}
 		}while ( strncmp( opt, "\0",1)!=0 );
 	}
-	
+
 	return pt;	
 }
 
@@ -346,16 +346,16 @@ param* parse_options(char *opt, int *file_d, int *pipe)
 void parse_line(char **comm, char ** opt, char * line)
 {	
 	int count=0;
-	
+
 	// skip extra blanks
 	while ( strncmp(line, " ",1)==0 )
 		line++;
-	
+
 	while ( strncmp( line+count, " ",1)!=0 && strncmp( line+count, "\0",1)!=0 )
 		count++;
-	
+
 	strncpy(*comm,line,count);
-	
+
 	if(strncmp( line+count, "\0",1)!=0)
 		strncpy(*opt,line+count+1, strlen(line) - count +1);
 }
@@ -363,38 +363,38 @@ void parse_line(char **comm, char ** opt, char * line)
 // wrap for malloc
 char *salloc (unsigned size)
 {
-    char *ret;
-    ret = (char *) malloc (size+1);
-        
-    return ret;
+	char *ret;
+	ret = (char *) malloc (size+1);
+
+	return ret;
 }
 
 // wrap for realloc
 char *srealloc(char *str, unsigned u){
-	
+
 	char *ret;
 	unsigned int length = u + strlen(str);
-	
+
 	ret = (char *) realloc(str,length);
-	    
+
 	return ret;	
 }
 
 // dynamically get a line till return is pressed
 char *get_line(){
-	
+
 	char *line;
 	char *cp;
-	
+
 	unsigned size;
 	unsigned count;
 	int c;
-	
+
 	size = N;
 	line=salloc(size);
 	cp=line;
 	for(count=0;(c=getchar())!= '\n'; count++){
-		
+
 		if(c==EOF)
 			return NULL;
 		if(count>=(size-1))
@@ -413,7 +413,7 @@ char *get_line(){
 void my_free(param** list)
 {
 	param* q = NULL;
-	
+
 	for ( ; (*list)!=NULL ; (*list)=q )
 	{
 		//fprintf(stdout,"free --%s--\n",(*list)->name);

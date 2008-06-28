@@ -54,7 +54,7 @@ void exec_com(char * command, char * options) {
 			dup(pipe_comm[1]);
 			close(pipe_comm[1]);
 		} 
-		
+
 		else // second command after pipe -- need to be parsed from the beginning
 		{
 			// wait end of first command
@@ -204,11 +204,11 @@ int main(int argc, char **argv) {
 		} else // father
 		{
 			wait(&status);
-	
+
 			// routines to detect if need to move to new dir
 			length=read(current_dir[0], buf, BUF_MAX);
 			buf[length]='\0';
-			
+
 			// buffer contains onvalidating char '*'
 			if ( (new_dir=strrchr(buf, '*')) != NULL) // working directory has changed in the child
 			{

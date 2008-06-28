@@ -18,7 +18,7 @@
  *
  * ***** END LICENSE BLOCK ***** 
  */
-//BUG! if space after argument, it exits
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -52,13 +52,13 @@ int launch_exe(char *command_path, param *parameters) {
 	//count the number of arguments(whose length is >0)
 	while (par != NULL) {
 
-		
+
 		if(strlen(par->name)>0)
 			i++;
 		par=par->next;
 
 	}
-	
+
 	if (i!=0) {
 
 		par = parameters;
@@ -68,7 +68,7 @@ int launch_exe(char *command_path, param *parameters) {
 		//bacause execve is missing the first argument
 		arguments[0] = (char *)malloc(2);
 		strcpy(arguments[0],"**");
-		
+
 		while (par != NULL) {
 
 			if(strlen(par->name) != 0){
@@ -76,13 +76,13 @@ int launch_exe(char *command_path, param *parameters) {
 				strcpy(arguments[j], par->name);
 				j++;
 			}
-			
+
 			par=par->next;
 		}
 	} else
 		arguments = NULL;
 
-	
+
 	if ((fd = open(command_path, O_EXCL))!= -1) {
 
 		if (stat(command_path, &stat_result) == -1) {
@@ -98,7 +98,7 @@ int launch_exe(char *command_path, param *parameters) {
 
 			fprintf(stderr, "%s: any executable permission\n", command_path);
 			return -1;
-			
+
 		}
 
 		if ((pid=fork())==0) {//child
@@ -112,9 +112,9 @@ int launch_exe(char *command_path, param *parameters) {
 		}
 
 	} else {
-		
+
 		return -1;
 
 	}
-		return 0;
+	return 0;
 }

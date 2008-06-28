@@ -48,7 +48,7 @@ void my_more(char *src) {
 
 	if ( (fp = fopen(src, "r")) == NULL) {
 		fprintf(stderr,"MORE: cannot access %s: No such file or directory\n",
-		src);
+				src);
 		//exit(1);
 		return;
 	}
@@ -64,17 +64,17 @@ void my_more(char *src) {
 			row++;
 			continue;
 		}
-		
+
 		if(s_option == TRUE){
 			if(strlen(buf) == 1)
 				space ++;
 			else space=0;
-			
+
 			if(space > 1){
 				row++;
 				continue;
 			}
-				
+
 		}
 		fprintf(stdout,"%s",buf);
 
@@ -91,13 +91,13 @@ void more(param *parameters) {
 
 	param *p = parameters;
 	short int files = 0;
-	
+
 	if (p==NULL) {
-			fprintf(stderr, "more: missing file operand\n");
-			fprintf(stderr, "Try \'help more\' for more information\n");
-			exit(1);
-		}
-	
+		fprintf(stderr, "more: missing file operand\n");
+		fprintf(stderr, "Try \'help more\' for more information\n");
+		exit(1);
+	}
+
 
 	while (p!= NULL) {
 
