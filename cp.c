@@ -176,21 +176,21 @@ int req_overridden(char *pth, int file)
 		else // dir
 			fprintf(stdout,"Directory %s already exists, Do you want to overwrite it? [Yes or No or All]\n", pth);
 
-		answ=get_line();
-		if (strcasecmp(answ,"yes")==0 || strcasecmp(answ,"y")==0 || strcmp(answ,"Yes")==0 )
+		answ=get_line();			
+		if (strncasecmp(answ,"yes",3)==0 || strncasecmp(answ,"y",1)==0 || strncmp(answ,"Yes",3)==0 )
 			return 1;
 		else	
 		{	// NO
-			if ( strcasecmp(answ,"no")==0 || strcasecmp(answ,"n")==0 || strcmp(answ,"No")==0 )
+			if ( strncasecmp(answ,"no",3)==0 || strncasecmp(answ,"n",1)==0 || strncmp(answ,"No",3)==0 )
 				return 0;
 			// ALL - don't ask again
-			else if ( strcasecmp(answ,"all")==0 || strcasecmp(answ,"a")==0 || strcmp(answ,"All")==0 )
+			else if ( strncasecmp(answ,"all",3)==0 || strncasecmp(answ,"a",1)==0 || strncmp(answ,"All",3)==0 )
 			{
 				override = 1;
 				return 1;
 			}
 			else 
-				fprintf(stderr, "Type Yes or No or All !\n");
+				fprintf(stderr, "Type Yes or No!\n");
 		}
 
 	}
@@ -556,21 +556,22 @@ int create_confirmation(char *pth, int file)
 			fprintf(stdout,"Are you sure to create directory %s?[Yes or No or All]\n", pth);
 
 		answ=get_line();
-		if (strcasecmp(answ,"yes")==0 || strcasecmp(answ,"y")==0 || strcmp(answ,"Yes")==0 )
+		if (strncasecmp(answ,"yes",3)==0 || strncasecmp(answ,"y",1)==0 || strncmp(answ,"Yes",3)==0 )
 			return 1;
 		else	
 		{	// NO
-			if ( strcasecmp(answ,"no")==0 || strcasecmp(answ,"n")==0 || strcmp(answ,"No")==0 )
+			if ( strncasecmp(answ,"no",3)==0 || strncasecmp(answ,"n",1)==0 || strncmp(answ,"No",3)==0 )
 				return 0;
 			// ALL - don't ask again
-			else if ( strcasecmp(answ,"all")==0 || strcasecmp(answ,"a")==0 || strcmp(answ,"All")==0 )
+			else if ( strncasecmp(answ,"all",3)==0 || strncasecmp(answ,"a",1)==0 || strncmp(answ,"All",3)==0 )
 			{
-				confirm = 0;
+				override = 1;
 				return 1;
 			}
 			else 
-				fprintf(stderr, "Type Yes or No or All !\n");
+				fprintf(stderr, "Type Yes or No!\n");
 		}
+
 	}
 }
 
