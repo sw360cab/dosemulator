@@ -40,7 +40,7 @@ int current_dir[2];
 int pipe_comm[2];
 
 // check first string character to identify an option
-// *** receive pased string - return 1 -> Yes / 0 -> No ***
+// *** receive passed string - return 1 -> Yes / 0 -> No ***
 int jolly_char(char *);
 // insert a new element in a custom list of type *param
 // *** receive list by reference , element to insert in lis *** 
