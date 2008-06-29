@@ -56,11 +56,11 @@ void print_differences(Resource *smaller, Resource *bigger) {
 	Resource  *copy_smaller, *copy_bigger;
 	Resource *last_smaller, *last_bigger;
 
-	int i =0;
+	int i=0;
 
 	//fprintf(stdout,"%s smaller than %s \n",smaller->path,bigger->path);
-	copy_smaller = smaller;
-	copy_bigger = bigger;
+	copy_smaller = smaller->next;//it was smaller
+	copy_bigger = bigger->next; //it was bigger
 
 	last_smaller = smaller->prev;
 	last_bigger = bigger->prev;
@@ -70,9 +70,9 @@ void print_differences(Resource *smaller, Resource *bigger) {
 	//first= mark all equals lines 
 
 	if ( (int)copy_smaller->flag != TRUE && (int)copy_smaller != TRUE) {
-
-		for (i= 0; i<smaller_lines; i++) {
-
+		
+		for (i=0; i<smaller_lines; i++) {
+			
 			if (case_sensitive==TRUE) {
 
 				//fprintf(stdout,"comparing \n %s \nand \n %s\n",copy_smaller->name, copy_bigger->name);
@@ -101,14 +101,14 @@ void print_differences(Resource *smaller, Resource *bigger) {
 
 	//second = print all not marked remaining lines (the ones who differ)
 
-	copy_smaller=smaller;
-	copy_bigger=bigger;
+	copy_smaller=smaller; //it was smaller 
+	copy_bigger=bigger->next;   //it was bigger
 
 	fprintf(stdout,"\n****** %s *******\n\n", smaller->path);
-
+	i=0;
 
 	for (i=0; i<smaller_lines; i++) {
-
+		
 		if (copy_smaller->flag!=TRUE) {
 
 			if (show_line_option==FALSE)
@@ -123,11 +123,11 @@ void print_differences(Resource *smaller, Resource *bigger) {
 
 	fprintf(stdout,"\n****** %s *******\n\n", bigger->path);
 
-
+	i=0;
 
 
 	for (i=0; i<bigger_lines; i++) {
-
+		
 		if (copy_bigger->flag!=TRUE) {
 
 			if (show_line_option==FALSE)
@@ -249,11 +249,11 @@ void my_fc(char *path1, char *path2) {
 
 
 
-	while (fgets(buf_smaller, (int)STRING_LENGTH, fp_smaller) != NULL) {
+	while (fgets(buf_smaller, (int)STRING_LENGTH/2, fp_smaller) != NULL) {
 
 		res_temp = new_resource();
 		res_temp =(Resource *) create_res(status_smaller, buf_smaller, row, path_smaller);
-		insert_resource(&list_smaller, res_temp);
+		insert_resource_order_by_type(&list_smaller, res_temp);//it was insert_resource
 		//fprintf(stdout,"inserted line %s of %s\n",res_temp->name,res_temp->path);
 		row++;
 
@@ -273,11 +273,11 @@ void my_fc(char *path1, char *path2) {
 
 	row=1;
 
-	while (fgets(buf_bigger, (int)STRING_LENGTH, fp_bigger) != NULL) {
+	while (fgets(buf_bigger, (int)STRING_LENGTH/2, fp_bigger) != NULL) {
 
 		res_temp = new_resource() ;
 		res_temp = (Resource *)create_res(status_bigger, buf_bigger, row, path_bigger);
-		insert_resource(&list_bigger, res_temp);
+		insert_resource_order_by_type(&list_bigger, res_temp);//it was insert_resource
 		row++;
 
 	}
