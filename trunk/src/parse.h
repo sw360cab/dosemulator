@@ -53,6 +53,7 @@ param * new_elem();
 // *** receive path name, 0-> dir 1->file - return TRUE -> Ok / FALSE -> Forbidden ***
 int under_s(char, int);
 // check for forbidden characters - in particular name cannot start with digit or '_' or '-'
+// space are not handled - for dir -> "." and ".." are considered valid
 // *** receive path name, character to store errors by reference,  0-> dir 1->file ***
 // *** return TRUE -> Ok / FALSE -> Forbidden ***
 int alpha_num(char *, char *, int);

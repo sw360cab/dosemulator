@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
 	char buf[MAXPATH];
 	int length;
 
-	fprintf(stdout,"\n-- This is Windows DOS shell emulator 1.0\n");
+	fprintf(stdout,"\n-- This is Microsoft Windows DOS shell emulator 1.0\n");
 	fprintf(stdout,"-- you can type windows command or run programs\n");
 	fprintf(stdout,"-- type \'list\' for a list or \'help command\' for help\n");
 	fprintf(stdout,"-- otherwise type \'quit\' or \'exit\' to quit\n\n");
