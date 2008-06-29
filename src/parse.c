@@ -100,13 +100,15 @@ int under_s(char ch, int dir)
  * 
  * dir is 1 --> name to check is a directory name
  * dir is 0 --> name to check is a file name --> '.' is a valid char
+ * space are not handled
+ * for dir -> "." and ".." are considered valid
  */
 int alpha_num(char *path, char *ch, int dir)
 {
 	int i,k,count=strlen(path);
 
 	// special case path->'..' and dir->1
-	if ( (strcmp(path,".")==0 || strcmp(path,"..")==0) && dir==1)
+	if ( (strcmp(path,".")==0 || strcmp(path,"..")==0 || strcmp(path,"~")==0) && dir==1)
 		return TRUE;
 
 	k=0;  //this allow to have '.' as first

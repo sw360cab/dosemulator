@@ -257,6 +257,9 @@ void del(param *list)
 { 	
 	param *p, *file_list=NULL;
 	char *path,*working_dir, *param_name;
+	char *line, *new_line;
+	DIR *dir;
+	int len=0;
 	int source_fd, req_tmp;
 	struct stat st;
 
@@ -361,7 +364,35 @@ void del(param *list)
 		// subdir --> check file in subdir recursively
 		if (sub_dir==1)
 		{
-			recur_subdir(working_dir,path);
+			line = strrchr(path,'/');
+				
+			// length of string not composing file name
+			if (line==NULL)
+				len = strlen(working_dir);
+			else
+				len = strlen(path)-strlen(line);
+
+			new_line = (char*)malloc(sizeof(char)*len+1);
+			
+			if (line==NULL) // only file name no dir specified
+				strcpy(new_line, working_dir);
+			else
+			{
+				strncpy(new_line, path, len);
+				line++;
+			}
+			dir=opendir(new_line);
+			if (dir == NULL)
+			{
+				fprintf(stderr, "Unable to find file %s or you don\'t have enough permission\n",path);
+				exit(1);
+			}
+			
+			if (line==NULL) // looking in current dir
+				recur_subdir(new_line,path);
+			else	 // looking in sub_dir
+				recur_subdir(new_line,line);
+			
 			erased=1;
 		}
 
@@ -521,6 +552,7 @@ void deltree(param *list)
  */
 void rd(param *list)
 {
+	param *p, *file_list=NULL;
 	char *working_dir;
 	struct stat st;
 	int sub_dir=0, no_ask=0;
@@ -554,44 +586,58 @@ void rd(param *list)
 		}
 		else // dir name
 		{
-			if (stat(list->name,&st)==-1)
-			{
-				fprintf(stderr, "Failed to remove \'%s\': No such file or directory\n",list->name);
-				exit(1);
-			}
+			p=new_elem();
 
-			// delete directory
-			if(S_ISDIR(st.st_mode))
-			{
-				if (opendir(list->name)==NULL)
-				{
-					fprintf(stderr, "Unable to open directory %s\n", list->name);
-					exit(1);
-				}
-
-				if (sub_dir==1)
-					// rm -Rf
-					recur_del(list->name,no_ask);
-				else // only delete dir if empty
-				{
-					if(empty_dir(list->name))  // dir is empty
-					{
-						if ( rmdir(list->name) == -1)
-						{
-							fprintf(stderr, "Unable to delete directory %s\nDirectory should be empty or there is a permission problem\n",list->name);
-							exit(1);
-						}
-					}
-
-					else // dir not empty
-					{
-						fprintf(stderr, "Unable to delete directory %s\nDirectory should be empty or there is a permission problem\n",list->name);
-						exit(1);
-					}
-				}
-			}
+			p->name = (char *) malloc(sizeof(char)*strlen(list->name)+1);
+			strcpy(p->name, list->name);
+			p->type = 0;
+			p->next=NULL;
+			insert_e(&file_list,p);
 		}
 
 		list=list->next;
 	}
-}	
+	
+	// parse dir list to be deleted
+	while(file_list!=NULL)
+	{	
+		if (stat(file_list->name,&st)==-1)
+		{
+			fprintf(stderr, "Failed to remove \'%s\': No such file or directory\n",file_list->name);
+			exit(1);
+		}
+
+		// delete directory
+		if(S_ISDIR(st.st_mode))
+		{
+			if (opendir(file_list->name)==NULL)
+			{
+				fprintf(stderr, "Unable to open directory %s\n", file_list->name);
+				exit(1);
+			}
+
+			if (sub_dir==1)
+				// rm -Rf
+				recur_del(file_list->name,no_ask);
+			else // only delete dir if empty
+			{
+				if(empty_dir(file_list->name))  // dir is empty
+				{
+					if ( rmdir(file_list->name) == -1)
+					{
+						fprintf(stderr, "Unable to delete directory %s\nDirectory should be empty or there is a permission problem\n",file_list->name);
+						exit(1);
+					}
+				}
+
+				else // dir not empty
+				{
+					fprintf(stderr, "Unable to delete directory %s\nDirectory should be empty or there is a permission problem\n",file_list->name);
+					exit(1);
+				}
+			}
+		}
+		file_list=file_list->next;
+	}
+	free(working_dir);
+}

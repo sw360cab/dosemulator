@@ -98,7 +98,7 @@ char *cd(char *current, param *list) {
 		free(path);
 		return current;
 	} else {
-		fprintf(stdout,"%s\n", path);
+		//fprintf(stdout,"%s\n", path);
 		return path;
 	}
 }
