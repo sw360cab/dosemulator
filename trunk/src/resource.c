@@ -194,17 +194,7 @@ Resource *create_res(struct stat status, char res_name[], unsigned char type,
 
 }
 
-/* 
- **  Function:    void delete_event(Event **last,Event *event)
- **  Parameters:  Event **last  - Reference pointer for the list (the last
- **                               element)
- **               Event  *elem  - Record of type Event to be removed
- **  Return:      none
- **  Description: Remove the event 'elem' from the FES, leaving it in a
- **               correct state. The event must already be in the FES and it is
- **               not looked up. 
- */
-
+/* Delete a resource */
 void delete_resource(Resource **last, Resource *elem) {
 
 	if (elem==NULL)
@@ -213,7 +203,7 @@ void delete_resource(Resource **last, Resource *elem) {
 		return;
 
 	if ((*last)->next==(*last)) {
-		/* There is a single event in the FES */
+		/* There is a single resource */
 		if ( (*last)==elem) {
 			(*last)=NULL;
 		}
@@ -221,12 +211,12 @@ void delete_resource(Resource **last, Resource *elem) {
 		(elem->next)->prev = elem->prev;
 		(elem->prev)->next = elem->next;
 		if ((*last)==elem) {
-			/* elem was the last event in the FES: update the FES reference */
+			/* elem was the last resource: update reference */
 			(*last) = elem->prev;
 		}
 	}
 
-	/* Detach the record from the FES */
+	/* Detach the record from */
 	elem->next = NULL;
 	elem->prev = NULL;
 
@@ -241,7 +231,7 @@ Resource* delete_resource_POP(Resource **last, Resource *elem) {
 		return NULL;
 
 	if ((*last)->next==(*last)) {
-		/* There is a single event in the FES */
+		/* There is a single resource */
 		if ((*last)==elem) {
 			(*last)=NULL;
 		}
@@ -249,27 +239,19 @@ Resource* delete_resource_POP(Resource **last, Resource *elem) {
 		(elem->next)->prev = elem->prev;
 		(elem->prev)->next = elem->next;
 		if ((*last)==elem) {
-			/* elem was the last event in the FES: update the FES reference */
+			/* elem was the last resource: update reference */
 			(*last) = elem->prev;
 		}
 	}
 
-	/* Detach the record from the FES */
+	/* Detach the record from */
 	elem->next = NULL;
 	elem->prev = NULL;
 
 	return elem;
 }
 
-
-/* 
- **  Function:    void insert_resource_order_by_type(Event **last, Event *elem)
- **  Parameters:  Event **last  - Reference pointer for the list (the last 
- **                               element)
- **               Event  *elem  - Record of type Event to be inserted
- **  Return:      none
- **  Description: Inserts 'elem' in the Event List referenced by **last
- */
+/* Inserts a resource ordered */
 void insert_resource_order_by_type(Resource **last, Resource *elem) {
 	Resource *p;
 	if (elem==NULL)
@@ -284,7 +266,7 @@ void insert_resource_order_by_type(Resource **last, Resource *elem) {
 	}
 
 	/* 
-	 ** elem is scheduled later than the last event in the list:
+	 ** elem is scheduled later than the last resource in the list:
 	 ** it is inserted at the end and becomes the new last
 	 */
 	//if (elem->time >= (*last)->time)
@@ -313,7 +295,7 @@ void insert_resource_order_by_type(Resource **last, Resource *elem) {
 			(p->prev)->next = elem;
 			p->prev = elem;
 		} else {
-			/* elem must be the first event in the list:
+			/* elem must be the first resource in the list:
 			 insert elem after p (that is *last) */
 			elem->prev = p;
 			elem->next = p->next;
@@ -324,14 +306,7 @@ void insert_resource_order_by_type(Resource **last, Resource *elem) {
 	return;
 }
 
-/* 
- **  Function:    void insert_event(Event **last, Event *elem)
- **  Parameters:  Event **last  - Reference pointer for the list (the last 
- **                               element)
- **               Event  *elem  - Record of type Event to be inserted
- **  Return:      none
- **  Description: Inserts 'elem' in the Event List referenced by **last
- */
+/* Inserts a resource */
 void insert_resource(Resource **last, Resource *elem) {
 	Resource *p;
 	if (elem==NULL)
@@ -346,7 +321,7 @@ void insert_resource(Resource **last, Resource *elem) {
 	}
 
 	/* 
-	 ** elem is scheduled later than the last event in the list:
+	 ** elem is scheduled later than the last resource in the list:
 	 ** it is inserted at the end and becomes the new last
 	 */
 	//if (elem->time >= (*last)->time)
@@ -375,7 +350,7 @@ void insert_resource(Resource **last, Resource *elem) {
 			(p->prev)->next = elem;
 			p->prev = elem;
 		} else {
-			/* elem must be the first event in the list:
+			/* elem must be the first resource in the list:
 			 insert elem after p (that is *last) */
 			elem->prev = p;
 			elem->next = p->next;
@@ -386,14 +361,7 @@ void insert_resource(Resource **last, Resource *elem) {
 	return;
 }
 
-/* 
- **  Function:    Event *get_event(Event **last)
- **  Parameters:  Event **last  - Reference pointer for the list (the last 
- **                               element)
- **  Return:      Pointer to the extracted event 
- **  Description: Returns the next scheduled event, removing it from the top of
- **               the FES. Returns NULL if the FES was empty
- */
+/* Returns the first resource */
 Resource *get_resource(Resource **last) {
 	Resource *p;
 	if ((*last)==NULL)
@@ -411,14 +379,7 @@ Resource *get_resource(Resource **last) {
 	return p;
 }
 
-/* 
- **  Function:	 Event *new_event(void)
- **  Parameters:  none
- **  Return:      Pointer to a new event
- **  Description: Returns a new event either allocating it or extracting it 
- **               from the Free List
- **  Side Effect: Extracts elements from the global Free List
- */
+/* Returns a new resource */
 Resource *new_resource(void) {
 	extern Resource *free_resources;
 	Resource *p;
@@ -436,14 +397,7 @@ Resource *new_resource(void) {
 	 Free List */
 }
 
-/* 
- **  Function:	 void release_event(Event *elem)
- **  Parameters:  Event *elem - Event to be released
- **  Return:      None
- **  Description: Releases the record of the event, inserting it in the
- **               Free List
- **  Side Effect: Inserts elements in the global Free List
- */
+/* Releases a resource */
 void release_resource(Resource *elem) {
 	extern Resource *free_resources;
 	//elem->time = (Time)MAX_TIME;   
@@ -615,7 +569,7 @@ Resource *print_list(Resource *res_list, char *path, char *options) {
 	files = 0;
 	totfilesize=0;
 
-	fprintf(stdout,"\n Directory di %s\n\n", path);
+	fprintf(stdout,"\n Directory of %s\n\n", path);
 
 	last= res_list;
 	temp_path =(char *) malloc((unsigned int)MAXPATH);
