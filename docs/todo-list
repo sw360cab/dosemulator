@@ -1,5 +1,0 @@
-TODO
-
-- aggiungere pipe nel main per mantenere current directory tra padre e figlio
-- free-custom function che fa free di tutti gli elem in una lista --> parse.c 
-- stringa formattata di errore --> ex. comando - file - errore

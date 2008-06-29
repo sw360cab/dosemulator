@@ -1,3 +1,0 @@
-unfortunately the value returned by the sprintf function varies 
-according to the particular version of UNIX being used. On UNIX System IV
-the number of characters stored in the area is returned, ...
