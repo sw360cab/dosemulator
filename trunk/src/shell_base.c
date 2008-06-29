@@ -190,7 +190,7 @@ int main(int argc, char **argv) {
 
 		if (strcasecmp(command, "exit")==0 || strcasecmp(command, "quit")==0) {
 			running=FALSE;
-			
+
 			fprintf(stdout,"\n !! Bye Bye !!\n\n");
 			free(command);
 			free(opt);

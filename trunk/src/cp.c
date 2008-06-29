@@ -565,7 +565,7 @@ int create_confirmation(char *pth, int file)
 			// ALL - don't ask again
 			else if ( strncasecmp(answ,"all",3)==0 || strncasecmp(answ,"a",1)==0 || strncmp(answ,"All",3)==0 )
 			{
-				override = 1;
+				confirm = 0;
 				return 1;
 			}
 			else 
@@ -777,11 +777,11 @@ int is_dest_dir(char *pth)
 		fprintf(stdout,"The destination %s is a file[F] or a directory[D]?\n", pth);
 
 		answ=get_line();
-		if (strcasecmp(answ,"dir")==0 || strcasecmp(answ,"d")==0 || strcmp(answ,"Dir")==0 )
+		if (strncasecmp(answ,"dir",3)==0 || strncasecmp(answ,"d",1)==0 || strncmp(answ,"Dir",3)==0 )
 			return TRUE;
 		else	
 		{	// file
-			if ( strcasecmp(answ,"file")==0 || strcasecmp(answ,"F")==0 || strcmp(answ,"File")==0 )
+			if ( strncasecmp(answ,"file",4)==0 || strncasecmp(answ,"f",1)==0 || strncmp(answ,"File",1)==0 )
 				return FALSE;
 			else 
 				fprintf(stderr, "Type F or D!\n");
@@ -1154,8 +1154,8 @@ void disk_copy(param* list)
 				exit(1);
 			}
 
-			// file to write does not exceed floppy size 
-			if (written_bytes + st.st_size < 1440)
+			// file to write does not exceed floppy size - 1.44 MB 
+			if (written_bytes + st.st_size < 1440000)
 			{
 				while ((rd = read( source_fd, buf,BUF_MAX)) > 0 )
 					write(floppy_fd, buf, rd /*BUF_MAX*/ );
