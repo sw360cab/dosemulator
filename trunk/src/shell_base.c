@@ -79,9 +79,9 @@ void exec_com(char * command, char * options) {
 			parse_line(&command2, &options2, line);
 			strcpy(command, command2);
 			parameter_list=parse_options(options2, &fd, &piped);
-			//fprintf(stdout,"PIPE:  Trovati COMANDO ---%s---\n e OPZIONI ---%s---\n", command,options);
-			//free(command2);
-			//free(options2);
+			//fprintf(stdout,"PIPE:  Found COMMAND ---%s---\n and OPTIONS ---%s---\n", command,options2);
+			free(command2);
+			free(options2);
 		}
 	} // end command with pipe
 
