@@ -117,11 +117,13 @@ int request(char *pth, int rd_only)
 			fprintf(stdout,"Are you sure to delete %s ? [Yes or No]\n", pth);
 
 		answ=get_line();
-		if (strcasecmp(answ,"yes")==0 || strcasecmp(answ,"y")==0 || strcmp(answ,"Yes")==0 )
+
+
+		if (strncasecmp(answ,"yes",3)==0 || strncasecmp(answ,"y",1)==0 || strncmp(answ,"Yes",3)==0 )
 			return 1;
 		else	
 		{	// NO
-			if ( strcasecmp(answ,"no")==0 || strcasecmp(answ,"n")==0 || strcmp(answ,"No")==0 )
+			if ( strncasecmp(answ,"no",3)==0 || strncasecmp(answ,"n",1)==0 || strncmp(answ,"No",3)==0 )
 				return 0;
 			else 
 				fprintf(stderr, "Type Yes or No!\n");
@@ -365,7 +367,7 @@ void del(param *list)
 		if (sub_dir==1)
 		{
 			line = strrchr(path,'/');
-				
+
 			// length of string not composing file name
 			if (line==NULL)
 				len = strlen(working_dir);
@@ -373,7 +375,7 @@ void del(param *list)
 				len = strlen(path)-strlen(line);
 
 			new_line = (char*)malloc(sizeof(char)*len+1);
-			
+
 			if (line==NULL) // only file name no dir specified
 				strcpy(new_line, working_dir);
 			else
@@ -387,12 +389,12 @@ void del(param *list)
 				fprintf(stderr, "Unable to find file %s or you don\'t have enough permission\n",path);
 				exit(1);
 			}
-			
+
 			if (line==NULL) // looking in current dir
 				recur_subdir(new_line,path);
 			else	 // looking in sub_dir
 				recur_subdir(new_line,line);
-			
+
 			erased=1;
 		}
 
@@ -597,7 +599,7 @@ void rd(param *list)
 
 		list=list->next;
 	}
-	
+
 	// parse dir list to be deleted
 	while(file_list!=NULL)
 	{	
