@@ -39,18 +39,21 @@
 void initialize();
 
 /* it fills and return the list of all resources fuonded in the path
- (with respect to filter arguements */
+ (with respect to filter arguements );
+ ***receive a path , ***return pointer to the first element of a list of directories contained in that path*/
 Resource *my_dir(char *);
 
-/* launch my_dir capturing the return and launch the printing function*/
+/* launch my_dir capturing the return and launch the printing function*;
+ * ***receive a path, ***return pointer to the first element of a list of directories contained in that path
+ */
 Resource *processNode(char *);
 
 /* process the path passed as argument, then for all children resource, it launches itself for recursion  */
-//  *** receive parent path ***
+//  *** receive parent path ***return -
 void followNode(char *);
 
 /* check for and set parameters, launch dir execution functions */
-// *** receive list with path and options ***
+// *** receive list with path and options *** return -
 void dir(param *);
 
 /* 

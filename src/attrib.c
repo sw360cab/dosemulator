@@ -32,30 +32,41 @@
 #include "resource.h"
 
 /*returns the full path of the folder containing the file,
- * whose path is passed as argument*/
+ * whose path is passed as argument;
+ ***receive the full path of the resource*/
 char *extract_path(char *);
 
 /*prints permissions (windows like format and meaning) of the resource and its 
- * name (with full path) */
+ * name (with full path);
+ ***receive an int array representing the mssk,the father's folder path, the name of the resource
+ *  */
 void print_mask(int[], char *, char *);
 
-/* build the permission mask of the resource*/
+/* build the permission mask of the resource;
+ ***receive a pointer to a resource, the path of the resource
+ */
 void print_attrib(Resource *, char *);
 
 /* print on the screen the failure of file access and exit*/
 void attrib_error();
 
 /* collect resources from the directory (if argument is a dir) in a list (if argument was a file , 
- * only one element in the list). Check for recursion and filters arguments. Change permission bits of resource*/
+ * only one element in the list). Check for recursion and filters arguments. Change permission bits of resource.
+ * ***receive a path of a resource, ***return the first of a list of directories resources; 
+ * */
 Resource *my_attrib(char *);
 
-/* element of the recursion alghoritm, it launhes my_attrib function and return its output*/
+/* element of the recursion alghoritm, it launches my_attrib function and return its output;
+ * receive a path, return pointer to the first of a list of dirs 
+ * */
 Resource *attrib_processNode(char *);
 
-/* starting from a path, it process the node and recursively all its descent */
+/* starting from a path, it process the node and recursively all its descent;
+ * ***receive a path, ***return pointer to the first of a list of dirs */
 Resource *attrib_followNode(char *);
 
-/* scan for parameters and launch the executive functions of attrib command*/
+/* scan for parameters and launch the executive functions of attrib command;
+ * ***receive pointer to the first paramater of the list*/
 void attrib(param *);
 
 extern Resource *create_res(struct stat, char[], unsigned char, char *);
