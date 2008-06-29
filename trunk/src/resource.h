@@ -41,57 +41,78 @@ struct resource_unit
 
 /* Prototypes */
 
-/* Inserts a resource */
+/* Inserts a resource 
+ * ***receive a pointer to a list, the resource pointer element to be inserted*/
 void insert_resource(Resource **, Resource *);
 
-/* Inserts a resource ordered*/
+/* Inserts a resource ordered,
+ * ***receive a pointer to a list, the resource pointer element to be inserted*/
 void insert_resource_order_by_type(Resource **, Resource *);
 
-/* Returns the first resource */
+/* Returns the first resource 
+ * ***recevive a pointer to a list, ***return the first resource*/
 Resource *get_resource(Resource **);		
 
-/* pop an element from list */
+/* pop an element from list,
+ * ***receive a pointer to a list,the resource pointer to pop, ***return the resource extracted */
 Resource* delete_resource_POP(Resource **, Resource *); 
 
-/* Returns a new resource */
+/* ***Returns a new resource */
 Resource *new_resource(void );		
 
-/* Releases a resource */
+/* Releases a resource 
+ * receive a resource pointer*/
 void release_resource(Resource *);		
 
-/* Delete a resource */
+/* Delete a resource ,
+ * ***receive a pointer to list of resources, the resource pointer to delete*/
 void delete_resource(Resource **,Resource *); 
 
 /* print a list of resources - the third argument is a generic pointer parameter,
- * to be used  through a cast to the specific type */
+ * to be used  through a cast to the specific type ;
+ * ***receive the first element pointer of the list, the path of the father dir,and options
+ * ***return list of dirs contained in path */
 Resource *print_list(Resource *, char *,char *); 
 
-/* create a resource with parameters*/
+/* create a resource with parameters;
+ * ***receive the stat, the name, the type and the path of the resource father folder
+ * ***return the created resource * */
 Resource *create_res(struct stat, char[], unsigned char,char *);
 
-/* given the resource name and owner dir path, it returns the full path of the resource*/
+/* build the absolute path of the resource;
+ * ***receive the resource name and owner dir path, 
+ * ***return the absolute path of the resource*/
 char *build_path(char *,char *); 
 
-/* tells wheter resource is read only*/
+/* tells wheter resource is read only;
+ * ***receive the mode (casted to long), ***return 0 if resource isn't read only, 1 otherwise*/
 int is_read_only(long);
 
-/* given a string , it extracts double quotes from beginning and end*/
+/* given a string , it extracts double quotes from beginning and end
+ * ***receive a string, ***return the string without double quotes*/
 char *extract_double_quotes(char*); 
 
-/* converts a decimal number into a binary one as array of chars */
+/* converts a decimal number into a binary one as array of chars 
+ * ***receive a long, and a pointer to an array of characters*/
 void dec2bin(long, char*);
 
-/* build the full path of a resource, given its name and folder parent containing path */
-char *build_path(char *, char* );
 
-/* It reads the time from ts and puts it in buffer (of size len) as a string */
+/* It reads the time from ts and puts it in buffer (of size len) as a string 
+ * ***receive the structure timespec, a char array where to save the string,the length of the array
+ * */
 void timespec2string(struct timespec *, char[], int);
 
-/* standard resource info printing */
+/* standard resource info printing ;
+ * ***receive a resource pointer, pointers to, respectively, number of dirs,files and file size counters  
+ * */
 void stdprint(Resource *, int *, int *, int *) ;
 
-/* time info print of folder . and .. */
+/* time info print of folder . and .. ;
+ * ***receive the structure stat of the folder, an int flag to indicate wheter it's the father folder(..) or not 
+ * */
 void strdprint_time_parents(struct stat, int);
 
-/* folder . and .. info print */
+/* folder . and .. info print ;
+ * ***receive the path of the folder;
+ * */
 void stdprint_parents(char *path);
